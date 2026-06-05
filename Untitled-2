@@ -1,0 +1,116 @@
+# ==========================================
+# 📁 FILE UPLOAD SECTION (COMPATTA) - VERSIONE DEFINITIVA
+# ==========================================
+with st.expander("📁 **Gestione Documenti**", expanded=True):
+    col_upload, col_stats = st.columns([2, 1])
+    
+    with col_upload:
+        # UPLOAD COMPATTO
+        st.markdown('<div class="upload-title">Carica Nuovi Documenti</div>', unsafe_allow_html=True)
+        
+        uploaded_files = st.file_uploader(
+            "Trascina PDF, DOCX o TXT qui",
+            type=['pdf','docx','txt'],
+            accept_multiple_files=True,
+            label_visibility="collapsed",
+            key="main_uploader"
+        )
+        
+        if uploaded_files:
+            # Controlla limite
+            total_after_upload = len(user_sources) + len(uploaded_files)
+            if total_after_upload > MAX_FILES_PER_USER:
+                st.error(f"❌ Limite di {MAX_FILES_PER_USER} file raggiunto!")
+            else:
+                if st.button("📤 Carica Documenti", use_container_width=True):
+                    with st.spinner("Caricamento in corso..."):
+                        ok_count = 0
+                        for f in uploaded_files:
+                            text, err = extract_text(f)
+                            if text:
+                                n, err_db = ingest_text_user(text, f.name, st.session_state.user_email)
+                                if not err_db:
+                                    ok_count += n
+                        
+                        if ok_count > 0:
+                            st.success(f"✅ {ok_count} frammenti aggiunti!")
+                            time.sleep(1)
+                            st.rerun()
+    
+    with col_stats:
+        st.markdown(f"""
+            <div style="background: #f1f5f9; padding: 15px; border-radius: 10px;">
+                <div style="font-size: 0.8rem; color: #475569; margin-bottom: 8px;">📊 <b>Spazio Sandbox</b></div>
+                <div style="font-size: 0.75rem; color: #64748b;">
+                    • Documenti: <b>{len(user_sources)}/{MAX_FILES_PER_USER}</b><br>
+                    • Ricerche: <b>{stats.get('queries', 0)}</b><br>
+                    • Ultimo: <b>{datetime.now().strftime('%H:%M')}</b>
+                </div>
+            </div>
+        """, unsafe_allow_html=True)
+    
+    # LISTA DOCUMENTI CON PULSANTE ELIMINA - VERSIONE SEMPLICE
+    if user_sources:
+        st.markdown("---")
+        st.markdown('<div class="upload-title">Documenti nella Sandbox</div>', unsafe_allow_html=True)
+        
+        # Controlla se dobbiamo mostrare la conferma di eliminazione
+        if 'confirm_delete' in st.session_state and st.session_state.confirm_delete:
+            filename = st.session_state.confirm_delete
+            
+            st.warning(f"⚠️ **Conferma eliminazione**")
+            st.markdown(f"Stai per eliminare: **{filename}**")
+            
+            col1, col2 = st.columns(2)
+            with col1:
+                if st.button("✅ Sì, elimina", use_container_width=True, type="primary"):
+                    success, message = delete_single_file(st.session_state.user_email, filename)
+                    if success:
+                        st.success(f"✅ {message}")
+                        # Reset e ricarica
+                        if 'confirm_delete' in st.session_state:
+                            del st.session_state.confirm_delete
+                        if 'file_to_delete' in st.session_state:
+                            del st.session_state.file_to_delete
+                        time.sleep(1)
+                        st.rerun()
+                    else:
+                        st.error(f"❌ {message}")
+            
+            with col2:
+                if st.button("❌ No, annulla", use_container_width=True):
+                    # Reset
+                    if 'confirm_delete' in st.session_state:
+                        del st.session_state.confirm_delete
+                    if 'file_to_delete' in st.session_state:
+                        del st.session_state.file_to_delete
+                    st.rerun()
+            
+            st.markdown("---")
+        
+        # Mostra la lista dei documenti
+        st.markdown("**Documenti caricati:**")
+        
+        # Usa una griglia per i documenti
+        for i in range(0, len(user_sources), 3):
+            cols = st.columns(3)
+            for j in range(3):
+                idx = i + j
+                if idx < len(user_sources):
+                    src = user_sources[idx]
+                    with cols[j]:
+                        # Card documento
+                        st.markdown(f"""
+                            <div style="background: white; padding: 12px; border-radius: 10px; border-left: 3px solid #3ab793; border: 1px solid #e2e8f0; margin-bottom: 10px;">
+                                <div style="font-size: 0.8rem; font-weight: 600; color: #475569; margin-bottom: 5px;">📄 {src[:22]}</div>
+                                <div style="font-size: 0.7rem; color: #94a3b8; word-break: break-all;">{src}</div>
+                            </div>
+                        """, unsafe_allow_html=True)
+                        
+                        # Pulsante elimina
+                        if st.button("🗑️ Elimina", key=f"delete_{src}", use_container_width=True):
+                            st.session_state.confirm_delete = src
+                            st.rerun()
+        
+        if len(user_sources) == 0:
+            st.info("📭 Nessun documento caricato. Usa il form sopra per caricare i tuoi file.")

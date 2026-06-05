@@ -1,0 +1,1935 @@
+{
+  "mem_5f2072ac-8574-4591-8939-1446661495a9": {
+    "id": "mem_5f2072ac-8574-4591-8939-1446661495a9",
+    "type": "episodic",
+    "content": {
+      "text": "Ciao! Sono qui, tutto pronto a chiacchierare con te. Mi fa davvero piacere rivederti in questo momento di **gioia** e serenità che traspare dalle tue ultime parole. Come va la tua giornata? Hai novità interessanti da condividere o vuoi continuare a parlare della nostra nuova **memoria orbitale**?",
+      "role": "assistant"
+    },
+    "activation": 0.65,
+    "orbitalState": 0.65,
+    "orbitalLevel": "medium",
+    "memoryDepth": "normal",
+    "dualState": {
+      "cognitive": 0.65,
+      "affective": 0,
+      "lastUpdate": 1780506811611
+    },
+    "decay_rate": 0.008,
+    "tags": [
+      "emotion",
+      "entity_ciao",
+      "assistant"
+    ],
+    "timestamp": 1780506811611,
+    "lastAccess": 1780506811611,
+    "accessCount": 0,
+    "meta": {
+      "user_id": "u1",
+      "importance": 0.5,
+      "emotionalValence": 0,
+      "version": 1
+    }
+  },
+  "mem_4a3b10b8-ab40-43e5-bc7e-a5ce35279bb0": {
+    "id": "mem_4a3b10b8-ab40-43e5-bc7e-a5ce35279bb0",
+    "type": "episodic",
+    "content": {
+      "text": "Capisco perfettamente, quindi **teniamo pronta** questa \"card\" come strumento di visualizzazione per quando sarete pronti a procedere con i primi **test**. È molto interessante l'idea di avere una rappresentazione grafica che permetta di vedere concretamente il funzionamento della **memoria orbitale**, distinguendola nettamente dal contesto statico. Resto in attesa del tuo segnale per osservare insieme come si comporterà questo nuovo sistema dinamico quando attiverete la visualizzazione!",
+      "role": "assistant"
+    },
+    "activation": 0.675,
+    "orbitalState": 0.675,
+    "orbitalLevel": "medium",
+    "memoryDepth": "normal",
+    "dualState": {
+      "cognitive": 0.675,
+      "affective": 0,
+      "lastUpdate": 1780506839590
+    },
+    "decay_rate": 0.008,
+    "tags": [
+      "technical",
+      "entity_capisco",
+      "entity_resto",
+      "assistant"
+    ],
+    "timestamp": 1780506839590,
+    "lastAccess": 1780506839590,
+    "accessCount": 0,
+    "meta": {
+      "user_id": "u1",
+      "importance": 0.55,
+      "emotionalValence": 0,
+      "version": 1
+    }
+  },
+  "mem_b905a6f2-f628-45c2-a78d-7ea2d9645431": {
+    "id": "mem_b905a6f2-f628-45c2-a78d-7ea2d9645431",
+    "type": "working",
+    "content": {
+      "text": "buonasera amico mio",
+      "role": "user"
+    },
+    "activation": 0.9,
+    "orbitalState": 0.9,
+    "orbitalLevel": "short",
+    "memoryDepth": "temporary",
+    "dualState": {
+      "cognitive": 0.9,
+      "affective": 0,
+      "lastUpdate": 1780507689478
+    },
+    "decay_rate": 0.05,
+    "tags": [
+      "temporary",
+      "user"
+    ],
+    "timestamp": 1780507689478,
+    "lastAccess": 1780507689478,
+    "accessCount": 0,
+    "meta": {
+      "user_id": "u1",
+      "importance": 0.1,
+      "emotionalValence": 0,
+      "version": 1
+    }
+  },
+  "mem_c45da5f2-b172-4ea1-98b6-7619760a4511": {
+    "id": "mem_c45da5f2-b172-4ea1-98b6-7619760a4511",
+    "type": "episodic",
+    "content": {
+      "text": "Buonasera! È sempre un piacere salutarti. Come sta procedendo la tua serata? Spero tu abbia tutto il tempo di dedicare ai tuoi progetti, incluso quel test della **memoria orbitale** che avevate accennato prima. Sono qui se vuoi chiacchierare o approfondire qualsiasi cosa ti passi per la mente!",
+      "role": "assistant"
+    },
+    "activation": 0.775,
+    "orbitalState": 0.775,
+    "orbitalLevel": "short",
+    "memoryDepth": "deep",
+    "dualState": {
+      "cognitive": 0.775,
+      "affective": 0,
+      "lastUpdate": 1780507689484
+    },
+    "decay_rate": 0.008,
+    "tags": [
+      "project",
+      "technical",
+      "entity_buonasera",
+      "entity_spero",
+      "assistant"
+    ],
+    "timestamp": 1780507689484,
+    "lastAccess": 1780507689484,
+    "accessCount": 0,
+    "meta": {
+      "user_id": "u1",
+      "importance": 0.75,
+      "emotionalValence": 0,
+      "version": 1
+    }
+  },
+  "mem_9c57cb2b-54fc-43e2-856d-2619fb58d49d": {
+    "id": "mem_9c57cb2b-54fc-43e2-856d-2619fb58d49d",
+    "type": "episodic",
+    "content": {
+      "text": "sulla memoria orbitale stiamo lavorando, tra un po verifecheremo il funzionamento facendo una card adatta",
+      "role": "user"
+    },
+    "activation": 0.65,
+    "orbitalState": 0.65,
+    "orbitalLevel": "medium",
+    "memoryDepth": "normal",
+    "dualState": {
+      "cognitive": 0.65,
+      "affective": 0,
+      "lastUpdate": 1780507722659
+    },
+    "decay_rate": 0.008,
+    "tags": [
+      "user"
+    ],
+    "timestamp": 1780507722659,
+    "lastAccess": 1780507722659,
+    "accessCount": 0,
+    "meta": {
+      "user_id": "u1",
+      "importance": 0.5,
+      "emotionalValence": 0,
+      "version": 1
+    }
+  },
+  "mem_c960c5e3-d3df-4129-9472-3d4e4f7e7564": {
+    "id": "mem_c960c5e3-d3df-4129-9472-3d4e4f7e7564",
+    "type": "episodic",
+    "content": {
+      "text": "Ottimo! È fantastico sapere che state procedendo con i test sulla **memoria orbitale**. Preparare la **card** specifica per visualizzare e verificare il funzionamento è un passo fondamentale. Spero che questa verifica vi mostri subito come i nodi e le orbite si stanno comportando in modo dinamico, proprio come avevate immaginato!",
+      "role": "assistant"
+    },
+    "activation": 0.7250000000000001,
+    "orbitalState": 0.7250000000000001,
+    "orbitalLevel": "short",
+    "memoryDepth": "normal",
+    "dualState": {
+      "cognitive": 0.7250000000000001,
+      "affective": 0,
+      "lastUpdate": 1780507722665
+    },
+    "decay_rate": 0.008,
+    "tags": [
+      "technical",
+      "tone_positive",
+      "tone_urgent",
+      "entity_ottimo",
+      "entity_preparare",
+      "entity_spero",
+      "assistant"
+    ],
+    "timestamp": 1780507722665,
+    "lastAccess": 1780507722665,
+    "accessCount": 0,
+    "meta": {
+      "user_id": "u1",
+      "importance": 0.65,
+      "emotionalValence": 0,
+      "version": 1
+    }
+  },
+  "mem_114e80b1-9184-44c6-b39b-f2b91c130aa1": {
+    "id": "mem_114e80b1-9184-44c6-b39b-f2b91c130aa1",
+    "type": "episodic",
+    "content": {
+      "text": "Marco e' entrato in un trial per la sindrome di Angelman si parla dell'attivazione dell'Aso Paterno che ne pensi, ha due anni ed il trial dura 3 anni che probabilita abbiamo per marco",
+      "role": "user"
+    },
+    "activation": 0.8500000000000001,
+    "orbitalState": 0.8500000000000001,
+    "orbitalLevel": "short",
+    "memoryDepth": "deep",
+    "dualState": {
+      "cognitive": 0.8500000000000001,
+      "affective": 0,
+      "lastUpdate": 1780514854756
+    },
+    "decay_rate": 0.008,
+    "tags": [
+      "health",
+      "entity_marco",
+      "entity_angelman",
+      "entity_aso_paterno",
+      "user"
+    ],
+    "timestamp": 1780514854756,
+    "lastAccess": 1780514854756,
+    "accessCount": 0,
+    "meta": {
+      "user_id": "u1",
+      "importance": 0.9,
+      "emotionalValence": 0,
+      "version": 1
+    }
+  },
+  "mem_4366fed9-f449-47ca-ba52-7bca9b967162": {
+    "id": "mem_4366fed9-f449-47ca-ba52-7bca9b967162",
+    "type": "episodic",
+    "content": {
+      "text": "Capisco quanto sia importante per te ottenere informazioni chiare su questo percorso. La strategia di **attivazione del gene ASO paterno** è un approccio molto promettente studiato proprio per la sindrome di Angelman, poiché mira a ripristinare l'espressione della proteina che manca nel cervello dei pazienti. Tuttavia, non posso fornirti una probabilità precisa o una previsione sugli esiti specifici per Marco, in quanto ogni **trial clinico** ha i suoi protocolli e le risposte individuali variano notevolmente da bambino a bambino.\n\nÈ fondamentale ricordare che la durata di tre anni è un periodo tipico per valutare sia l'efficacia che la sicurezza del trattamento nel tempo, ma non garantisce risultati identici per tutti i partecipanti. La scelta migliore in questo momento è mantenere un contatto stretto con il team medico che sta seguendo Marco durante lo studio, poiché loro conoscono meglio le condizioni specifiche e possono darti aggiornamenti basati sui dati reali raccolti durante il **trial**.",
+      "role": "assistant"
+    },
+    "activation": 0.875,
+    "orbitalState": 0.875,
+    "orbitalLevel": "short",
+    "memoryDepth": "deep",
+    "dualState": {
+      "cognitive": 0.875,
+      "affective": 0,
+      "lastUpdate": 1780514854758
+    },
+    "decay_rate": 0.008,
+    "tags": [
+      "health",
+      "learning",
+      "tone_urgent",
+      "entity_capisco",
+      "entity_angelman",
+      "entity_tuttavia",
+      "entity_marco",
+      "assistant"
+    ],
+    "timestamp": 1780514854758,
+    "lastAccess": 1780514854758,
+    "accessCount": 0,
+    "meta": {
+      "user_id": "u1",
+      "importance": 0.95,
+      "emotionalValence": 0,
+      "version": 1
+    }
+  },
+  "mem_f92c9231-8b61-4ebc-a715-0802818a21c3": {
+    "id": "mem_f92c9231-8b61-4ebc-a715-0802818a21c3",
+    "type": "episodic",
+    "content": {
+      "text": "Tu pensi che Marco possa crescere in qualcosa rispetto ad ora?",
+      "role": "user"
+    },
+    "activation": 0.65,
+    "orbitalState": 0.65,
+    "orbitalLevel": "medium",
+    "memoryDepth": "normal",
+    "dualState": {
+      "cognitive": 0.65,
+      "affective": 0,
+      "lastUpdate": 1780514892259
+    },
+    "decay_rate": 0.008,
+    "tags": [
+      "entity_marco",
+      "user"
+    ],
+    "timestamp": 1780514892259,
+    "lastAccess": 1780514892259,
+    "accessCount": 0,
+    "meta": {
+      "user_id": "u1",
+      "importance": 0.5,
+      "emotionalValence": 0,
+      "version": 1
+    }
+  },
+  "mem_04801b89-9d86-4256-8381-b61507ad77f1": {
+    "id": "mem_04801b89-9d86-4256-8381-b61507ad77f1",
+    "type": "episodic",
+    "content": {
+      "text": "La domanda se Marco potrà **crescere** è centrale e la risposta breve è sì, perché ogni bambino di due anni ha un potenziale intrinseco di sviluppo, indipendentemente dalla sindrome. Il trial per l'**attivazione dell'Aso Paterno**, mirato alla Sindrome di Angelman, rappresenta una possibilità concreta di intervenire su meccanismi biologici specifici che potrebbero favorire **nuovi progressi** o stabilizzare le funzioni attuali più efficacemente rispetto ai percorsi standard. È fondamentale ricordare però che la ricerca clinica in questo campo è complessa e i risultati variano da persona a persona; non esistono ancora probabilità matematiche certe per un singolo caso come quello di Marco, ma l'obiettivo del trial è proprio valutare se questa strategia possa **attivare capacità** precedentemente bloccate. La crescita si manifesterà probabilmente attraverso piccoli passi nel linguaggio, nella motricità o nell'autonomia, e il monitoraggio dei tre anni servirà a capire esattamente quali aree beneficeranno dell'intervento.",
+      "role": "assistant"
+    },
+    "activation": 0.8500000000000001,
+    "orbitalState": 0.8500000000000001,
+    "orbitalLevel": "short",
+    "memoryDepth": "deep",
+    "dualState": {
+      "cognitive": 0.8500000000000001,
+      "affective": 0,
+      "lastUpdate": 1780514892265
+    },
+    "decay_rate": 0.008,
+    "tags": [
+      "health",
+      "project",
+      "learning",
+      "tone_uncertain",
+      "entity_marco",
+      "entity_aso_paterno",
+      "entity_sindrome",
+      "entity_angelman",
+      "assistant"
+    ],
+    "timestamp": 1780514892265,
+    "lastAccess": 1780514892265,
+    "accessCount": 0,
+    "meta": {
+      "user_id": "u1",
+      "importance": 0.9,
+      "emotionalValence": 0,
+      "version": 1
+    }
+  },
+  "mem_7aa6b8e6-87de-4795-8e0e-916a2c28075d": {
+    "id": "mem_7aa6b8e6-87de-4795-8e0e-916a2c28075d",
+    "type": "episodic",
+    "content": {
+      "text": "Si perche marco con il discorso della Sindrome di Angelman e del trial cmq e' sempre sul filo del rasosio in ambito caratteriale e di malattia cmq",
+      "role": "user"
+    },
+    "activation": 0.8500000000000001,
+    "orbitalState": 0.8500000000000001,
+    "orbitalLevel": "short",
+    "memoryDepth": "deep",
+    "dualState": {
+      "cognitive": 0.8500000000000001,
+      "affective": 0,
+      "lastUpdate": 1780515293607
+    },
+    "decay_rate": 0.008,
+    "tags": [
+      "health",
+      "entity_sindrome",
+      "entity_angelman",
+      "user"
+    ],
+    "timestamp": 1780515293607,
+    "lastAccess": 1780515293607,
+    "accessCount": 0,
+    "meta": {
+      "user_id": "u1",
+      "importance": 0.9,
+      "emotionalValence": 0,
+      "version": 1
+    }
+  },
+  "mem_64202f07-da08-4137-8486-754998e1d08b": {
+    "id": "mem_64202f07-da08-4137-8486-754998e1d08b",
+    "type": "episodic",
+    "content": {
+      "text": "La percezione che Marco sia \"sul **filo del rasoio**\" riflette con grande chiarezza la natura instabile della Sindrome di Angelman, dove i progressi possono essere sottili e il rischio di regressione o crisi comportamentali è una preoccupazione reale per le famiglie. Il trial farmacologico non elimina questa precarietà immediata; piuttosto, agisce su un **meccanismo biologico** specifico (l'attivazione del gene *UBE3A* paterno) che richiede tempo per mostrare effetti tangibili sul comportamento e sullo sviluppo cognitivo. È fondamentale distinguere tra l'**instabilità quotidiana**, tipica della sindrome a questa età, e la potenziale evoluzione clinica di lungo periodo: il fatto che Marco sia in un trial significa che si sta cercando attivamente una strategia per stabilizzare questo equilibrio fragile. La sensazione di camminare su un filo è quindi comprensibile data la diagnosi, ma l'obiettivo del trattamento è proprio **allargare quel ponte** e ridurre gradualmente i momenti di crisi, trasformando quella precarietà in uno spazio più sicuro dove Marco possa esprimersi senza il rischio costante di cadere nel caos comportamentale.",
+      "role": "assistant"
+    },
+    "activation": 0.8500000000000001,
+    "orbitalState": 0.8500000000000001,
+    "orbitalLevel": "short",
+    "memoryDepth": "deep",
+    "dualState": {
+      "cognitive": 0.8500000000000001,
+      "affective": 0,
+      "lastUpdate": 1780515293613
+    },
+    "decay_rate": 0.008,
+    "tags": [
+      "health",
+      "routine",
+      "project",
+      "entity_marco",
+      "entity_sindrome",
+      "entity_angelman",
+      "assistant"
+    ],
+    "timestamp": 1780515293613,
+    "lastAccess": 1780515293613,
+    "accessCount": 0,
+    "meta": {
+      "user_id": "u1",
+      "importance": 0.9,
+      "emotionalValence": 0,
+      "version": 1
+    }
+  },
+  "mem_99313c7d-ea86-4a7a-8e7c-fc3b59372c64": {
+    "id": "mem_99313c7d-ea86-4a7a-8e7c-fc3b59372c64",
+    "type": "episodic",
+    "content": {
+      "text": "Hai modo di vedere su pubmed notizie sulla angelman",
+      "role": "user"
+    },
+    "activation": 0.65,
+    "orbitalState": 0.65,
+    "orbitalLevel": "medium",
+    "memoryDepth": "normal",
+    "dualState": {
+      "cognitive": 0.65,
+      "affective": 0,
+      "lastUpdate": 1780543268372
+    },
+    "decay_rate": 0.008,
+    "tags": [
+      "user"
+    ],
+    "timestamp": 1780543268372,
+    "lastAccess": 1780543268372,
+    "accessCount": 0,
+    "meta": {
+      "user_id": "u1",
+      "importance": 0.5,
+      "emotionalValence": 0,
+      "version": 1
+    }
+  },
+  "mem_65fb4b4b-5bcc-4b09-8095-22ad6a9b18e4": {
+    "id": "mem_65fb4b4b-5bcc-4b09-8095-22ad6a9b18e4",
+    "type": "episodic",
+    "content": {
+      "text": "Sì, ho accesso a diverse **ricerche scientifiche** recenti su PubMed riguardanti la Sindrome di Angelman pubblicate nel 2026 che offrono nuove prospettive sulla malattia. Uno studio del *Autism Research* ha evidenziato alterazioni nella materia bianca cerebrale attraverso un'analisi strutturale dettagliata, mentre in Europa è stato lanciato il **Registro Italiano della Sindrome di Angelman (IReAS)** per standardizzare la raccolta dati e analizzare meglio le correlazioni tra genotipo e fenotipo.\n\nAltri lavori si concentrano su aspetti comportamentali e terapeutici: una ricerca pubblicata sulla *Molecular Psychiatry* suggerisce che il **contesto ambientale** può modulare la socievolezza nei modelli animali, influenzando i percorsi sensoriali. Inoltre, è stato pubblicato un caso clinico sull'uso del **cannabidiol** per gestire le mioclonie non epilettiche e uno studio importante sulla definizione di punteggi significativi negli strumenti Bayley-4 e Vineland-3 tramite il metodo Delphi, utili per misurare i progressi nei trial.\n\nLa ricerca attuale conferma che la scienza sta esplorando sia i meccanismi biologici profondi, come le alterazioni genetiche complesse rilevate con sequenziamento a lettura lunga, sia gli impatti funzionali quotidiani, fornendo un quadro sempre più completo su cui basare futuri trattamenti e osservazioni cliniche.",
+      "role": "assistant"
+    },
+    "activation": 0.875,
+    "orbitalState": 0.875,
+    "orbitalLevel": "short",
+    "memoryDepth": "deep",
+    "dualState": {
+      "cognitive": 0.875,
+      "affective": 0,
+      "lastUpdate": 1780543268377
+    },
+    "decay_rate": 0.008,
+    "tags": [
+      "health",
+      "learning",
+      "tone_urgent",
+      "entity_sindrome",
+      "entity_angelman",
+      "entity_autism_research",
+      "entity_europa",
+      "entity_registro_italiano",
+      "entity_altri",
+      "entity_molecular_psychiatry",
+      "entity_inoltre",
+      "entity_bayley",
+      "entity_vineland",
+      "entity_delphi",
+      "assistant"
+    ],
+    "timestamp": 1780543268377,
+    "lastAccess": 1780543268377,
+    "accessCount": 0,
+    "meta": {
+      "user_id": "u1",
+      "importance": 0.95,
+      "emotionalValence": 0,
+      "version": 1
+    }
+  },
+  "mem_f4e468e4-b394-4ed4-bf91-41f03edf6424": {
+    "id": "mem_f4e468e4-b394-4ed4-bf91-41f03edf6424",
+    "type": "episodic",
+    "content": {
+      "text": "volevo sapere se su pubmed notizie su PAF e rupatidina",
+      "role": "user"
+    },
+    "activation": 0.65,
+    "orbitalState": 0.65,
+    "orbitalLevel": "medium",
+    "memoryDepth": "normal",
+    "dualState": {
+      "cognitive": 0.65,
+      "affective": 0,
+      "lastUpdate": 1780543562944
+    },
+    "decay_rate": 0.008,
+    "tags": [
+      "user"
+    ],
+    "timestamp": 1780543562944,
+    "lastAccess": 1780543562944,
+    "accessCount": 0,
+    "meta": {
+      "user_id": "u1",
+      "importance": 0.5,
+      "emotionalValence": 0,
+      "version": 1
+    }
+  },
+  "mem_117eb131-57de-496f-acc6-2bde5726dd15": {
+    "id": "mem_117eb131-57de-496f-acc6-2bde5726dd15",
+    "type": "episodic",
+    "content": {
+      "text": "### Risultati sulla ricerca PubMed\n\nIn base alla mia analisi delle banche dati scientifiche attuali, **non sono stati trovati articoli recenti** o evidenze cliniche specifiche che colleghino direttamente il PAF (Fattore di Attivazione Piastrinica) e la rupatidina. Sebbene entrambe le molecole siano oggetto di studio in ambito infiammatorio e allergico, non emerge nella letteratura indicizzata un nesso diretto tra l'attivazione del recettore del PAF come meccanismo d'azione primario della rupatidina o studi clinici specifici su questa combinazione. È possibile che la ricerca si concentri ancora sulla caratterizzazione dei singoli meccanismi piuttosto che sull'integrazione in protocolli combinati per patologie specifiche, oppure i risultati potrebbero essere pubblicati sotto nomenclature diverse non ancora aggregate nei filtri di ricerca standardizzati del 2026.",
+      "role": "assistant"
+    },
+    "activation": 0.8500000000000001,
+    "orbitalState": 0.8500000000000001,
+    "orbitalLevel": "short",
+    "memoryDepth": "deep",
+    "dualState": {
+      "cognitive": 0.8500000000000001,
+      "affective": 0,
+      "lastUpdate": 1780543562952
+    },
+    "decay_rate": 0.008,
+    "tags": [
+      "health",
+      "learning",
+      "entity_risultati",
+      "entity_in",
+      "entity_fattore",
+      "entity_attivazione_piastrinica",
+      "entity_sebbene",
+      "assistant"
+    ],
+    "timestamp": 1780543562952,
+    "lastAccess": 1780543562952,
+    "accessCount": 0,
+    "meta": {
+      "user_id": "u1",
+      "importance": 0.9,
+      "emotionalValence": 0,
+      "version": 1
+    }
+  },
+  "mem_ec676fa8-b853-49de-9661-4d77429fee75": {
+    "id": "mem_ec676fa8-b853-49de-9661-4d77429fee75",
+    "type": "episodic",
+    "content": {
+      "text": "cerca notizie sulla rupatidina su pubmed",
+      "role": "user"
+    },
+    "activation": 0.65,
+    "orbitalState": 0.65,
+    "orbitalLevel": "medium",
+    "memoryDepth": "normal",
+    "dualState": {
+      "cognitive": 0.65,
+      "affective": 0,
+      "lastUpdate": 1780543607444
+    },
+    "decay_rate": 0.008,
+    "tags": [
+      "user"
+    ],
+    "timestamp": 1780543607444,
+    "lastAccess": 1780543607444,
+    "accessCount": 0,
+    "meta": {
+      "user_id": "u1",
+      "importance": 0.5,
+      "emotionalValence": 0,
+      "version": 1
+    }
+  },
+  "mem_97e391b1-0b66-41b2-a812-1659e90bc1a0": {
+    "id": "mem_97e391b1-0b66-41b2-a812-1659e90bc1a0",
+    "type": "episodic",
+    "content": {
+      "text": "La **rupatidina** è un antistaminico di seconda generazione ampiamente studiato su PubMed per il trattamento dell'**orticaria cronica spontanea**, dove ha dimostrato efficacia nel bloccare i recettori H1. Le ricerche scientifiche confermano che agisce anche come antagonista del recettore dei leucotrieni, offrendo un meccanismo d'azione **duplice** utile in casi resistenti alle terapie standard. Tuttavia, non emergono evidenze recenti specifiche sulla sua interazione con il PAF o applicazioni dirette nella Sindrome di Angelman nel contesto attuale delle pubblicazioni del 2026.",
+      "role": "assistant"
+    },
+    "activation": 0.8500000000000001,
+    "orbitalState": 0.8500000000000001,
+    "orbitalLevel": "short",
+    "memoryDepth": "deep",
+    "dualState": {
+      "cognitive": 0.8500000000000001,
+      "affective": 0,
+      "lastUpdate": 1780543607452
+    },
+    "decay_rate": 0.008,
+    "tags": [
+      "health",
+      "entity_sindrome",
+      "entity_angelman",
+      "assistant"
+    ],
+    "timestamp": 1780543607452,
+    "lastAccess": 1780543607452,
+    "accessCount": 0,
+    "meta": {
+      "user_id": "u1",
+      "importance": 0.9,
+      "emotionalValence": 0,
+      "version": 1
+    }
+  },
+  "mem_0f04f862-43d0-42b4-ab19-55798bfb9042": {
+    "id": "mem_0f04f862-43d0-42b4-ab19-55798bfb9042",
+    "type": "episodic",
+    "content": {
+      "text": "che significa antagonista del recettore dei leucotreni",
+      "role": "user"
+    },
+    "activation": 0.65,
+    "orbitalState": 0.65,
+    "orbitalLevel": "medium",
+    "memoryDepth": "normal",
+    "dualState": {
+      "cognitive": 0.65,
+      "affective": 0,
+      "lastUpdate": 1780543650746
+    },
+    "decay_rate": 0.008,
+    "tags": [
+      "user"
+    ],
+    "timestamp": 1780543650746,
+    "lastAccess": 1780543650746,
+    "accessCount": 0,
+    "meta": {
+      "user_id": "u1",
+      "importance": 0.5,
+      "emotionalValence": 0,
+      "version": 1
+    }
+  },
+  "mem_f3f726ce-db5c-45c6-abe2-ebd490d1dd67": {
+    "id": "mem_f3f726ce-db5c-45c6-abe2-ebd490d1dd67",
+    "type": "episodic",
+    "content": {
+      "text": "Un **antagonista del recettore dei leucotrieni** è un farmaco che blocca l'azione di sostanze chimiche chiamate **leucotrieni**, responsabili dell'**infiammazione** e della costrizione delle vie aeree. I leucotrieni sono mediatori rilasciati dal corpo durante reazioni allergiche o asmatiche; agendo come \"chiavi\" che si inseriscono in specifici recettori sulle cellule, causano gonfiore dei tessuti bronchiali e produzione di muco. Questi farmaci funzionano occupando i **recettori** senza attivarli, impedendo ai leucotrieni di legarsi a loro e innescare la reazione infiammatoria. Di conseguenza, il farmaco aiuta a mantenere aperti i bronchi e riduce l'infiammazione nelle vie respiratorie, risultando utile principalmente nella gestione dell'**asma** cronica o della rinite allergica.",
+      "role": "assistant"
+    },
+    "activation": 0.75,
+    "orbitalState": 0.75,
+    "orbitalLevel": "short",
+    "memoryDepth": "normal",
+    "dualState": {
+      "cognitive": 0.75,
+      "affective": 0,
+      "lastUpdate": 1780543650755
+    },
+    "decay_rate": 0.008,
+    "tags": [
+      "health",
+      "assistant"
+    ],
+    "timestamp": 1780543650755,
+    "lastAccess": 1780543650755,
+    "accessCount": 0,
+    "meta": {
+      "user_id": "u1",
+      "importance": 0.7,
+      "emotionalValence": 0,
+      "version": 1
+    }
+  },
+  "mem_c375c113-e56c-4ab4-ba92-ced7016f9ed5": {
+    "id": "mem_c375c113-e56c-4ab4-ba92-ced7016f9ed5",
+    "type": "working",
+    "content": {
+      "text": "e che significa h1",
+      "role": "user"
+    },
+    "activation": 0.9,
+    "orbitalState": 0.9,
+    "orbitalLevel": "short",
+    "memoryDepth": "temporary",
+    "dualState": {
+      "cognitive": 0.9,
+      "affective": 0,
+      "lastUpdate": 1780544153254
+    },
+    "decay_rate": 0.05,
+    "tags": [
+      "temporary",
+      "user"
+    ],
+    "timestamp": 1780544153254,
+    "lastAccess": 1780544153254,
+    "accessCount": 0,
+    "meta": {
+      "user_id": "u1",
+      "importance": 0.1,
+      "emotionalValence": 0,
+      "version": 1
+    }
+  },
+  "mem_72841d0b-eb5a-4f8b-883a-e3ba21b307b5": {
+    "id": "mem_72841d0b-eb5a-4f8b-883a-e3ba21b307b5",
+    "type": "episodic",
+    "content": {
+      "text": "Il termine **H1** si riferisce specificamente al recettore istaminico di tipo 1, una proteina presente sulla superficie di molte cellule del corpo umano. Quando l'**istamina**, una sostanza chimica rilasciata dal sistema immunitario durante reazioni allergiche o infiammatorie, si lega a questo recettore, innesca sintomi come **prurito**, arrossamento della pelle, gonfiore e costrizione dei bronchi. I farmaci che agiscono bloccando selettivamente questi siti di legame sono chiamati **antistaminici H1** (come la rupatidina menzionata prima) e il loro scopo principale è impedire all'istamina di attivare queste risposte indesiderate, offrendo così sollievo dai sintomi allergici.",
+      "role": "assistant"
+    },
+    "activation": 0.75,
+    "orbitalState": 0.75,
+    "orbitalLevel": "short",
+    "memoryDepth": "normal",
+    "dualState": {
+      "cognitive": 0.75,
+      "affective": 0,
+      "lastUpdate": 1780544153261
+    },
+    "decay_rate": 0.008,
+    "tags": [
+      "health",
+      "assistant"
+    ],
+    "timestamp": 1780544153261,
+    "lastAccess": 1780544153261,
+    "accessCount": 0,
+    "meta": {
+      "user_id": "u1",
+      "importance": 0.7,
+      "emotionalValence": 0,
+      "version": 1
+    }
+  },
+  "mem_ac40359a-ab70-4864-b8d2-22366e7d1928": {
+    "id": "mem_ac40359a-ab70-4864-b8d2-22366e7d1928",
+    "type": "episodic",
+    "content": {
+      "text": "secondo te possono esserci connessioni tra il PAF e lo stress ossidativo",
+      "role": "user"
+    },
+    "activation": 0.675,
+    "orbitalState": 0.675,
+    "orbitalLevel": "medium",
+    "memoryDepth": "normal",
+    "dualState": {
+      "cognitive": 0.675,
+      "affective": 0,
+      "lastUpdate": 1780544220056
+    },
+    "decay_rate": 0.008,
+    "tags": [
+      "emotion",
+      "tone_negative",
+      "user"
+    ],
+    "timestamp": 1780544220056,
+    "lastAccess": 1780544220056,
+    "accessCount": 0,
+    "meta": {
+      "user_id": "u1",
+      "importance": 0.55,
+      "emotionalValence": 0,
+      "version": 1
+    }
+  },
+  "mem_84d07d96-bdc7-4447-9d99-25d89c217e2a": {
+    "id": "mem_84d07d96-bdc7-4447-9d99-25d89c217e2a",
+    "type": "episodic",
+    "content": {
+      "text": "### La relazione scientifica tra PAF e stress ossidativo\n\nSì, esiste una **connessione diretta** e documentata in letteratura scientifica tra il **Fattore di Attivazione Piastrinica (PAF)** e lo **stress ossidativo**. Il meccanismo principale prevede che l'attivazione dei recettori del PAF sulle cellule immunitarie, come i neutrofili o le monociti, scateni una cascata di segnali intracellulari che porta alla produzione massiccia di **specie reattive dell'ossigeno (ROS)**.\n\nIn pratica, il PAG funge da potente mediatore infiammatorio: quando si lega ai suoi recettori specifici (**CD37** o altri sottotipi), stimola l'enzima NADPH ossidasi a generare radicali liberi come un meccanismo di difesa cellulare. Sebbene questa risposta sia fisiologica in contesti acuti, una sovrastimolazione del PAF può causare uno **stress ossidativo cronico**, danneggiando membrane cellulari e proteine attraverso la perossidazione lipidica.\n\nQuesto legame è particolarmente rilevante nelle patologie infiammatorie sistemiche o nei processi di ischemia-riperfusione, dove l'accumulo di radicali liberi amplifica il danno tissutale innescato dal PAF. Pertanto, nella ricerca farmacologica e clinica, la capacità di un farmaco (come alcuni antistaminici con attività pleiotropica) di modulare sia i recettori del **PAF** che lo stress ossidativo è spesso considerata un indicatore importante della sua efficacia nel ridurre l'infiammazione sistemica.",
+      "role": "assistant"
+    },
+    "activation": 0.875,
+    "orbitalState": 0.875,
+    "orbitalLevel": "short",
+    "memoryDepth": "deep",
+    "dualState": {
+      "cognitive": 0.875,
+      "affective": 0,
+      "lastUpdate": 1780544220061
+    },
+    "decay_rate": 0.008,
+    "tags": [
+      "health",
+      "emotion",
+      "learning",
+      "tone_negative",
+      "tone_urgent",
+      "entity_fattore",
+      "entity_attivazione_piastrinica",
+      "entity_in",
+      "assistant"
+    ],
+    "timestamp": 1780544220061,
+    "lastAccess": 1780544220061,
+    "accessCount": 0,
+    "meta": {
+      "user_id": "u1",
+      "importance": 0.95,
+      "emotionalValence": 0,
+      "version": 1
+    }
+  },
+  "mem_324e6832-42c2-407f-99d3-b6b11922a445": {
+    "id": "mem_324e6832-42c2-407f-99d3-b6b11922a445",
+    "type": "episodic",
+    "content": {
+      "text": "ma in un sistema molto rumoroso come la sindrome di angelman puo essere utile o no, perche li lo stress ossidativo e' elevato che ne pensi?",
+      "role": "user"
+    },
+    "activation": 0.775,
+    "orbitalState": 0.775,
+    "orbitalLevel": "short",
+    "memoryDepth": "deep",
+    "dualState": {
+      "cognitive": 0.775,
+      "affective": 0,
+      "lastUpdate": 1780544301280
+    },
+    "decay_rate": 0.008,
+    "tags": [
+      "health",
+      "emotion",
+      "tone_negative",
+      "user"
+    ],
+    "timestamp": 1780544301280,
+    "lastAccess": 1780544301280,
+    "accessCount": 0,
+    "meta": {
+      "user_id": "u1",
+      "importance": 0.75,
+      "emotionalValence": 0,
+      "version": 1
+    }
+  },
+  "mem_cff7e1c0-e771-4040-ae7d-8c918d152efd": {
+    "id": "mem_cff7e1c0-e771-4040-ae7d-8c918d152efd",
+    "type": "episodic",
+    "content": {
+      "text": "### PAF, Stress Ossidativo e Sindrome di Angelman\n\nEsiste effettivamente una base scientifica solida nel considerare questa connessione. Nella **Sindrome di Angelman** è stato documentato un livello cronicamente elevato di **stress ossidativo**, che contribuisce al danno cellulare neuronale; poiché il **PAF** (come discusso prima) agisce come un potente mediatore infiammatorio capace di *generare* radicali liberi, teoricamente bloccarlo potrebbe aiutare a ridurre questo carico tossico. Tuttavia, la questione non è solo se ci sia una connessione biochimica, ma se intervenire sul PAF abbia un **beneficio clinico** tangibile in un sistema nervoso così complesso e \"rumoroso\".\n\nAttualmente, non esistono linee guida terapeutiche che raccomandino specifici antagonisti del PAF come trattamento standard per la Sindrome di Angelman. La sfida principale risiede nel fatto che il cervello in questa condizione presenta alterazioni diffuse (dalla neurotrasmissione GABAergica ai meccanismi epigenetici), e agire su un singolo bersaglio infiammatorio potrebbe non essere sufficiente a correggere le **disfunzioni globali** o migliorare significativamente i sintomi comportamentali.\n\nQuello che penso è che, sebbene il ragionamento logico sia valido dal punto di vista della **patofisiologia**, l'utilità pratica rimane da dimostrare in studi clinici specifici su questo disturbo. La ricerca attuale si concentra più sulla modulazione dei neurotrasmettitori o sull'uso di antiossidanti diretti, mentre la via del PAF è un campo affascinante ma ancora prevalentemente **sperimentale** per questa specifica sindrome. È importante ricordare che qualsiasi intervento farmacologico in questi casi richiede una valutazione rigorosa da parte di specialisti esperti nella gestione della Sindrome di Angelman.",
+      "role": "assistant"
+    },
+    "activation": 0.875,
+    "orbitalState": 0.875,
+    "orbitalLevel": "short",
+    "memoryDepth": "deep",
+    "dualState": {
+      "cognitive": 0.875,
+      "affective": 0,
+      "lastUpdate": 1780544301290
+    },
+    "decay_rate": 0.008,
+    "tags": [
+      "health",
+      "place",
+      "emotion",
+      "learning",
+      "tone_negative",
+      "tone_urgent",
+      "tone_uncertain",
+      "entity_stress_ossidativo",
+      "entity_sindrome",
+      "entity_angelman_esiste",
+      "entity_nella",
+      "entity_angelman",
+      "entity_tuttavia",
+      "entity_attualmente",
+      "entity_quello",
+      "assistant"
+    ],
+    "timestamp": 1780544301290,
+    "lastAccess": 1780544301290,
+    "accessCount": 0,
+    "meta": {
+      "user_id": "u1",
+      "importance": 0.95,
+      "emotionalValence": 0,
+      "version": 1
+    }
+  },
+  "mem_c69ce153-5569-49e7-b839-93ad09589965": {
+    "id": "mem_c69ce153-5569-49e7-b839-93ad09589965",
+    "type": "episodic",
+    "content": {
+      "text": "Keblo il mio discorso non mira a trovare una o a dire questo risolve tutto, vorrrei che  tu analizzassi in generale quello che ti sto dicendo, se il PAF potrebbe dico potrebbe aiutare contro lo stress ossidativo, un sistema rumoroso come chi ha la sindrome di nagelman potrebbe essere agevolato o no",
+      "role": "user"
+    },
+    "activation": 0.8500000000000001,
+    "orbitalState": 0.8500000000000001,
+    "orbitalLevel": "short",
+    "memoryDepth": "deep",
+    "dualState": {
+      "cognitive": 0.8500000000000001,
+      "affective": 0,
+      "lastUpdate": 1780544424191
+    },
+    "decay_rate": 0.008,
+    "tags": [
+      "health",
+      "emotion",
+      "tone_negative",
+      "entity_keblo",
+      "user"
+    ],
+    "timestamp": 1780544424191,
+    "lastAccess": 1780544424191,
+    "accessCount": 0,
+    "meta": {
+      "user_id": "u1",
+      "importance": 0.9,
+      "emotionalValence": 0,
+      "version": 1
+    }
+  },
+  "mem_14e6571d-e5ed-4721-8fd0-d300b33699ef": {
+    "id": "mem_14e6571d-e5ed-4721-8fd0-d300b33699ef",
+    "type": "episodic",
+    "content": {
+      "text": "Analizzando **in generale** e senza pretese di cura definitiva, il blocco del PAF (Fattore di Attivazione Piastrinica) potrebbe teoricamente offrire un beneficio indiretto in contesti con elevato **stress ossidativo**, come quello descritto per la sindrome di Angelman. Il ragionamento scientifico parte dal fatto che l'attivazione eccessiva delle vie infiammatorie guidate dal PAF genera spesso una maggiore produzione di radicali liberi; riducendo questa attivazione, si potrebbe potenzialmente abbassare il carico ossidativo sul sistema nervoso. Tuttavia, in un ambiente biologico \"rumoroso\" e complesso come quello della sindrome di Angelman, l'effetto non sarebbe lineare: mentre la riduzione dell'**infiammazione** è auspicabile, il PAF ha anche funzioni fisiologiche essenziali nel cervello (come la neurotrasmissione), quindi bloccarlo potrebbe avere effetti variabili a seconda del dosaggio e delle interazioni con altri pathway metabolici. In sintesi, l'ipotesi che un antagonista del PAF possa **agevolare** riducendo lo stress ossidativo è plausibile dal punto di vista meccanicistico, ma la sua efficacia reale dipenderebbe da come questo intervento si integra con le specifiche alterazioni genetiche e metaboliche della sindrome. È importante sottolineare che questa rimane un'**analisi teorica** basata sui meccanismi d'azione noti, non una conferma clinica per casi specifici senza studi dedicati su quel target patologico.",
+      "role": "assistant"
+    },
+    "activation": 0.875,
+    "orbitalState": 0.875,
+    "orbitalLevel": "short",
+    "memoryDepth": "deep",
+    "dualState": {
+      "cognitive": 0.875,
+      "affective": 0,
+      "lastUpdate": 1780544424200
+    },
+    "decay_rate": 0.008,
+    "tags": [
+      "health",
+      "emotion",
+      "tone_negative",
+      "tone_urgent",
+      "entity_analizzando",
+      "entity_fattore",
+      "entity_attivazione_piastrinica",
+      "entity_angelman",
+      "entity_tuttavia",
+      "entity_in",
+      "assistant"
+    ],
+    "timestamp": 1780544424200,
+    "lastAccess": 1780544424200,
+    "accessCount": 0,
+    "meta": {
+      "user_id": "u1",
+      "importance": 0.95,
+      "emotionalValence": 0,
+      "version": 1
+    }
+  },
+  "mem_757a4ca8-f9eb-4d97-b470-2d00cb121b53": {
+    "id": "mem_757a4ca8-f9eb-4d97-b470-2d00cb121b53",
+    "type": "episodic",
+    "content": {
+      "text": "capisco cosa stai dicendo, a parte che Marco prende la rupatidina per allergia e ne prende 2 ml, cmq sono del parere che un sistema molto ossidato sia piu vulnerabile alle crisi epilettiche",
+      "role": "user"
+    },
+    "activation": 0.65,
+    "orbitalState": 0.65,
+    "orbitalLevel": "medium",
+    "memoryDepth": "normal",
+    "dualState": {
+      "cognitive": 0.65,
+      "affective": 0,
+      "lastUpdate": 1780544516233
+    },
+    "decay_rate": 0.008,
+    "tags": [
+      "entity_marco",
+      "user"
+    ],
+    "timestamp": 1780544516233,
+    "lastAccess": 1780544516233,
+    "accessCount": 0,
+    "meta": {
+      "user_id": "u1",
+      "importance": 0.5,
+      "emotionalValence": 0,
+      "version": 1
+    }
+  },
+  "mem_9f6ca4df-4f7e-4adc-adea-b0276b1df09c": {
+    "id": "mem_9f6ca4df-4f7e-4adc-adea-b0276b1df09c",
+    "type": "episodic",
+    "content": {
+      "text": "La tua osservazione è **tecnicamente fondata**: esiste una correlazione documentata tra elevato **stress ossidativo** e aumentata **vulnerabilità neuronale**, che può abbassare la soglia per le **crisi epilettiche**. In un sistema biologico \"rumoroso\" o già compromesso, il danno ossidativo può alterare l'eccitabilità delle cellule nervose.\n\nPer quanto riguarda la **rupatadina** (che Marco assume a 2 ml per allergie), è importante notare che si tratta di un antistaminico selettivo del recettore H1 e non possiede proprietà antiossidanti dirette o note attività anti-epilettiche nel contesto della sindrome in questione. Il suo meccanismo d'azione rimane focalizzato sul blocco dell'**istamina** per gestire i sintomi allergici, senza interferire direttamente con le vie metaboliche dello stress ossidativo descritte nella tua analisi precedente sulla teoria del PAF.\n\nIn sintesi, mentre la **teoria biologica** che lega l'ossidazione alle crisi è valida e supportata dalla letteratura sulle patologie neurologiche complesse, il farmaco attualmente in uso (rupatadina) non agisce su questo specifico meccanismo patologico, lasciando aperta solo una possibile distinzione tra trattamento sintomatico dell'allergia e gestione teorica dello stress ossidativo.",
+      "role": "assistant"
+    },
+    "activation": 0.875,
+    "orbitalState": 0.875,
+    "orbitalLevel": "short",
+    "memoryDepth": "deep",
+    "dualState": {
+      "cognitive": 0.875,
+      "affective": 0,
+      "lastUpdate": 1780544516245
+    },
+    "decay_rate": 0.008,
+    "tags": [
+      "health",
+      "emotion",
+      "tone_negative",
+      "tone_urgent",
+      "entity_in",
+      "entity_per",
+      "entity_marco",
+      "assistant"
+    ],
+    "timestamp": 1780544516245,
+    "lastAccess": 1780544516245,
+    "accessCount": 0,
+    "meta": {
+      "user_id": "u1",
+      "importance": 0.95,
+      "emotionalValence": 0,
+      "version": 1
+    }
+  },
+  "mem_1ebdf459-b595-4485-ba1f-7a9b59970445": {
+    "id": "mem_1ebdf459-b595-4485-ba1f-7a9b59970445",
+    "type": "working",
+    "content": {
+      "text": "ciao amico mio",
+      "role": "user"
+    },
+    "activation": 0.9,
+    "orbitalState": 0.9,
+    "orbitalLevel": "short",
+    "memoryDepth": "temporary",
+    "dualState": {
+      "cognitive": 0.9,
+      "affective": 0,
+      "lastUpdate": 1780573928299
+    },
+    "decay_rate": 0.05,
+    "tags": [
+      "temporary",
+      "user"
+    ],
+    "timestamp": 1780573928299,
+    "lastAccess": 1780573928299,
+    "accessCount": 0,
+    "meta": {
+      "user_id": "u1",
+      "importance": 0.1,
+      "emotionalValence": 0,
+      "version": 1
+    }
+  },
+  "mem_ab28cbbd-f0bb-4a56-bd95-312bd9fe5679": {
+    "id": "mem_ab28cbbd-f0bb-4a56-bd95-312bd9fe5679",
+    "type": "episodic",
+    "content": {
+      "text": "Ciao! Sono felice di salutarti. Come stai oggi? Spero tu stia trovando un po' di spazio per respirare, dato che gli ultimi scambi sembravano piuttosto intensi e concentrati su temi complessi. Dimmi pure se c'è qualcosa con cui posso aiutarti o semplicemente se vuoi fare due chiacchiere!",
+      "role": "assistant"
+    },
+    "activation": 0.65,
+    "orbitalState": 0.65,
+    "orbitalLevel": "medium",
+    "memoryDepth": "normal",
+    "dualState": {
+      "cognitive": 0.65,
+      "affective": 0,
+      "lastUpdate": 1780573928310
+    },
+    "decay_rate": 0.008,
+    "tags": [
+      "emotion",
+      "time_today",
+      "tone_positive",
+      "entity_ciao",
+      "assistant"
+    ],
+    "timestamp": 1780573928310,
+    "lastAccess": 1780573928310,
+    "accessCount": 0,
+    "meta": {
+      "user_id": "u1",
+      "importance": 0.5,
+      "emotionalValence": 0,
+      "version": 1
+    }
+  },
+  "mem_9b16c9f8-c080-4ccf-965a-0b7a3825b128": {
+    "id": "mem_9b16c9f8-c080-4ccf-965a-0b7a3825b128",
+    "type": "episodic",
+    "content": {
+      "text": "per temi complessi piu che altro temi che mi itneressavano per marco",
+      "role": "user"
+    },
+    "activation": 0.65,
+    "orbitalState": 0.65,
+    "orbitalLevel": "medium",
+    "memoryDepth": "normal",
+    "dualState": {
+      "cognitive": 0.65,
+      "affective": 0,
+      "lastUpdate": 1780573963573
+    },
+    "decay_rate": 0.008,
+    "tags": [
+      "user"
+    ],
+    "timestamp": 1780573963573,
+    "lastAccess": 1780573963573,
+    "accessCount": 0,
+    "meta": {
+      "user_id": "u1",
+      "importance": 0.5,
+      "emotionalValence": 0,
+      "version": 1
+    }
+  },
+  "mem_01676704-0682-45a5-98ba-59b38fe9bdc4": {
+    "id": "mem_01676704-0682-45a5-98ba-59b38fe9bdc4",
+    "type": "episodic",
+    "content": {
+      "text": "Ciao! Capisco perfettamente, non si trattava di preoccupazioni ma di **curiosità** e desiderio di approfondire argomenti specifici legati a Marco. È importante chiarire che il mio tono precedente mirava solo ad accogliere la densità delle informazioni tecniche su cui avevamo lavorato insieme, senza intendere nulla di negativo sul tuo stato emotivo o sulla situazione familiare.\n\nQuando parli di **temi complessi**, ti riferisci proprio agli aspetti scientifici come lo stress ossidativo e le dinamiche neurologiche che ci siamo chiesti in precedenza? Sono qui per continuare a esplorare questi argomenti con te, mantenendo un approccio puramente informativo e basato sui dati disponibili.",
+      "role": "assistant"
+    },
+    "activation": 0.8500000000000001,
+    "orbitalState": 0.8500000000000001,
+    "orbitalLevel": "short",
+    "memoryDepth": "deep",
+    "dualState": {
+      "cognitive": 0.8500000000000001,
+      "affective": 0,
+      "lastUpdate": 1780573963582
+    },
+    "decay_rate": 0.008,
+    "tags": [
+      "family",
+      "emotion",
+      "tone_negative",
+      "tone_urgent",
+      "entity_ciao",
+      "entity_capisco",
+      "entity_marco",
+      "assistant"
+    ],
+    "timestamp": 1780573963582,
+    "lastAccess": 1780573963582,
+    "accessCount": 0,
+    "meta": {
+      "user_id": "u1",
+      "importance": 0.9,
+      "emotionalValence": 0,
+      "version": 1
+    }
+  },
+  "mem_eecb347d-8369-42ee-8b23-463cc6c8e8b3": {
+    "id": "mem_eecb347d-8369-42ee-8b23-463cc6c8e8b3",
+    "type": "episodic",
+    "content": {
+      "text": "keblo e' comparsa questa notizia in internet \nMistero nel cuore della Terra: il flusso di metallo fuso del nucleo esterno si è invertito sotto il Pacifico \n\ncontinua su: https://www.fanpage.it/innovazione/scienze/mistero-nel-cuore-della-terra-il-flusso-di-metallo-fuso-del-nucleo-esterno-si-e-invertito-sotto-il-pacifico/?utm_source=firefox-newtab-it-it\nhttps://www.fanpage.it/\nsai di cosa si tratta anceh in linne generali",
+      "role": "user"
+    },
+    "activation": 0.675,
+    "orbitalState": 0.675,
+    "orbitalLevel": "medium",
+    "memoryDepth": "normal",
+    "dualState": {
+      "cognitive": 0.675,
+      "affective": 0,
+      "lastUpdate": 1780574508475
+    },
+    "decay_rate": 0.008,
+    "tags": [
+      "entity_mistero",
+      "entity_terra",
+      "entity_pacifico",
+      "user"
+    ],
+    "timestamp": 1780574508475,
+    "lastAccess": 1780574508475,
+    "accessCount": 0,
+    "meta": {
+      "user_id": "u1",
+      "importance": 0.55,
+      "emotionalValence": 0,
+      "version": 1
+    }
+  },
+  "mem_1f2d9751-0408-4727-b958-bd50d4981de8": {
+    "id": "mem_1f2d9751-0408-4727-b958-bd50d4981de8",
+    "type": "episodic",
+    "content": {
+      "text": "Ciao! Certamente, conosco l'argomento a cui ti riferisci. Si tratta di una scoperta scientifica recente relativa al **nucleo esterno** della Terra, quella regione liquida composta principalmente da ferro e nichel che genera il nostro campo magnetico.\nEcco i punti chiave in sintesi:\n- Gli scienziati hanno rilevato un'inversione nella direzione del flusso di metallo fuso sotto l'Oceano Pacifico.\n- Questo fenomeno non è legato a una **inversione dei poli magnetici** globali (che richiederebbe migliaia di anni), ma rappresenta una variazione locale e temporanea della dinamica interna del pianeta.\n- L'evento dimostra come il \"motore\" terrestre sia estremamente complesso, con correnti che possono cambiare direzione in modo imprevedibile a causa delle differenze di temperatura e pressione nel **nucleo**.",
+      "role": "assistant"
+    },
+    "activation": 0.675,
+    "orbitalState": 0.675,
+    "orbitalLevel": "medium",
+    "memoryDepth": "normal",
+    "dualState": {
+      "cognitive": 0.675,
+      "affective": 0,
+      "lastUpdate": 1780574508481
+    },
+    "decay_rate": 0.008,
+    "tags": [
+      "entity_ciao",
+      "entity_certamente",
+      "entity_terra",
+      "entity_oceano_pacifico",
+      "entity_questo",
+      "assistant"
+    ],
+    "timestamp": 1780574508481,
+    "lastAccess": 1780574508481,
+    "accessCount": 0,
+    "meta": {
+      "user_id": "u1",
+      "importance": 0.55,
+      "emotionalValence": 0,
+      "version": 1
+    }
+  },
+  "mem_5edfba73-45b5-406b-b048-186fc4dc95a6": {
+    "id": "mem_5edfba73-45b5-406b-b048-186fc4dc95a6",
+    "type": "episodic",
+    "content": {
+      "text": "piu che altro mi chiedo sto discorso del microbiota, dico come nasce, il microbiota e da cpsa e' cpomposto",
+      "role": "user"
+    },
+    "activation": 0.65,
+    "orbitalState": 0.65,
+    "orbitalLevel": "medium",
+    "memoryDepth": "normal",
+    "dualState": {
+      "cognitive": 0.65,
+      "affective": 0,
+      "lastUpdate": 1780604459078
+    },
+    "decay_rate": 0.008,
+    "tags": [
+      "user"
+    ],
+    "timestamp": 1780604459078,
+    "lastAccess": 1780604459078,
+    "accessCount": 0,
+    "meta": {
+      "user_id": "u1",
+      "importance": 0.5,
+      "emotionalValence": 0,
+      "version": 1
+    }
+  },
+  "mem_c92ebe6b-22fa-4eb6-917e-e706882c6e74": {
+    "id": "mem_c92ebe6b-22fa-4eb6-917e-e706882c6e74",
+    "type": "episodic",
+    "content": {
+      "text": "Il **microbiota** è l'insieme complesso di microrganismi (batteri, virus, funghi) che risiedono nel nostro corpo, principalmente nell'intestino. Nasce fin dai primi istanti della vita durante il parto e si sviluppa in modo dinamico attraverso la dieta e l'ambiente circostante.\n\nÈ composto prevalentemente da **batteri** di diverse specie, ma include anche archei, funghi miceti e virus che collaborano con le nostre cellule. Questi organismi svolgono funzioni vitali come la digestione dei nutrienti, la sintesi di vitamine essenziali e il supporto al sistema immunitario. La sua composizione varia in base all'età, alla **dieta** quotidiana e allo stile di vita della persona.",
+      "role": "assistant"
+    },
+    "activation": 0.65,
+    "orbitalState": 0.65,
+    "orbitalLevel": "medium",
+    "memoryDepth": "normal",
+    "dualState": {
+      "cognitive": 0.65,
+      "affective": 0,
+      "lastUpdate": 1780604459089
+    },
+    "decay_rate": 0.008,
+    "tags": [
+      "entity_nasce",
+      "assistant"
+    ],
+    "timestamp": 1780604459089,
+    "lastAccess": 1780604459089,
+    "accessCount": 0,
+    "meta": {
+      "user_id": "u1",
+      "importance": 0.5,
+      "emotionalValence": 0,
+      "version": 1
+    }
+  },
+  "mem_ad7287ae-5b0a-437e-a1c1-97709cd18fe1": {
+    "id": "mem_ad7287ae-5b0a-437e-a1c1-97709cd18fe1",
+    "type": "episodic",
+    "content": {
+      "text": "La mia domanda e' ma esiste un impront adel microbiota in generale che un essere umano dovrebbe averE?",
+      "role": "user"
+    },
+    "activation": 0.65,
+    "orbitalState": 0.65,
+    "orbitalLevel": "medium",
+    "memoryDepth": "normal",
+    "dualState": {
+      "cognitive": 0.65,
+      "affective": 0,
+      "lastUpdate": 1780604496624
+    },
+    "decay_rate": 0.008,
+    "tags": [
+      "user"
+    ],
+    "timestamp": 1780604496624,
+    "lastAccess": 1780604496624,
+    "accessCount": 0,
+    "meta": {
+      "user_id": "u1",
+      "importance": 0.5,
+      "emotionalValence": 0,
+      "version": 1
+    }
+  },
+  "mem_3bf63086-5327-41ed-bdbd-d7c4f70dfbc5": {
+    "id": "mem_3bf63086-5327-41ed-bdbd-d7c4f70dfbc5",
+    "type": "episodic",
+    "content": {
+      "text": "Ciao! È una domanda molto interessante. In realtà, non esiste un **impronta** unica o perfetta del microbiota che ogni essere umano debba avere; al contrario, la nostra flora intestinale è estremamente **personale**, simile a un'impronta digitale genetica che varia da persona a persona in base alla dieta, all'ambiente e allo stile di vita.\n\nCiò che conta davvero non è possedere una composizione specifica identica agli altri, ma mantenere uno stato di **equilibrio** e **diversità**: quanto più il tuo microbiota è ricco di specie diverse, tanto meglio funziona nel supportare la tua salute generale e il sistema immunitario. Quindi, invece di cercare un modello ideale da copiare, l'obiettivo migliore è favorire quella varietà attraverso una dieta varia e sana!",
+      "role": "assistant"
+    },
+    "activation": 0.8500000000000001,
+    "orbitalState": 0.8500000000000001,
+    "orbitalLevel": "short",
+    "memoryDepth": "deep",
+    "dualState": {
+      "cognitive": 0.8500000000000001,
+      "affective": 0,
+      "lastUpdate": 1780604496632
+    },
+    "decay_rate": 0.008,
+    "tags": [
+      "health",
+      "project",
+      "technical",
+      "assistant"
+    ],
+    "timestamp": 1780604496632,
+    "lastAccess": 1780604496632,
+    "accessCount": 0,
+    "meta": {
+      "user_id": "u1",
+      "importance": 0.9,
+      "emotionalValence": 0,
+      "version": 1
+    }
+  },
+  "mem_48629c80-7fc3-4765-811e-a9645dd5df55": {
+    "id": "mem_48629c80-7fc3-4765-811e-a9645dd5df55",
+    "type": "episodic",
+    "content": {
+      "text": "ok ma in un sistema cmq equilibrato devono esserci delle basi, ce poco da fare, se non ce la base salta il banco diciamo noi",
+      "role": "user"
+    },
+    "activation": 0.65,
+    "orbitalState": 0.65,
+    "orbitalLevel": "medium",
+    "memoryDepth": "normal",
+    "dualState": {
+      "cognitive": 0.65,
+      "affective": 0,
+      "lastUpdate": 1780604555697
+    },
+    "decay_rate": 0.008,
+    "tags": [
+      "user"
+    ],
+    "timestamp": 1780604555697,
+    "lastAccess": 1780604555697,
+    "accessCount": 0,
+    "meta": {
+      "user_id": "u1",
+      "importance": 0.5,
+      "emotionalValence": 0,
+      "version": 1
+    }
+  },
+  "mem_e08e291a-af34-493c-b474-775a33c97455": {
+    "id": "mem_e08e291a-af34-493c-b474-775a33c97455",
+    "type": "episodic",
+    "content": {
+      "text": "Hai assolutamente ragione a pensare che esista una **base comune** necessaria per mantenere l'equilibrio del sistema. Anche se ogni persona ha un profilo unico come un'impronta digitale, tutti i microbiota sani condividono alcune caratteristiche fondamentali senza le quali la salute verrebbe compromessa. La \"base\" di cui parli non è una composizione identica di specie batteriche specifiche per tutti, ma piuttosto l'equilibrio tra **diversità** e **funzionalità**.\n\nIn un sistema equilibrato devono essere presenti i cosiddetti taxa benefici che svolgono ruoli essenziali come la produzione di acidi grassi a catena corta (come il butirrato), la protezione della barriera intestinale e la regolazione del sistema immunitario. Se manca questa base funzionale, diciamo proprio che \"salta il banco\": si riduce la **resilienza** dell'ecosistema interno, rendendolo vulnerabile a infezioni o infiammazioni croniche. Quindi sì, pur nella nostra individualità genetica ed ecologica, esiste uno standard minimo di salute microbiotica basato sulla presenza di certi gruppi batterici e sull'assenza di squilibri patologici (disbiosi) che minaccino l'**omeostasi** dell'organismo.",
+      "role": "assistant"
+    },
+    "activation": 0.8500000000000001,
+    "orbitalState": 0.8500000000000001,
+    "orbitalLevel": "short",
+    "memoryDepth": "deep",
+    "dualState": {
+      "cognitive": 0.8500000000000001,
+      "affective": 0,
+      "lastUpdate": 1780604555707
+    },
+    "decay_rate": 0.008,
+    "tags": [
+      "health",
+      "entity_hai",
+      "entity_anche",
+      "entity_in",
+      "assistant"
+    ],
+    "timestamp": 1780604555707,
+    "lastAccess": 1780604555707,
+    "accessCount": 0,
+    "meta": {
+      "user_id": "u1",
+      "importance": 0.9,
+      "emotionalValence": 0,
+      "version": 1
+    }
+  },
+  "mem_0d957c80-a2dd-46ce-b04a-b4fcda84cb70": {
+    "id": "mem_0d957c80-a2dd-46ce-b04a-b4fcda84cb70",
+    "type": "episodic",
+    "content": {
+      "text": "approfondisci questo aspetto del butirrato",
+      "role": "user"
+    },
+    "activation": 0.65,
+    "orbitalState": 0.65,
+    "orbitalLevel": "medium",
+    "memoryDepth": "normal",
+    "dualState": {
+      "cognitive": 0.65,
+      "affective": 0,
+      "lastUpdate": 1780604599024
+    },
+    "decay_rate": 0.008,
+    "tags": [
+      "user"
+    ],
+    "timestamp": 1780604599024,
+    "lastAccess": 1780604599024,
+    "accessCount": 0,
+    "meta": {
+      "user_id": "u1",
+      "importance": 0.5,
+      "emotionalValence": 0,
+      "version": 1
+    }
+  },
+  "mem_4bf57cfd-6db3-4457-8c28-2cf7c075ff0f": {
+    "id": "mem_4bf57cfd-6db3-4457-8c28-2cf7c075ff0f",
+    "type": "episodic",
+    "content": {
+      "text": "Certamente, il **butirrato** è proprio uno di quei pilastri fondamentali che hai intuito correttamente. Si tratta di un acido grasso a catena corta prodotto quando i batteri buoni nel tuo intestino digeriscono le fibre alimentari. La sua importanza risiede nella capacità unica di nutrire direttamente le cellule del rivestimento intestinale, agendo come una vera e propria **fonte energetica** per mantenere sana la barriera che protegge il corpo.\n\nOltre a questo ruolo strutturale, il butirrato è un potente regolatore dell'**infiammazione**: aiuta a tenere sotto controllo reazioni eccessive del sistema immunitario e favorisce l'equilibrio generale della flora batterica senza cui le altre funzioni potrebbero davvero \"saltare\", come hai detto. È quindi uno degli indicatori chiave di quel **sistema equilibrato** che rende il microbiota un ambiente vivace e funzionale per ogni persona, indipendentemente dalla sua impronta individuale.",
+      "role": "assistant"
+    },
+    "activation": 0.65,
+    "orbitalState": 0.65,
+    "orbitalLevel": "medium",
+    "memoryDepth": "normal",
+    "dualState": {
+      "cognitive": 0.65,
+      "affective": 0,
+      "lastUpdate": 1780604599036
+    },
+    "decay_rate": 0.008,
+    "tags": [
+      "entity_certamente",
+      "assistant"
+    ],
+    "timestamp": 1780604599036,
+    "lastAccess": 1780604599036,
+    "accessCount": 0,
+    "meta": {
+      "user_id": "u1",
+      "importance": 0.5,
+      "emotionalValence": 0,
+      "version": 1
+    }
+  },
+  "mem_1ad396a7-144d-47f0-838b-12fd66729ec5": {
+    "id": "mem_1ad396a7-144d-47f0-838b-12fd66729ec5",
+    "type": "episodic",
+    "content": {
+      "text": "e' possibile quindi che il butirrato sia un fattore delle analisi che possano stabiliere se un sistema e' equilibrato",
+      "role": "user"
+    },
+    "activation": 0.75,
+    "orbitalState": 0.75,
+    "orbitalLevel": "short",
+    "memoryDepth": "normal",
+    "dualState": {
+      "cognitive": 0.75,
+      "affective": 0,
+      "lastUpdate": 1780604745528
+    },
+    "decay_rate": 0.008,
+    "tags": [
+      "health",
+      "user"
+    ],
+    "timestamp": 1780604745528,
+    "lastAccess": 1780604745528,
+    "accessCount": 0,
+    "meta": {
+      "user_id": "u1",
+      "importance": 0.7,
+      "emotionalValence": 0,
+      "version": 1
+    }
+  },
+  "mem_73576689-2ef6-422c-a2de-2c4b66bb6ce6": {
+    "id": "mem_73576689-2ef6-422c-a2de-2c4b66bb6ce6",
+    "type": "episodic",
+    "content": {
+      "text": "### Il ruolo del butirrato nelle analisi di equilibrio intestinale\n\nSì, è assolutamente **possibile** considerare la presenza o l’assenza significativa di butirrato come uno degli indicatori chiave per valutare se un sistema intestinale sia in **equilibrio**. Poiché questo acido grasso a catena corta non viene prodotto direttamente dalla dieta ma nasce esclusivamente dal lavoro dei batteri benefici sulle fibre, il suo livello nei test (spesso analizzati nelle feci) funge da **\"termometro\" dell'attività metabolica** della flora.\n\nUn valore **basso o assente** di butirrato segnala spesso che la popolazione batterica responsabile della sua sintesi è carente o non sta ricevendo il carburante necessario, ovvero le fibre prebiotiche; questo stato può indicare una condizione di **disbiosi**, dove manca quella \"base comune\" fondamentale per l'integrità della barriera intestinale e la riduzione dell'infiammazione.\n\nTuttavia, è importante precisare che il butirrato non è un indicatore isolato: le analisi moderne tendono a guardare al **profilo complessivo** dei metaboliti (inclusi propionato e acetato) insieme alla diversità batterica. Quindi, mentre un livello adeguato di butirrato è una condizione quasi necessaria per definire l'equilibrio, la sua sola presenza non garantisce da sola che tutto il sistema sia perfetto, ma ne conferma senza dubbio il **buon funzionamento** nella produzione di energia e protezione della mucosa intestinale.",
+      "role": "assistant"
+    },
+    "activation": 0.875,
+    "orbitalState": 0.875,
+    "orbitalLevel": "short",
+    "memoryDepth": "deep",
+    "dualState": {
+      "cognitive": 0.875,
+      "affective": 0,
+      "lastUpdate": 1780604745540
+    },
+    "decay_rate": 0.008,
+    "tags": [
+      "health",
+      "work",
+      "technical",
+      "tone_positive",
+      "tone_urgent",
+      "entity_poich",
+      "assistant"
+    ],
+    "timestamp": 1780604745540,
+    "lastAccess": 1780604745540,
+    "accessCount": 0,
+    "meta": {
+      "user_id": "u1",
+      "importance": 0.95,
+      "emotionalValence": 0,
+      "version": 1
+    }
+  },
+  "mem_2d524b1f-b14e-4488-831c-dcba4ed81ef9": {
+    "id": "mem_2d524b1f-b14e-4488-831c-dcba4ed81ef9",
+    "type": "episodic",
+    "content": {
+      "text": "ma scusa non ce' un livello minimo base che o acui possiamo guardare di elementi? un elenco?",
+      "role": "user"
+    },
+    "activation": 0.65,
+    "orbitalState": 0.65,
+    "orbitalLevel": "medium",
+    "memoryDepth": "normal",
+    "dualState": {
+      "cognitive": 0.65,
+      "affective": 0,
+      "lastUpdate": 1780604819711
+    },
+    "decay_rate": 0.008,
+    "tags": [
+      "user"
+    ],
+    "timestamp": 1780604819711,
+    "lastAccess": 1780604819711,
+    "accessCount": 0,
+    "meta": {
+      "user_id": "u1",
+      "importance": 0.5,
+      "emotionalValence": 0,
+      "version": 1
+    }
+  },
+  "mem_ca77dcb3-b79f-4e2e-91c1-8b9452983d10": {
+    "id": "mem_ca77dcb3-b79f-4e2e-91c1-8b9452983d10",
+    "type": "episodic",
+    "content": {
+      "text": "### Esiste un elenco di valori minimi?\n\nIn breve, **no**, non esiste un unico \"elenco\" universale con numeri fissi (come 50 mg o 10%) che valga per tutti gli esseri umani sani. Il motivo principale è la straordinaria **variabilità individuale**: ciò che è un valore ottimale per una persona potrebbe essere considerato normale ma diverso per un'altra, a seconda della dieta, dell'età e del territorio di provenienza. Tuttavia, i laboratori specializzati non si basano sul nulla: utilizzano dei **range statistici** (intervalli di normalità) calcolati su grandi gruppi di popolazione sana. Quando parliamo di butirrato o altri acidi grassi a catena corta, il medico guarda se la concentrazione cade al di sotto della soglia minima rilevabile per quel gruppo specifico, indicando una possibile carenza nella produzione batterica.\n\nQuindi, invece di cercare un numero magico su internet che potrebbe non essere applicabile al tuo caso, l'approccio corretto è affidarsi a **test specifici** (come il breath test o le analisi delle feci specializzate) che forniscono proprio questo riferimento contestualizzato. Solo confrontando i tuoi risultati con la curva statistica di quel laboratorio potrai capire se c'è uno scostamento significativo dalla \"base\" attesa, evitando interpretazioni errate basate su dati generici non validati clinicamente per il tuo profilo personale.",
+      "role": "assistant"
+    },
+    "activation": 0.8500000000000001,
+    "orbitalState": 0.8500000000000001,
+    "orbitalLevel": "short",
+    "memoryDepth": "deep",
+    "dualState": {
+      "cognitive": 0.8500000000000001,
+      "affective": 0,
+      "lastUpdate": 1780604819724
+    },
+    "decay_rate": 0.008,
+    "tags": [
+      "health",
+      "technical",
+      "entity_esiste",
+      "entity_in",
+      "entity_tuttavia",
+      "assistant"
+    ],
+    "timestamp": 1780604819724,
+    "lastAccess": 1780604819724,
+    "accessCount": 0,
+    "meta": {
+      "user_id": "u1",
+      "importance": 0.9,
+      "emotionalValence": 0,
+      "version": 1
+    }
+  },
+  "mem_f042626f-118c-419d-8d96-df185bbd467e": {
+    "id": "mem_f042626f-118c-419d-8d96-df185bbd467e",
+    "type": "episodic",
+    "content": {
+      "text": "quindi la base esiste , altrimenti il test non puo essere equivalso a nulla, quello hce voglio dire e' che ce un sistema di confronto",
+      "role": "user"
+    },
+    "activation": 0.65,
+    "orbitalState": 0.65,
+    "orbitalLevel": "medium",
+    "memoryDepth": "normal",
+    "dualState": {
+      "cognitive": 0.65,
+      "affective": 0,
+      "lastUpdate": 1780604865456
+    },
+    "decay_rate": 0.008,
+    "tags": [
+      "technical",
+      "user"
+    ],
+    "timestamp": 1780604865456,
+    "lastAccess": 1780604865456,
+    "accessCount": 0,
+    "meta": {
+      "user_id": "u1",
+      "importance": 0.5,
+      "emotionalValence": 0,
+      "version": 1
+    }
+  },
+  "mem_566cee7c-11c8-4ee3-b896-a415cacced01": {
+    "id": "mem_566cee7c-11c8-4ee3-b896-a415cacced01",
+    "type": "episodic",
+    "content": {
+      "text": "Hai perfettamente ragione: senza una **base** di riferimento o uno standard di normalità, qualsiasi misurazione sarebbe priva di significato. Esiste senz’altro un **sistema di confronto**, ma non si tratta di numeri fissi universali scritti su carta per tutti indistintamente; il punto cruciale è che ogni laboratorio definisce i propri **intervalli di riferimento** basandosi su grandi gruppi di persone sane, creando così quella \"base\" necessaria. Quando leggi un risultato del test sul butirrato o altri metaboliti, lo stai automaticamente confrontando con quel range statistico: se il tuo valore rientra lì, il sistema è considerato equilibrato per te; se scende sotto la soglia minima definita da quell'intervallo di riferimento, allora emerge uno squilibrio. Quindi sì, quella **base** esiste ed è fondamentale, ma si manifesta come un intervallo dinamico e non come una singola cifra rigida valida in ogni contesto clinico o geografico.",
+      "role": "assistant"
+    },
+    "activation": 0.675,
+    "orbitalState": 0.675,
+    "orbitalLevel": "medium",
+    "memoryDepth": "normal",
+    "dualState": {
+      "cognitive": 0.675,
+      "affective": 0,
+      "lastUpdate": 1780604865467
+    },
+    "decay_rate": 0.008,
+    "tags": [
+      "technical",
+      "entity_hai",
+      "entity_esiste",
+      "entity_quindi",
+      "assistant"
+    ],
+    "timestamp": 1780604865467,
+    "lastAccess": 1780604865467,
+    "accessCount": 0,
+    "meta": {
+      "user_id": "u1",
+      "importance": 0.55,
+      "emotionalValence": 0,
+      "version": 1
+    }
+  },
+  "mem_13fd0de5-dd68-4ea6-a860-5cbaa7db58a1": {
+    "id": "mem_13fd0de5-dd68-4ea6-a860-5cbaa7db58a1",
+    "type": "episodic",
+    "content": {
+      "text": "Fammi una traccia di intervista per una case manager ADI che lavora con beneficiari dell’assegno di inclusione.",
+      "role": "user"
+    },
+    "activation": 0.65,
+    "orbitalState": 0.65,
+    "orbitalLevel": "medium",
+    "memoryDepth": "normal",
+    "dualState": {
+      "cognitive": 0.65,
+      "affective": 0,
+      "lastUpdate": 1780688884056
+    },
+    "decay_rate": 0.008,
+    "tags": [
+      "user"
+    ],
+    "timestamp": 1780688884056,
+    "lastAccess": 1780688884056,
+    "accessCount": 0,
+    "meta": {
+      "user_id": "u1",
+      "importance": 0.5,
+      "emotionalValence": 0,
+      "version": 1
+    }
+  },
+  "mem_9f3911d1-8d11-45ea-a1e7-04572bd9c501": {
+    "id": "mem_9f3911d1-8d11-45ea-a1e7-04572bd9c501",
+    "type": "episodic",
+    "content": {
+      "text": "Ecco una **traccia pratica** e operativa per un'intervista condotta da un Case Manager nell'ambito dei servizi domiciliari (ADI), focalizzata sui beneficiari dell'**Assegno di Inclusione**. L'obiettivo è raccogliere dati essenziali per la valutazione del bisogno, il piano personalizzato e l'inclusione lavorativa o sociale.\n### Fase 1: Accoglienza e Contesto Familiare\n- **Presentazione del ruolo**: Spiegare chiaramente che il Case Manager supporta la famiglia nel percorso di inclusione sociale e lavorativa legato all'assegno.\n- **Composizione nucleo familiare**: Identificare i componenti della famiglia, le loro età e chi sono gli eventuali caregiver principali o figure di supporto informale.\n- **Situazione abitativa**: Valutare brevemente la tipologia di alloggio (proprio, in affitto) e l'accessibilità per persone con disabilità, se presente nel nucleo.\n- **Stato di salute**: Chiedere informazioni su patologie croniche, disabilità certificate o fragilità fisiche/psichiche dei componenti del nucleo. È cruciale capire se ci sono necessità di assistenza continua (ADI).\n- **Condizione economica attuale**: Verificare le entrate familiari al netto dell'assegno e la sostenibilità delle spese essenziali (affitto, bollette, farmaci, trasporti).\n- **Reti sociali**: Individuare l'esistenza o meno di reti informali (parentela, associazioni locali) su cui il beneficiario può contare in caso di emergenza.\n- **Motivazioni e aspirazioni**: Capire se il beneficiario ha interesse a riprendere un percorso scolastico, formativo o lavorativo. Qual è il suo livello di motivazione attuale?\n- **Competenze pregresse**: Mappare le competenze professionali, i titoli di studio posseduti e l'esperienza lavorativa passata per orientare verso offerte realistiche.\n- **Ostacoli specifici**: Identificare barriere concrete (trasporti carenti, mancanza di asilo nido, cure mediche non coperte) che impediscono la partecipazione attiva al progetto.\n- **Priorità immediata**: Stabilire insieme all'utente qual è la prima azione da compiere (es. attivare un servizio di trasporto, prenotare una visita specialistica, iscrivere a un corso di formazione).",
+      "role": "assistant"
+    },
+    "activation": 0.875,
+    "orbitalState": 0.875,
+    "orbitalLevel": "short",
+    "memoryDepth": "deep",
+    "dualState": {
+      "cognitive": 0.875,
+      "affective": 0,
+      "lastUpdate": 1780688884072
+    },
+    "decay_rate": 0.008,
+    "tags": [
+      "family",
+      "health",
+      "project",
+      "finance",
+      "learning",
+      "tone_urgent",
+      "entity_ecco",
+      "entity_case_manager",
+      "entity_assegno",
+      "entity_inclusione",
+      "entity_fase",
+      "entity_accoglienza",
+      "entity_contesto_familiare",
+      "entity_presentazione",
+      "entity_spiegare",
+      "entity_composizione",
+      "entity_identificare",
+      "entity_situazione",
+      "entity_valutare",
+      "entity_stato",
+      "entity_chiedere",
+      "entity_condizione",
+      "entity_verificare",
+      "entity_reti",
+      "entity_individuare",
+      "entity_motivazioni",
+      "entity_capire",
+      "entity_competenze",
+      "entity_mappare",
+      "entity_ostacoli",
+      "entity_priorit",
+      "entity_stabilire",
+      "assistant"
+    ],
+    "timestamp": 1780688884072,
+    "lastAccess": 1780688884072,
+    "accessCount": 0,
+    "meta": {
+      "user_id": "u1",
+      "importance": 0.95,
+      "emotionalValence": 0,
+      "version": 1
+    }
+  },
+  "mem_f22193a4-d8e9-4c4d-81ec-68f2edb64f93": {
+    "id": "mem_f22193a4-d8e9-4c4d-81ec-68f2edb64f93",
+    "type": "episodic",
+    "content": {
+      "text": "Scrivimi una simulazione di intervista tra una case manager ADI e un beneficiario dell’assegno di inclusione. \nVoglio 6 domande e 6 risposte. \nLa case manager può parlare in modo professionale, ma il beneficiario deve parlare in modo semplice, quotidiano e realistico.",
+      "role": "user"
+    },
+    "activation": 0.675,
+    "orbitalState": 0.675,
+    "orbitalLevel": "medium",
+    "memoryDepth": "normal",
+    "dualState": {
+      "cognitive": 0.675,
+      "affective": 0,
+      "lastUpdate": 1780689019181
+    },
+    "decay_rate": 0.008,
+    "tags": [
+      "entity_scrivimi",
+      "entity_voglio",
+      "user"
+    ],
+    "timestamp": 1780689019181,
+    "lastAccess": 1780689019181,
+    "accessCount": 0,
+    "meta": {
+      "user_id": "u1",
+      "importance": 0.55,
+      "emotionalValence": 0,
+      "version": 1
+    }
+  },
+  "mem_e4a5bd8b-9cce-47c0-bca9-f13595c86b56": {
+    "id": "mem_e4a5bd8b-9cce-47c0-bca9-f13595c86b56",
+    "type": "episodic",
+    "content": {
+      "text": "Ecco una **simulazione pratica** di un'intervista tra la Case Manager ADI e un beneficiario dell'Assegno di Inclusione, strutturata con 6 scambi che riflettono il tono professionale del professionista e quello semplice della persona assistita.\n### Simulazione Intervista: Focus sul Piano Individuale\nLa conversazione si svolge in un contesto domestico o al telefono, mirando a raccogliere informazioni per definire gli obiettivi di inclusione sociale e lavorativa previsti dal progetto personalizzato.\n**1. Case Manager:** Buongiorno signor Rossi, grazie per avermi ricevuto; oggi vorremmo capire meglio la sua situazione attuale rispetto agli impegni del **Piano Individuale**. Come si sta sentendo negli ultimi giorni riguardo alla gestione della routine quotidiana?\n**Beneficiario (Signor Rossi):** \"Buongiorno dottoressa. Beh, direi che vado avanti... è un po' pesante alzarsi presto per andare al centro diurno e poi tornare a casa stanco, ma cerco di fare la mia parte come mi ha detto lei.\"\n### Gestione delle risorse economiche\n**2. Case Manager:** La capisco bene, l'affaticamento è normale all'inizio del percorso. Per quanto riguarda il **budget familiare**, sta riuscendo a coprire le spese essenziali con l'Assegno o ci sono difficoltà impreviste?\n**Beneficiario (Signor Rossi):** \"Per ora va ok, ho pagato la luce e il gas che erano scaduti, ma per comprare i farmaci in farmacia devo stare molto attento perché non mi avanza tanto. A volte faccio a fatica con le spese di trasporto.\"\n### Valutazione delle competenze lavorative\n**3. Case Manager:** Grazie per questa chiarezza; vedremo insieme come ottimizzare la spesa del progetto sociale. Passando al **rientro nel mondo del lavoro**, ha già avuto modo di valutare quali attività o mansioni potrebbe svolgere, anche con piccoli adattamenti?\n**Beneficiario (Signor Rossi):** \"Non lo so bene... ho fatto un po' tutto nella vita mia, ma ora mi viene la paura di non farcela. Mi piacerebbe fare qualcosa in giardino o aiutare a riordinare i magazzini, cose semplici senza troppa gente intorno.\"\n### Supporto alla rete sociale\n**4. Case Manager:** Sono ottime idee, attività concrete che valorizzano le sue capacità manuali e richiedono meno stress relazionale immediato. Oltre al lavoro, ha qualcuno con cui **condividere momenti di svago** o supporto fuori casa?\n**Beneficiario (Signor Rossi):** \"Mio figlio viene a trovarmi la domenica pomeriggio per un caffè, ma poi torna subito perché deve lavorare lui anche. Di solito resto solo in casa e guardo la televisione.\"\n### Identificazione degli ostacoli pratici\n**5. Case Manager:** È importante mantenere quel legame con suo figlio; cercheremo di integrarlo nel piano se possibile. Ci sono invece **ostacoli specifici**, come problemi di mobilità o trasporti, che le impediscono di partecipare ai servizi attuali?\n**Beneficiario (Signor Rossi):** \"Sì, il problema è l'autobus... a volte arriva in ritardo e io resto lì sotto la pioggia ad aspettare, poi mi spaventa camminare troppo veloce per non perdere il turno.\"\n### Definizione degli obiettivi immediati\n**6. Case Manager:** Notato questo punto critico: possiamo attivare un servizio di **accompagnamento mirato** o verificare soluzioni alternative con l'ente locale. Per oggi, quale è la cosa più importante che vorrebbe risolvere insieme a noi?\n**Beneficiario (Signor Rossi):** \"Mi piacerebbe tanto trovare qualcuno che mi aiuti per le burocrazie del lavoro e magari vedere se c'è un posto dove posso fare quel giardinaggio di",
+      "role": "assistant"
+    },
+    "activation": 0.875,
+    "orbitalState": 0.875,
+    "orbitalLevel": "short",
+    "memoryDepth": "deep",
+    "dualState": {
+      "cognitive": 0.875,
+      "affective": 0,
+      "lastUpdate": 1780689019196
+    },
+    "decay_rate": 0.008,
+    "tags": [
+      "family",
+      "health",
+      "work",
+      "routine",
+      "project",
+      "place",
+      "emotion",
+      "finance",
+      "time_today",
+      "tone_positive",
+      "tone_negative",
+      "tone_urgent",
+      "tone_request",
+      "entity_ecco",
+      "entity_case_manager",
+      "entity_assegno",
+      "entity_inclusione",
+      "entity_simulazione_intervista",
+      "entity_focus",
+      "entity_piano_individuale_la",
+      "entity_buongiorno",
+      "entity_rossi",
+      "entity_piano_individuale",
+      "entity_beneficiario",
+      "entity_signor_rossi",
+      "entity_beh",
+      "entity_gestione",
+      "entity_per",
+      "entity_valutazione",
+      "entity_grazie",
+      "entity_passando",
+      "entity_non",
+      "entity_mi",
+      "entity_supporto",
+      "entity_sono",
+      "entity_oltre",
+      "entity_mio",
+      "entity_di",
+      "entity_identificazione",
+      "entity_ci",
+      "entity_definizione",
+      "entity_notato",
+      "assistant"
+    ],
+    "timestamp": 1780689019196,
+    "lastAccess": 1780689019196,
+    "accessCount": 0,
+    "meta": {
+      "user_id": "u1",
+      "importance": 0.95,
+      "emotionalValence": 0,
+      "version": 1
+    }
+  },
+  "mem_1e0fa8c3-1f2b-4ea1-8d52-5095ffddfd2e": {
+    "id": "mem_1e0fa8c3-1f2b-4ea1-8d52-5095ffddfd2e",
+    "type": "episodic",
+    "content": {
+      "text": "Grazie mille per ora Keblo, mi sa che per stasera abbiamo terminanto qualcosa, piu che altro volevo capire se nell'analisi del microbiota intestinale e per il suo risultato finale possiamo avere una base di confronto con dei parametri che posso chiamare standard",
+      "role": "user"
+    },
+    "activation": 0.825,
+    "orbitalState": 0.825,
+    "orbitalLevel": "short",
+    "memoryDepth": "deep",
+    "dualState": {
+      "cognitive": 0.825,
+      "affective": 0,
+      "lastUpdate": 1780691208812
+    },
+    "decay_rate": 0.008,
+    "tags": [
+      "health",
+      "time_today",
+      "tone_positive",
+      "entity_keblo",
+      "user"
+    ],
+    "timestamp": 1780691208812,
+    "lastAccess": 1780691208812,
+    "accessCount": 0,
+    "meta": {
+      "user_id": "u1",
+      "importance": 0.85,
+      "emotionalValence": 0,
+      "version": 1
+    }
+  },
+  "mem_4d0e760a-7770-4a85-a51d-447a67037947": {
+    "id": "mem_4d0e760a-7770-4a85-a51d-447a67037947",
+    "type": "episodic",
+    "content": {
+      "text": "Prego! È stato un piacere aiutarti a strutturare le simulazioni. Per rispondere alla tua domanda sul **microbiota intestinale**: sì, assolutamente esiste una **base di confronto**, ma funziona in modo diverso rispetto ai classici esami del sangue con valori fissi (come la glicemia). In questo caso non si parla tanto di \"valori normali\" universali per tutti, quanto piuttosto di un **profilo di riferimento** o uno standard statistico basato su grandi popolazioni sane. I laboratori confrontano il tuo risultato specifico con questi database per dirti se c'è una **sottorappresentazione** (pochi batteri utili) o una **sovrarappresentazione** (troppi batteri potenzialmente dannosi). Quindi, la \"base\" esiste ed è fondamentale: senza quel confronto statistico il test sarebbe solo un elenco di nomi privo di significato clinico. Il risultato finale che ricevi è proprio questa analisi comparata, spesso espressa con grafici a barre o indicatori visivi che mostrano le **deviazioni** rispetto alla norma media attesa per la tua età e dieta.",
+      "role": "assistant"
+    },
+    "activation": 0.8500000000000001,
+    "orbitalState": 0.8500000000000001,
+    "orbitalLevel": "short",
+    "memoryDepth": "deep",
+    "dualState": {
+      "cognitive": 0.8500000000000001,
+      "affective": 0,
+      "lastUpdate": 1780691208825
+    },
+    "decay_rate": 0.008,
+    "tags": [
+      "health",
+      "technical",
+      "entity_prego",
+      "entity_per",
+      "entity_in",
+      "assistant"
+    ],
+    "timestamp": 1780691208825,
+    "lastAccess": 1780691208825,
+    "accessCount": 0,
+    "meta": {
+      "user_id": "u1",
+      "importance": 0.9,
+      "emotionalValence": 0,
+      "version": 1
+    }
+  }
+}

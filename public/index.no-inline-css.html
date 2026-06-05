@@ -1,0 +1,2614 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8" />
+  <title>Keblo – Dashboard AI</title>
+  <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+  <div id="dock"></div>
+  
+  <link rel="stylesheet" href="./keblo-extracted.css" />
+
+</head>
+
+<body>
+  <img src="/output/ComfyUI_00014_-removebg-preview.png" id="keblo-mascot">
+  <div id="system-clock">
+  <div id="clock-time">00:00</div>
+  <div id="clock-date">CARICAMENTO...</div>
+</div>
+   <!-- Overlay di Login -->
+  <div id="login-overlay">
+    <div class="login-box">
+      <div class="logo" style="color:white; font-size:24px; margin-bottom:30px;">KEBLO <span style="font-weight:200">PRO</span></div>
+      <input type="text" id="user-input" placeholder="Username" autocomplete="username">
+      <input type="password" id="pass-input" placeholder="Password" autocomplete="current-password">
+      <button onclick="attemptLogin()">ACCEDI AL SISTEMA</button>
+      <div id="login-error" style="color:#ef4444; font-size:12px; margin-top:10px; display:none;">Credenziali errate</div>
+    </div>
+  </div>
+
+  <!-- Dashboard (visibile solo dopo login) -->
+  <div class="container">
+    </div>
+
+  <script>
+    const chat = document.getElementById("chat");
+    const input = document.getElementById("input");
+    const tokenInfo = document.getElementById("tokenInfo");
+
+function updateTokens(meta) { 
+  if (meta) {
+    const tokenInfo = document.getElementById("tokenInfo");
+    if (!tokenInfo) return;
+    
+    const used = meta.tokenUsed || 0;
+    const limit = meta.tokenLimit || 10000;
+    const speed = meta.speed || "0.00";
+    
+    // Mostra Token e Velocità nel footer generale
+    tokenInfo.innerHTML = `TOKEN: ${used}/${limit} | SPEED: ${speed} T/S`; 
+  }
+}
+    async function ensureSession() { 
+      try { 
+        const response = await fetch("/api/session", { method: "POST", credentials: "include" });
+        const data = await response.json();
+        if (data.ok && data.userId) {
+          return true; // Sessione valida
+        }
+        return false; // Nessuna sessione
+      } catch (e) { 
+        console.error("Session check failed:", e);
+        return false; 
+      }
+    }
+
+    async function attemptLogin() {
+      const username = document.getElementById("user-input").value;
+      const password = document.getElementById("pass-input").value;
+      
+      if (!username || !password) {
+        showLoginError("Inserisci username e password");
+        return;
+      }
+      
+      const res = await fetch("/api/login", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ username, password })
+      });
+      
+      const data = await res.json();
+      if (data.ok) {
+        document.getElementById("login-overlay").style.opacity = "0";
+        setTimeout(() => {
+          document.getElementById("login-overlay").style.display = "none";
+          initDashboard(); // Avvia le card solo dopo il login
+        }, 500);
+      } else {
+        showLoginError(data.msg || "Credenziali errate");
+      }
+    }
+
+    function showLoginError(message) {
+      const errorDiv = document.getElementById("login-error");
+      errorDiv.textContent = message;
+      errorDiv.style.display = "block";
+      setTimeout(() => { errorDiv.style.display = "none"; }, 3000);
+    }
+
+       function toggleFlip(btn) {
+      btn.closest('.card').classList.toggle('flipped');
+    }
+
+    // Funzione per registrare le azioni nel retro
+    function logToCard(cardId, actionText) {
+      const list = document.getElementById(`history-${cardId}`);
+      if (list) {
+        const item = document.createElement('div');
+        item.className = 'history-item';
+        item.innerHTML = `<b>[${new Date().toLocaleTimeString()}]</b> ${actionText}`;
+        list.prepend(item);
+      }
+    }
+
+    // --- LOGICA FILE (ANALISI) ---
+    async function refreshFileList(cardId) {
+      const container = document.getElementById(`content-${cardId}`);
+      if (!container) return;
+      try {
+        const r = await fetch('/api/user-files', { credentials: 'include' });
+        const data = await r.json();
+        const listHtml = data.files.map(f => `
+          <div class="file-row">
+            <div style="display:flex; align-items:center; flex:1;">
+              <input type="radio" name="file-${cardId}" value="${f}" id="${f}-${cardId}">
+              <label for="${f}-${cardId}" style="margin-left:8px; cursor:pointer;">${f}</label>
+            </div>
+            <span class="del-file-btn" onclick="deleteFile('${f}', '${cardId}')">🗑️</span>
+          </div>`).join('');
+        container.innerHTML = `
+          <div class="file-list">${listHtml || "Nessun file"}</div>
+          <input type="text" class="card-q" placeholder="Cosa cerchi?" id="q-${cardId}">
+          <button class="card-btn" onclick="runCardSearch('${cardId}')">ANALIZZA</button>
+          <div class="stream-result" id="res-${cardId}"></div>`;
+      } catch (e) { container.innerHTML = "⚠️ Errore sessione."; }
+    }
+
+    async function deleteFile(fileName, cardId) {
+      if (!confirm(`Eliminare ${fileName}?`)) return;
+      await fetch('/api/delete-file', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ fileName }) });
+      refreshFileList(cardId);
+      const sbList = document.querySelector('[id^="sandboxList_"]');
+      if (sbList) refreshSandboxFileList(sbList.id.split('_')[1]);
+      logToCard(cardId, `File eliminato: ${fileName}`);
+    }
+
+    // --- LOGICA SANDBOX ---
+    async function refreshSandboxFileList(cardId) {
+      const listDiv = document.getElementById(`sandboxList_${cardId}`);
+      if (!listDiv) return;
+      try {
+        const r = await fetch('/api/user-files', { credentials: 'include' });
+        const data = await r.json();
+        listDiv.innerHTML = data.files.length === 0 ? "<div style='opacity:0.5;text-align:center;'>Sandbox vuota</div>" : data.files.map(f => `
+          <div class="sandbox-file-item">
+            <span>📄 ${f.length > 20 ? f.substring(0,17)+'...' : f}</span>
+            <span style="cursor:pointer; opacity:0.6;" onclick="deleteFileFromSandbox('${f}', '${cardId}')">✕</span>
+          </div>`).join('');
+      } catch (e) {}
+    }
+
+    async function deleteFileFromSandbox(fileName, cardId) {
+      if (!confirm(`Eliminare ${fileName}?`)) return;
+      await fetch('/api/delete-file', { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ fileName }) });
+      refreshSandboxFileList(cardId);
+      const anCard = document.querySelector('.card.search');
+      if (anCard) refreshFileList(anCard.id);
+      logToCard(cardId, `File eliminato dalla sandbox: ${fileName}`);
+    }
+
+    async function uploadFile(input, cardId) {
+      const file = input.files[0]; if (!file) return;
+      const btn = document.getElementById(`uploadBtn_${cardId}`);
+      btn.disabled = true; btn.innerHTML = `<div class="loading-spinner"></div> Invio...`;
+      const fd = new FormData(); fd.append("file", file);
+      try {
+        const res = await fetch("/api/upload", { method: "POST", credentials: "include", body: fd });
+        const data = await res.json();
+        if (data.ok) {
+          refreshSandboxFileList(cardId);
+          const anCard = document.querySelector('.card.search'); if (anCard) refreshFileList(anCard.id);
+          setTimeout(() => { btn.disabled = false; btn.innerHTML = "📁 Scegli File"; }, 1000);
+          logToCard(cardId, `Nuovo file caricato: ${file.name}`);
+        } else { alert(data.msg); btn.disabled = false; btn.innerHTML = "📁 Scegli File"; }
+      } catch (e) { btn.disabled = false; btn.innerHTML = "📁 Scegli File"; }
+    }
+    // --- SISTEMA VOCALE GLOBALE KEBLO ---
+window.KebloVoice = {
+    audio: new Audio(),
+    isPlaying: false,
+
+    async speak(text, btnElement = null) {
+        if (this.isPlaying) {
+            this.audio.pause();
+            this.isPlaying = false;
+            if (btnElement) btnElement.innerHTML = "🔊";
+            return;
+        }
+
+        if (btnElement) btnElement.innerHTML = "🌀"; // Animazione caricamento
+
+        try {
+            const res = await fetch("/api/tts", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ text: text.substring(0, 1000) }) // Max 1000 caratteri per volta
+            });
+            const data = await res.json();
+
+            if (data.ok) {
+                this.audio.src = data.url;
+                this.audio.play();
+                this.isPlaying = true;
+                if (btnElement) btnElement.innerHTML = "⏹️";
+
+                this.audio.onended = () => {
+                    this.isPlaying = false;
+                    if (btnElement) btnElement.innerHTML = "🔊";
+                };
+            }
+        } catch (e) {
+            console.error("Errore Voce:", e);
+            if (btnElement) btnElement.innerHTML = "⚠️";
+        }
+    }
+};
+
+    // --- INFERENZA NEWS ---
+  async function runNewsInference(cardId) {
+  const topic = document.getElementById(`q-${cardId}`).value;
+  const resDiv = document.getElementById(`res-${cardId}`);
+  if (!topic) return alert("Inserisci un argomento.");
+  
+  logToCard(cardId, `Analisi profonda avviata su: ${topic}`);
+  
+  resDiv.innerHTML = `
+    <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; opacity:0.6;">
+      <div class="loading-spinner" style="width:30px; height:30px; border-width:3px;"></div>
+      <div style="margin-top:15px; font-size:10px; letter-spacing:2px; font-weight:900;">GENERAZIONE REPORT...</div>
+    </div>`;
+
+  try {
+    const response = await fetch("/api/news-inference", { 
+      method: "POST", 
+      headers: { "Content-Type": "application/json" }, 
+      credentials: "include",
+      body: JSON.stringify({ topic }) 
+    });
+    const data = await response.json();
+    
+    resDiv.style.opacity = 0;
+    setTimeout(() => {
+      // --- 🚀 FIX DEFINITIVO RENDERING ---
+      let rawHTML = data.content;
+
+      // 1. Rimuoviamo i blocchi "```html" o "```" che l'AI mette per abitudine
+      let cleanHTML = rawHTML.replace(/```html/g, "").replace(/```/g, "").trim();
+
+      // 2. Inseriamo DIRETTAMENTE l'HTML (senza marked.parse)
+      resDiv.innerHTML = cleanHTML;
+      
+      // 3. Applichiamo le classi alle immagini e link nel caso l'AI se le sia dimenticate
+      resDiv.querySelectorAll('img').forEach(img => img.classList.add('news-report-img'));
+      resDiv.querySelectorAll('a').forEach(a => a.classList.add('news-report-link'));
+      
+      resDiv.style.opacity = 1;
+      resDiv.scrollTop = 0;
+    }, 200);
+    
+  } catch (e) { 
+    resDiv.innerHTML = "⚠️ Errore durante l'analisi web."; 
+  }
+}
+    // --- FIX ANALISI FILE STREAM (MIGLIORATO) ---
+async function runCardSearch(cardId) {
+    // 1. Prendi tutti i checkbox selezionati
+    const selectedChecks = document.querySelectorAll(`#sandboxList_${cardId} .file-check:checked`);
+    const files = Array.from(selectedChecks).map(cb => cb.value);
+    
+    const q = document.getElementById(`q-${cardId}`).value;
+    const resDiv = document.getElementById(`res-${cardId}`);
+    
+    // 2. Controllo sicurezza
+    if (files.length === 0) return alert("Seleziona almeno un file per l'analisi.");
+    if (!q) return alert("Inserisci una domanda.");
+    
+    logToCard(cardId, `Analisi multi-file avviata su ${files.length} documenti.`);
+    resDiv.innerHTML = "<em>Keblo sta incrociando i dati dei file selezionati...</em>";
+    
+    try {
+        const response = await fetch('/api/card-search-stream', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({ fileNames: files, query: q })
+        });
+
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder("utf-8");
+        let sseBuffer = ""; 
+        let fullHTML = ""; 
+
+        while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            
+            sseBuffer += decoder.decode(value, { stream: true });
+            const lines = sseBuffer.split('\n\n'); 
+            sseBuffer = lines.pop();
+            
+            for (const line of lines) {
+                if (line.startsWith('data: ')) {
+                    try {
+                        const data = JSON.parse(line.substring(6));
+                        if (data.text) {
+                            fullHTML += data.text;
+                            resDiv.innerHTML = fullHTML;
+                        }
+                        if (data.error) resDiv.innerHTML = `<span style="color:red">Errore: ${data.error}</span>`;
+                    } catch (e) {
+                        console.log("Errore parsing chunk");
+                    }
+                }
+            }
+            resDiv.scrollTop = resDiv.scrollHeight;
+        }
+
+        // --- 🚀 TASTO ESPORTAZIONE (Appare a fine analisi) ---
+  // --- 🚀 FIX: DOPPIO TASTO (VOCE + SALVA) ---
+        if (fullHTML && fullHTML.length > 10) {
+            const actionsId = `actions-${cardId}`;
+            
+            if (!document.getElementById(actionsId)) {
+                // Creiamo un contenitore flex per tenere i bottoni affiancati
+                const btnBox = document.createElement('div');
+                btnBox.id = actionsId;
+                btnBox.style.cssText = "display:flex; gap:10px; margin-top:20px; width:100%;";
+
+                // 1. TASTO VOCE (Legge l'analisi completa)
+                const voiceBtn = document.createElement('button');
+                voiceBtn.className = 'card-btn';
+                voiceBtn.style.cssText = "background:#22d3ee; color:#0b1020; font-weight:900; flex:1;";
+                voiceBtn.innerHTML = "🔊 LEGGI ANALISI";
+                voiceBtn.onclick = () => {
+                    // Estraiamo solo il testo della ricerca (ignorando i tasti stessi)
+                    const researchText = resDiv.innerText.split('🔊')[0].trim();
+                    window.KebloVoice.speak(researchText, voiceBtn);
+                };
+
+                // 2. TASTO ESPORTAZIONE (Salva nello Scratchpad)
+                const exportBtn = document.createElement('button');
+                exportBtn.className = 'card-btn';
+                exportBtn.style.cssText = "background:#4ade80; color:#0b1020; font-weight:900; flex:1;";
+                exportBtn.innerHTML = "💾 SALVA REPORT";
+                
+                exportBtn.onclick = async () => {
+                    exportBtn.disabled = true;
+                    exportBtn.innerHTML = "SALVATAGGIO...";
+                    try {
+                        const res = await fetch("/api/export-to-scratchpad", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ 
+                                title: "REPORT: " + q.substring(0, 25) + "...", 
+                                content: fullHTML 
+                            })
+                        });
+                        const result = await res.json();
+                        if (result.ok) {
+                            exportBtn.style.background = "#22d3ee";
+                            exportBtn.innerHTML = "✅ SALVATO";
+                            logToCard(cardId, "Report esportato nello Scratchpad.");
+                            window.dispatchEvent(new CustomEvent('refresh-scratchpad'));
+                        }
+                    } catch (err) {
+                        exportBtn.disabled = false;
+                        exportBtn.innerHTML = "⚠️ ERRORE";
+                    }
+                };
+
+                // Aggiungiamo i bottoni al contenitore e il contenitore al div dei risultati
+                btnBox.appendChild(voiceBtn);
+                btnBox.appendChild(exportBtn);
+                resDiv.appendChild(btnBox);
+                
+                resDiv.scrollTop = resDiv.scrollHeight;
+            }
+        }} catch (err) {
+        resDiv.innerHTML = "<strong>Errore di connessione.</strong>";
+    }
+}
+
+function spawnCard(type, title, content, customPos = null, startMinimized = false) {
+  const div = document.createElement("div");
+  div.className = `card ${type}`;
+  const cardId = 'card_' + Date.now() + '_' + Math.random().toString(36).substr(2, 5);
+  div.id = cardId;
+  if (customPos) { 
+    div.style.top = customPos.top; 
+    if (customPos.left) div.style.left = customPos.left; 
+    if (customPos.right) div.style.right = customPos.right; 
+  }
+  
+  div.innerHTML = `
+    <span class="minimize-card" onclick="toggleMinimize(this)">−</span>
+    <span class="flip-btn" onclick="toggleFlip(this)">🔄</span>
+    <div class="card-inner">
+      <div class="card-front">
+        <div class="card-title">${title}</div>
+        <div class="card-content" id="content-${cardId}"></div>
+      </div>
+      <div class="card-back">
+        <div class="card-title" style="opacity:0.5; font-size:10px;">REGISTRO RETROATTIVO</div>
+        <div class="history-list" id="history-${cardId}">
+          <div class="history-item"><i>In attesa di attività...</i></div>
+        </div>
+      </div>
+    </div>
+  `;
+  
+  document.body.appendChild(div);
+  makeCardDraggable(div);
+  
+  const container = document.getElementById(`content-${cardId}`);
+  
+  // --- NUOVA LOGICA UNIFICATA: INTELLIGENCE ---
+  if (type === "intelligence") {
+    container.innerHTML = `
+      <!-- TESTATA: Caricamento compatto -->
+      <div style="margin-bottom: 12px; display:flex; gap:10px; align-items:center;">
+        <input type="file" id="fi_${cardId}" style="display:none" onchange="uploadFileIntelligence(this, '${cardId}')">
+        <button class="card-btn" id="uploadBtn_${cardId}" 
+                style="background:#22d3ee; color:#0b1020; font-size:9px; height:32px; letter-spacing:1px; flex:1;" 
+                onclick="document.getElementById('fi_${cardId}').click()">
+          ⚡ CARICA NUOVO DOCUMENTO
+        </button>
+      </div>
+
+      <!-- LISTA UNIFICATA: Sandbox + Selezione -->
+      <div class="sandbox-list" id="sandboxList_${cardId}" style="flex:1; min-height:100px; margin-bottom:10px;"></div>
+
+      <hr style="border:0; border-top:1px solid rgba(255,255,255,0.1); margin: 12px 0;">
+
+      <!-- AREA ANALISI -->
+      <input type="text" class="card-q" placeholder="Chiedi all'Intelligence..." id="q-${cardId}" style="margin-bottom:8px;">
+      <button class="card-btn" style="background:#0ea5e9; color:white; height:35px; font-weight:900;" onclick="runCardSearch('${cardId}')">ESEGUI ANALISI INCROCIATA</button>
+      
+      <div class="stream-result" id="res-${cardId}" style="margin-top:10px; flex:1.5; min-height:120px; font-size:12px;">
+         <span style="opacity:0.3; font-size:10px;">In attesa di istruzioni...</span>
+      </div>
+    `;
+    refreshIntelligenceCard(cardId);
+  }
+  
+  // --- LOGICA NEWS ---
+// --- NUOVA LOGICA UNIFICATA: NEWS STATION ---
+  else if (type === "news_station") {
+    div.style.width = "400px";
+    div.style.height = "550px";
+
+    container.innerHTML = `
+      <div class="tab-bar">
+        <div class="tab-btn active" id="btn-rss-${cardId}" onclick="switchNewsTab('${cardId}', 'rss')">📡 LIVE FEED</div>
+        <div class="tab-btn" id="btn-ai-${cardId}" onclick="switchNewsTab('${cardId}', 'ai')">🧠 AI REPORT</div>
+      </div>
+
+      <!-- VISTA RSS -->
+      <div id="view-rss-${cardId}" class="tab-view active">
+        <div class="rss-container">
+          
+          <!-- INPUT TAG (Manuale) -->
+          <div style="display:flex; gap:5px; padding:0 5px 5px 5px; border-bottom:1px solid rgba(255,255,255,0.05);">
+             <input type="text" id="new-tag-${cardId}" class="card-q" placeholder="Aggiungi argomento (es. Bitcoin)..." style="margin:0; font-size:10px;">
+             <button class="card-btn" style="width:auto; padding:5px 10px; background:#6366f1; color:white;" onclick="addRssInterest('${cardId}')">ADD</button>
+          </div>
+
+          <!-- LISTA TAG -->
+          <div class="rss-tags-bar" id="rss-tags-${cardId}" style="min-height:30px;"></div>
+
+          <!-- LISTA NOTIZIE -->
+          <div class="rss-list" id="rss-feed-${cardId}">
+            <!-- Messaggio iniziale vuoto -->
+            <div style="text-align:center; padding:40px; opacity:0.4;">
+               <div style="font-size:30px; margin-bottom:10px;">📭</div>
+               <div style="font-size:10px;">NESSUN FEED ATTIVO</div>
+               <div style="font-size:9px; margin-top:5px;">Aggiungi fino a 7 argomenti sopra.</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- VISTA AI (Uguale a prima) -->
+      <div id="view-ai-${cardId}" class="tab-view">
+        <div style="margin-bottom:10px; padding:0 5px;">
+           <div style="font-size:10px; opacity:0.7; margin-bottom:5px;">ARGOMENTO INTELLIGENCE:</div>
+           <input type="text" class="card-q" id="q-${cardId}" placeholder="Es. Trend Mercati 2026..." autocomplete="off">
+           <button class="card-btn" style="background:rgba(59, 130, 246, 0.8); color:white;" onclick="runNewsInference('${cardId}')">AVVIA ANALISI WEB</button>
+        </div>
+        <div class="stream-result" id="res-${cardId}" style="flex:1; background:rgba(0,0,0,0.2)!important;">
+          <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; opacity:0.4;">
+             <div style="font-size:30px;">🌐</div>
+             <div style="font-size:10px; margin-top:10px;">PRONTO PER L'INFERENZA</div>
+          </div>
+        </div>
+      </div>
+    `;
+
+    // 1. Renderizza i tag (se ce ne sono di salvati)
+    renderRssTags(cardId);
+
+    // 2. Se ci sono tag salvati, carica le notizie, altrimenti lascia vuoto
+    setTimeout(() => {
+        const saved = getRssInterests();
+        if (saved.length > 0) {
+            document.getElementById(`rss-feed-${cardId}`).innerHTML = 
+              "<div style='text-align:center;padding:20px;opacity:0.5;'><div class='loading-spinner'></div></div>";
+            loadAllFeeds(cardId, saved);
+        }
+    }, 500);
+    
+    // Refresh automatico solo se ci sono tag
+    setInterval(() => {
+        const saved = getRssInterests();
+        if (saved.length > 0) loadAllFeeds(cardId, saved);
+    }, 600000);
+  }
+  // --- BLOCCO DIARIO (AGGIUNGI QUESTO, NON TOCCARE LA CHAT) ---
+// 5. DIARIO
+      else if (type === "journal") {
+        div.style.width = "400px"; 
+        div.style.height = "600px";
+
+        container.innerHTML = `
+          <!-- 1. AREA CRONOLOGIA: Aggiunta classe "diary-feed" per lo scroll -->
+          <div id="diary-feed-${cardId}" class="diary-feed">
+             <div style="text-align:center; opacity:0.4; font-size:11px; margin-top:20px; align-self:center;">
+               Memorie del diario caricate.
+             </div>
+          </div>
+
+          <!-- 2. AREA INPUT -->
+          <div style="padding:15px; border-top:1px solid rgba(255,255,255,0.1); background:rgba(0,0,0,0.2); flex-shrink:0;">
+            <input type="text" id="diary-in-${cardId}" class="card-q" 
+                   placeholder="Scrivi un pensiero..." autocomplete="off" style="margin:0;">
+            <div style="font-size:9px; opacity:0.5; margin-top:5px; text-align:right;">PREMI INVIO PER SALVARE</div>
+          </div>
+        `;
+
+        // Carica la storia
+        loadDiaryHistory(cardId);
+
+        // Listener invio
+        const inp = document.getElementById(`diary-in-${cardId}`);
+        if(inp) {
+            inp.addEventListener("keydown", (e) => {
+              if (e.key === "Enter" && inp.value.trim()) {
+                sendDiaryMessage(cardId, inp.value.trim());
+                inp.value = "";
+              }
+            });
+        }
+      }
+// 6. SCRATCHPAD (Cloud Sync)
+else if (type === "memo") {
+  div.style.width = "700px"; // Un po' più larga per ospitare la sidebar
+  div.style.height = "450px";
+
+ container.innerHTML = `
+    <div class="memo-main-layout">
+      <!-- SIDEBAR (Aggiunto ID e rimosso width fissa dal CSS inline per farla comandare da JS) -->
+      <div class="memo-sidebar" id="sidebar-${cardId}" style="width: 150px;">
+        <div class="memo-sidebar-header">
+           <button class="add-page-btn" id="add-pg-${cardId}">+ NUOVA NOTA</button>
+        </div>
+        <div id="pg-list-${cardId}" class="memo-page-list"></div>
+      </div>
+
+      <!-- 🚀 IL RESIZER (Inserito qui) -->
+      <div class="memo-resizer" id="resizer-${cardId}"></div>
+
+      <!-- AREA EDITOR -->
+      <div class="memo-editor-area">
+        <div class="memo-toolbar">
+          <button onmousedown="event.preventDefault(); document.execCommand('bold', false, null);" style="background:none; border:none; color:white; cursor:pointer; font-weight:bold;">B</button>
+          <button onmousedown="event.preventDefault(); document.execCommand('italic', false, null);" style="background:none; border:none; color:white; cursor:pointer; font-style:italic;">I</button>
+          <div style="width:1px; height:15px; background:rgba(255,255,255,0.2); margin:0 5px;"></div>
+          
+          <div class="memo-color-btn" style="background:#ffffff;" onmousedown="event.preventDefault(); document.execCommand('styleWithCSS', false, true); document.execCommand('foreColor', false, '#ffffff');"></div>
+          <div class="memo-color-btn" style="background:#6366f1;" onmousedown="event.preventDefault(); document.execCommand('styleWithCSS', false, true); document.execCommand('foreColor', false, '#6366f1');"></div>
+          <div class="memo-color-btn" style="background:#22d3ee;" onmousedown="event.preventDefault(); document.execCommand('styleWithCSS', false, true); document.execCommand('foreColor', false, '#22d3ee');"></div>
+          <div class="memo-color-btn" style="background:#fb7185;" onmousedown="event.preventDefault(); document.execCommand('styleWithCSS', false, true); document.execCommand('foreColor', false, '#fb7185');"></div>
+          <div class="memo-color-btn" style="background:#facc15;" onmousedown="event.preventDefault(); document.execCommand('styleWithCSS', false, true); document.execCommand('foreColor', false, '#facc15');"></div>
+          <div class="memo-color-btn" style="background:#ff0000;" onmousedown="event.preventDefault(); document.execCommand('styleWithCSS', false, true); document.execCommand('foreColor', false, '#fb7185');"></div>
+
+          <div style="flex:1"></div>
+          <button id="rename-pg-${cardId}" style="background:none; border:none; color:#22d3ee; cursor:pointer; font-size:9px; font-weight:900; margin-right:10px;">RINOMINA NOTA</button>
+          <button id="del-pg-${cardId}" style="background:none; border:none; color:#fb7185; cursor:pointer; font-size:9px; font-weight:bold;">ELIMINA NOTA</button>
+        </div>
+        
+        <div id="memo-edit-${cardId}" class="memo-editor" contenteditable="true" spellcheck="false"></div>
+
+        <div class="memo-footer">
+          <span id="memo-status-${cardId}">READY</span>
+          <span id="memo-pg-title-${cardId}" style="color:#22d3ee">---</span>
+        </div>
+      </div>
+    </div>
+`;
+
+  let allPages = [];
+  let activeId = null;
+
+  // Funzione per aggiornare la lista nella sidebar
+  const renderList = () => {
+    const list = document.getElementById(`pg-list-${cardId}`);
+    list.innerHTML = allPages.map(p => `
+      <div class="memo-page-item ${p.id === activeId ? 'active' : ''}" data-id="${p.id}">
+        ${p.title}
+      </div>
+    `).join('');
+
+    list.querySelectorAll('.memo-page-item').forEach(el => {
+      el.onclick = () => switchPage(el.dataset.id);
+    });
+  };
+
+  // Funzione per cambiare pagina
+  const switchPage = (id) => {
+    // Prima di cambiare, salva il testo della pagina attuale nell'array locale
+    if (activeId) {
+      const current = allPages.find(p => p.id === activeId);
+      if (current) current.content = document.getElementById(`memo-edit-${cardId}`).innerHTML;
+    }
+
+    activeId = id;
+    const page = allPages.find(p => p.id === id);
+    document.getElementById(`memo-edit-${cardId}`).innerHTML = page.content || "";
+    document.getElementById(`memo-pg-title-${cardId}`).innerText = page.title.toUpperCase();
+    renderList();
+  };
+
+  // Caricamento iniziale dal Server
+  fetch("/api/scratchpad").then(r => r.json()).then(d => {
+    allPages = d.pages || [];
+    if (allPages.length > 0) {
+      switchPage(allPages[0].id);
+    } else {
+      // Se è la prima volta assoluta, crea una pagina di default
+      const first = { id: 'pg_1', title: 'Appunti 1', content: '' };
+      allPages = [first];
+      switchPage(first.id);
+    }
+  });
+
+  // ... cerca dove hai messo il tasto add-pg e del-pg ...
+
+// Tasto Rinomina Pagina
+document.getElementById(`rename-pg-${cardId}`).onclick = () => {
+  const currentPg = allPages.find(p => p.id === activeId);
+  if (!currentPg) return;
+
+  const newTitle = prompt("Inserisci il nuovo nome per questa sezione:", currentPg.title);
+  
+  if (newTitle && newTitle.trim() !== "" && newTitle !== currentPg.title) {
+    currentPg.title = newTitle.trim(); // Aggiorna il titolo nell'array
+    
+    // Aggiorna la grafica subito
+    document.getElementById(`memo-pg-title-${cardId}`).innerText = newTitle.toUpperCase();
+    renderList(); // Rinfresca la sidebar per vedere il nome nuovo
+    
+    saveAll(); // Salva sul server
+  }
+};
+  // Tasto Nuova Pagina
+  document.getElementById(`add-pg-${cardId}`).onclick = () => {
+    const title = prompt("Nome della nuova sezione:");
+    if (!title) return;
+    const newPage = { id: 'pg_' + Date.now(), title, content: '' };
+    allPages.push(newPage);
+    switchPage(newPage.id);
+    saveAll();
+  };
+
+  // Tasto Elimina Pagina
+  document.getElementById(`del-pg-${cardId}`).onclick = () => {
+    if (allPages.length <= 1) return alert("Devi avere almeno una pagina.");
+    if (!confirm(`Eliminare definitivamente "${allPages.find(p => p.id === activeId).title}"?`)) return;
+    allPages = allPages.filter(p => p.id !== activeId);
+    switchPage(allPages[0].id);
+    saveAll();
+  };
+
+  // Salvataggio Unificato (Debounced)
+  let saveTimer;
+  const saveAll = () => {
+    clearTimeout(saveTimer);
+    document.getElementById(`memo-status-${cardId}`).innerText = "STORY SAVING...";
+    
+    // Aggiorna l'array locale con l'ultimo testo scritto
+    const current = allPages.find(p => p.id === activeId);
+    if(current) current.content = document.getElementById(`memo-edit-${cardId}`).innerHTML;
+
+    saveTimer = setTimeout(() => {
+      fetch("/api/scratchpad", {
+        method: "POST",
+        headers: {"Content-Type":"application/json"},
+        body: JSON.stringify({ pages: allPages }) // Invia l'intero pacchetto pagine
+      }).then(() => {
+        document.getElementById(`memo-status-${cardId}`).innerText = "CLOUD SYNCED";
+      });
+    }, 1000);
+  };
+
+  document.getElementById(`memo-edit-${cardId}`).oninput = saveAll;
+   
+  // --- 🚀 FIX REATTIVITÀ: ASCOLTA L'INTELLIGENCE STATION ---
+  const reloadFromStore = () => {
+    fetch("/api/scratchpad").then(r => r.json()).then(d => {
+      allPages = d.pages || [];
+      renderList(); // Rinfresca la lista a sinistra
+      // Se non c'è una pagina attiva, carica la prima
+      if (!activeId && allPages.length > 0) switchPage(allPages[0].id);
+    });
+  };
+
+  // Funzione che scatta quando riceve il segnale "refresh-scratchpad"
+  const onRefresh = () => {
+    console.log("🔄 Scratchpad: Nuovi dati ricevuti dall'Intelligence!");
+    reloadFromStore();
+  };
+
+  window.addEventListener('refresh-scratchpad', onRefresh);
+  
+  // Caricamento iniziale (sostituisce il vecchio fetch)
+  reloadFromStore();
+  // --- 🚀 MOTORE DI RIDIMENSIONAMENTO DINAMICO (Incolla questo alla fine) ---
+  setTimeout(() => {
+    const resizer = document.getElementById(`resizer-${cardId}`);
+    const sidebar = document.getElementById(`sidebar-${cardId}`);
+    
+    if (!resizer || !sidebar) return;
+
+    let isResizing = false;
+
+    resizer.addEventListener('mousedown', (e) => {
+      isResizing = true;
+      resizer.classList.add('active');
+      document.body.style.cursor = 'col-resize';
+      
+      // 🛡️ BLOCCA IL TRASCINAMENTO DELLA CARD GLOBALE
+      e.stopPropagation(); 
+      e.preventDefault();
+    });
+
+    window.addEventListener('mousemove', (e) => {
+      if (!isResizing) return;
+      
+      // Calcoliamo la posizione del mouse rispetto all'inizio della card
+      const cardRect = div.getBoundingClientRect();
+      const newWidth = e.clientX - cardRect.left;
+
+      // Limiti di sicurezza (minimo 100px, massimo metà card)
+      if (newWidth > 100 && newWidth < (cardRect.width - 150)) {
+        sidebar.style.width = newWidth + 'px';
+      }
+    });
+
+    window.addEventListener('mouseup', () => {
+      if (isResizing) {
+        isResizing = false;
+        resizer.classList.remove('active');
+        document.body.style.cursor = 'default';
+      }
+    });
+  }, 200); 
+}//Fine Else Memo
+
+  else if (type === "rss") {
+  div.style.width = "400px";
+  div.style.height = "500px";
+
+  // I 10 INTERESSI DI DEFAULT (Puoi cambiarli qui)
+  const interests = [
+    "Intelligenza Artificiale", "Cybersecurity", "Sindrome di Angelman", 
+    "Milan", "Nvidia Intelligenza Artificiale", "SpaceX", 
+    "Energia Nucleare", "Quantum Computing", "Neuroscienze", "Droni"
+  ];
+
+  container.innerHTML = `
+    <div class="rss-container">
+      <!-- Barra dei Tag (Scorrevole) -->
+      <div class="rss-tags-bar" id="rss-tags-${cardId}">
+        ${interests.map(tag => `<span class="rss-tag" onclick="filterRss('${cardId}', '${tag}')">${tag}</span>`).join('')}
+      </div>
+      
+      <!-- Lista Notizie -->
+      <div class="rss-list" id="rss-feed-${cardId}">
+        <div style="text-align:center; padding:20px; opacity:0.5;">
+          <div class="loading-spinner"></div><br>Sincronizzazione feed...
+        </div>
+      </div>
+      
+      <!-- Footer Status -->
+      <div style="font-size:9px; opacity:0.3; text-align:center; padding:5px;">
+        AUTO-REFRESH: 10 MIN
+      </div>
+    </div>
+  `;
+
+  // Avvia il caricamento iniziale
+  loadAllFeeds(cardId, interests);
+
+  // Imposta l'aggiornamento automatico (10 minuti = 600000 ms)
+  // Salviamo l'ID dell'intervallo sulla card per poterlo fermare se la chiudi (opzionale, per ora semplice)
+  setInterval(() => loadAllFeeds(cardId, interests), 600000);
+}
+  
+  // --- LOGICA AGENDA ---
+// --- LOGICA AGENDA + METEO (WINDY) ---
+else if (type === "event") {
+    // 1. Definiamo le dimensioni della card
+    div.style.width = "720px"; 
+    div.style.height = "480px";
+
+    // 2. 🚀 FIX CRITICO: Inizializziamo i dati della data SUBITO
+    const ora = new Date();
+    div.dataset.month = ora.getMonth(); // Gennaio = 0, Febbraio = 1...
+    div.dataset.year = ora.getFullYear();
+    // Inizializziamo anche la data selezionata di default su "oggi"
+    div.dataset.selectedFullDate = `${ora.getFullYear()}-${ora.getMonth() + 1}-${ora.getDate()}`;
+
+    // 3. Iniezione HTML con la struttura split
+    container.innerHTML = `
+      <div class="agenda-split" style="display:flex; gap:20px; height:100%; width:100%; padding:5px; box-sizing:border-box;">
+        
+        <!-- COLONNA SINISTRA: COMANDO CALENDARIO -->
+        <div class="calendar-section" style="width:230px; flex-shrink:0; display:flex; flex-direction:column; gap:10px;">
+          <div class="calendar-header" style="display:flex; justify-content:space-between; align-items:center; font-family:monospace; font-size:12px;">
+            <span onclick="changeMonth('${cardId}', -1)" style="cursor:pointer; color:#a855f7; font-weight:bold;">[<]</span>
+            <b id="cal-month-title-${cardId}" style="letter-spacing:1px; text-transform:uppercase;">---</b>
+            <span onclick="changeMonth('${cardId}', 1)" style="cursor:pointer; color:#a855f7; font-weight:bold;">[>]</span>
+          </div>
+          
+          <!-- La tua griglia CSS -->
+          <div class="calendar-grid" id="cal-grid-${cardId}"></div>
+          
+          <button class="card-btn" style="margin-top:auto; background:rgba(168,85,247,0.1); border:1px solid rgba(168,85,247,0.3); color:#d8b4fe; font-size:8px; letter-spacing:1px;" 
+                  onclick="showArchived('${cardId}')">OPEN_ARCHIVE_DB</button>
+        </div>
+
+        <!-- COLONNA DESTRA: MONITOR TIMELINE -->
+        <div class="timeline-section" style="flex:1; display:flex; flex-direction:column; background:rgba(0,0,0,0.3); border-radius:16px; padding:15px; border:1px solid rgba(168,85,247,0.2); min-width:0;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:15px; border-bottom:1px solid rgba(168,85,247,0.3); padding-bottom:10px;">
+            <div id="day-label-${cardId}" style="font-size:10px; font-weight:900; color:#fff; letter-spacing:2px; font-family:monospace;">SYSTEM_TIMELINE</div>
+            <button id="briefing-btn-${cardId}" class="v-btn-mini" style="border-radius:50%; width:32px; height:32px; background:rgba(168,85,247,0.1); border:1px solid #a855f7;"
+                    onclick="runAgendaBriefing('${cardId}')">🎙️</button>
+          </div>
+
+          <div id="list-${cardId}" style="flex:1; overflow-y:auto; padding-right:8px;">
+             <!-- Eventi iniettati da showEventsForDay -->
+          </div>
+
+          <div class="agenda-input-wrapper" style="margin-top:10px; display:flex; gap:8px; background:rgba(0,0,0,0.4); padding:6px; border-radius:12px; border:1px solid rgba(168, 85, 247, 0.2);">
+            <input type="text" class="card-q" id="add-${cardId}" placeholder="Scrivimi un impegno" style="margin:0; background:transparent; border:none; flex:1; color:#fff; font-family:monospace;">
+            <button class="card-btn" style="width:35px; height:35px; border-radius:8px; background:#a855f7; color:white; font-size:18px;" onclick="quickAddEvent('${cardId}')">+</button>
+          </div>
+        </div>
+      </div>
+    `;
+
+    // 4. Avvio delle funzioni di disegno
+    renderCalendar(cardId);
+    // Mostriamo subito gli impegni di oggi
+    showEventsForDay(cardId, ora.getDate(), ora.getMonth(), ora.getFullYear());
+}
+  else if (type === "journal") {
+    div.style.width = "400px";
+    div.style.height = "600px";
+
+    container.innerHTML = `
+      <div id="diary-feed-${cardId}" class="diary-feed" style="flex: 1;">
+         <!-- Cronologia dei pensieri -->
+      </div>
+      <div style="padding-top:10px; border-top:1px solid rgba(255,255,255,0.1); background:rgba(0,0,0,0.2);">
+        <input type="text" id="diary-in-${cardId}" class="card-q" 
+               placeholder="Scrivi un pensiero..." autocomplete="off" style="margin:0;">
+        <div style="font-size:9px; opacity:0.5; margin-top:5px; text-align:right; padding-right:5px;">PREMI INVIO</div>
+      </div>
+    `;
+
+    loadDiaryHistory(cardId);
+
+    // Aspettiamo che il DOM sia pronto per agganciare l'evento Invio
+    setTimeout(() => {
+      const inp = document.getElementById(`diary-in-${cardId}`);
+      if (inp) {
+        inp.addEventListener("keydown", (e) => {
+          if (e.key === "Enter" && inp.value.trim()) {
+            sendDiaryMessage(cardId, inp.value.trim());
+            inp.value = "";
+          }
+        });
+      }
+    }, 100);
+  }
+  else if (type === "core") {
+  container.innerHTML = `
+
+      </div>
+        <button class="card-btn" onclick="logout()" style="margin-top:20px; background:#ef4444; color:white;">TERMINATE SESSION (LOGOUT)</button>
+    </div>
+  `;
+  // Aggiorna subito i token nella card
+  setTimeout(() => updateCoreMetrics(), 500);
+}
+else if (type === "vision") {
+    // Aumentiamo leggermente le dimensioni per ospitare la griglia
+    div.style.width = "480px";
+    div.style.height = "650px";
+    div.dataset.batchCount = "1"; // Valore iniziale
+
+    container.innerHTML = `
+      <textarea id="v-prompt-${cardId}" class="card-q" style="height:80px; resize:none; margin-bottom:10px;" placeholder="Descrivi l'immagine per Flux..."></textarea>
+      
+      <!-- 🚀 SELETTORE QUANTITÀ (I FLAG) -->
+      <div class="batch-selector" style="display:flex; gap:5px; margin-bottom:10px;">
+        <div class="batch-chip active" style="flex:1; padding:5px; background:rgba(255,255,255,0.05); border:1px solid #f472b6; border-radius:6px; color:#f472b6; font-size:9px; font-weight:900; cursor:pointer; text-align:center;" onclick="setBatch('${cardId}', 1, this)">X1</div>
+        <div class="batch-chip" style="flex:1; padding:5px; background:rgba(255,255,255,0.05); border:1px solid rgba(244, 114, 182, 0.3); border-radius:6px; color:#f472b6; font-size:9px; font-weight:900; cursor:pointer; text-align:center;" onclick="setBatch('${cardId}', 5, this)">X5</div>
+        <div class="batch-chip" style="flex:1; padding:5px; background:rgba(255,255,255,0.05); border:1px solid rgba(244, 114, 182, 0.3); border-radius:6px; color:#f472b6; font-size:9px; font-weight:900; cursor:pointer; text-align:center;" onclick="setBatch('${cardId}', 10, this)">X10</div>
+        <div class="batch-chip" style="flex:1; padding:5px; background:rgba(255,255,255,0.05); border:1px solid rgba(244, 114, 182, 0.3); border-radius:6px; color:#f472b6; font-size:9px; font-weight:900; cursor:pointer; text-align:center;" onclick="setBatch('${cardId}', 20, this)">X20</div>
+      </div>
+
+      <button class="card-btn" id="v-btn-${cardId}" style="background:#f472b6; color:white; font-weight:900;" onclick="runVisionBatch('${cardId}')">AVVIA PRODUZIONE SERIALE</button>
+      
+      <!-- 🖼️ AREA GALLERIA (Sostituisce vision-display) -->
+      <div id="v-res-${cardId}" style="display:grid; grid-template-columns:repeat(2, 1fr); gap:10px; margin-top:15px; overflow-y:auto; flex:1; padding-right:5px;">
+        <div style="grid-column:1/-1; opacity:0.2; font-size:10px; text-align:center; margin-top:50px; letter-spacing:2px;">READY_FOR_BATCH_PRODUCTION</div>
+      </div>
+    `;
+}
+  else if (type === "radar") {
+    div.style.width = "450px";
+    div.style.height = "750px";
+    const lat = 41.9028; const lon = 12.4964;
+    container.innerHTML = `
+      <div style="flex:1; border-radius:var(--r-2); overflow:hidden; border:1px solid var(--border); background:#000;">
+        <iframe style="width:100%; height:100%; border:none;" 
+                src="https://embed.windy.com/embed2.html?lat=${lat}&lon=${lon}&zoom=5&level=surface&overlay=wind&product=ecmwf"></iframe>
+      </div>
+      <div style="font-size:9px; opacity:0.4; text-align:center; padding:10px;">SATELLITE LIVE FEED</div>
+    `;
+  }
+else if (type === "chat") {
+      div.style.width = "600px";
+      div.style.height = "550px";
+
+      // Stile esterno specifico per Chat
+      const front = div.querySelector('.card-front');
+      front.style.border = "1px solid #6366f1";
+      front.style.boxShadow = "0 0 40px rgba(99, 102, 241, 0.2)";
+
+      container.innerHTML = `
+  <!-- AREA INPUT -->
+  <div id="chat-input-container" style="padding: 14px; border-bottom: 1px solid rgba(99,102,241,0.2);">
+    <div style="position:relative; width: 100%;">
+      <textarea id="chat-input-main" placeholder="Scrivi al sistema..." 
+             style="width:100%; height:60px; padding:10px; box-sizing: border-box; border-radius:8px; border: 1px solid #6366f1; background: rgba(30, 41, 59, 0.9); color: #ffffff; font-family: 'Consolas', monospace; font-size: 13px; outline: none; resize: none;"></textarea>
+      <div style="font-size:9px; opacity:0.4; text-align:right; margin-top:2px;">ENTER: Invia | SHIFT+ENTER: A capo</div>
+    </div>
+  </div>
+
+  <!-- AREA RISPOSTA -->
+  <div id="nexus-display" style="flex:1; overflow-y:auto; padding:15px; position:relative; user-select:text !important;">
+    <div id="nexus-placeholder" style="display:flex; flex-direction:column; align-items:center; justify-content:center; opacity:0.3; height:100%;">
+      <div style="font-size:30px; letter-spacing:10px; font-weight:200;">KEBLO</div>
+    </div>
+    <div id="nexus-out-text" style="font-size:15px; line-height:1.6; color:#ffffff; display:none;"></div>
+  </div>
+
+  <!-- 🕹️ DASHBOARD UNIFICATA (TUTTO QUI) -->
+  <div id="nexus-dashboard" style="display:none; padding:10px; background:rgba(15,23,42,0.8); border-top:1px solid rgba(255,255,255,0.05); align-items:center; justify-content:space-between; gap:10px;">
+    
+    <!-- 1. METRICHE (Sinistra) -->
+    <div id="nexus-token-info" style="display:flex; gap:5px; align-items:center;">
+       <!-- Qui verranno iniettati i chip IN/OUT/TS -->
+    </div>
+
+    <!-- 2. VISIONE (Centro - Icone compatte) -->
+    <div id="v-controls" style="display:flex; gap:8px;transform: translateY(-12px);">
+       <div class="v-btn-mini" onclick="triggerVision('cognitiva')" title="Visione Cognitiva">👁️</div>
+       <div class="v-btn-mini" onclick="triggerVision('schema')" title="Schema Logico">📊</div>
+       <div class="v-btn-mini" onclick="triggerVision('scomponi')" title="Scomponi Dati">🧩</div>
+    </div>
+ 
+<!-- 3. CONFIDENCE (Destra) - Colori Vivi e Flat -->
+<div id="confidence-bar" style="display:flex; gap:10px; align-items:center;">
+    <span style="font-size:10px; font-weight:900; color:rgba(255,255,255,0.8); letter-spacing:1px; margin-right:5px;">CONF:</span>
+    
+    <!-- VERDE PURO -->
+    <button onclick="setConfidence('green')" 
+            style="background:#22c55e; border:none; width:22px; height:22px; border-radius:50%; cursor:pointer; opacity:1;"></button>
+    
+    <!-- GIALLO PURO -->
+    <button onclick="setConfidence('yellow')" 
+            style="background:#f59e0b; border:none; width:22px; height:22px; border-radius:50%; cursor:pointer; opacity:1;"></button>
+    
+    <!-- ROSSO PURO -->
+    <button onclick="setConfidence('red')" 
+            style="background:#ef4444; border:none; width:22px; height:22px; border-radius:50%; cursor:pointer; opacity:1;"></button>
+</div>
+`;
+      // --- FIX EVENTO INVIO ---
+      // Usiamo un piccolo timeout per assicurarci che l'HTML sia stato renderizzato
+      setTimeout(() => {
+          const inp = document.getElementById("chat-input-main");
+          
+          if(inp) {
+              // Focus automatico
+              inp.focus();
+
+              // Rimozione vecchi listener (per sicurezza) e aggiunta nuovo
+              inp.onkeydown = null; 
+              inp.addEventListener("keydown", (e) => {
+                // Se premi ENTER senza SHIFT
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault(); // Blocca l'a capo
+                  const text = inp.value.trim();
+                  
+                  if(text) {
+                    console.log("Invio rilevato:", text); // Debug nella console del browser
+                    
+                    // 1. Invia all'AI
+                    sendNexusMessage(text);
+                    
+                    // 2. Scrivi nel retro (Cronologia)
+                    logChatRequest(text);
+                    
+                    // 3. Pulisci input
+                    inp.value = ""; 
+                  }
+                }
+              });
+          } else {
+              console.error("ERRORE: Input chat non trovato nel DOM!");
+          }
+
+      }, 100); // 100ms di attesa sono sufficienti
+
+    }
+  logToCard(cardId, `Sotto-sistema ${title} inizializzato.`);
+if (startMinimized) {
+      // Diamo un attimo al browser per "disegnare" la card prima di cliccare il bottone
+      setTimeout(() => {
+          const minBtn = div.querySelector('.minimize-card');
+          // Simula il click sul tasto "-"
+          if(minBtn) toggleMinimize(minBtn);
+      }, 200);
+    }
+}
+    //Fine funzione SpawnCard
+    
+    // VARIABILE GLOBALE PER LO Z-INDEX
+    /* --- MOTORE DI TRASCINAMENTO COMPLETO --- */
+    let highestZ = 1000;
+    const __Drag = { active: null, offsetX: 0, offsetY: 0 };
+
+   function makeCardDraggable(card) {
+  card.addEventListener('mousedown', (e) => {
+    highestZ++;
+    card.style.zIndex = highestZ;
+
+    // --- AGGIUNGI #nexus-display E #nexus-out-text QUI ---
+    if (e.target.closest('[contenteditable="true"]') || 
+        e.target.closest('.memo-toolbar') ||
+        e.target.closest('#nexus-display') || // <--- FIX
+        e.target.closest('#nexus-out-text') || // <--- FIX
+        ['INPUT', 'BUTTON', 'A', 'TEXTAREA', 'SPAN'].includes(e.target.tagName) || 
+        e.target.closest('.minimize-card') || 
+        e.target.closest('.flip-btn')) {
+      return; // Esce dalla funzione e permette la selezione del testo
+    }
+
+    const rect = card.getBoundingClientRect();
+    if (e.clientX > rect.right - 25 && e.clientY > rect.bottom - 25) return; 
+    
+    __Drag.active = card; 
+    __Drag.offsetX = e.clientX - rect.left; 
+    __Drag.offsetY = e.clientY - rect.top;
+    card.style.cursor = 'grabbing'; 
+    card.classList.add('is-dragging');
+  });
+}
+
+    // Gestore globale del movimento del mouse
+    document.addEventListener('mousemove', (e) => {
+      if (!__Drag.active) return;
+      
+      // Calcola la nuova posizione
+      const x = e.clientX - __Drag.offsetX;
+      const y = e.clientY - __Drag.offsetY;
+      
+      // Applica le coordinate
+      __Drag.active.style.left = x + 'px';
+      __Drag.active.style.top = y + 'px';
+    });
+
+    // Gestore globale del rilascio del mouse
+    document.addEventListener('mouseup', () => {
+      if (__Drag.active) {
+        __Drag.active.style.cursor = 'move';
+        __Drag.active.classList.remove('is-dragging');
+        __Drag.active = null;
+      }
+    });
+    async function send(text) {
+      // Prepariamo la chat: usiamo un div per il contenuto così gestisce meglio i blocchi (p, li, etc.)
+      chat.innerHTML = "<div id='current-msg' style='opacity:0.5'>...</div>";
+      const msgDiv = document.getElementById('current-msg');
+      
+      let accumulatedText = ""; // Qui salviamo tutto quello che arriva
+      let contentReceived = false;
+
+      try {
+        const response = await fetch("/api/chat", {
+          credentials: "include",
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ text })
+        });
+
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let chunkBuffer = "";
+
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          chunkBuffer += decoder.decode(value, { stream: true });
+          const lines = chunkBuffer.split('\n\n');
+          chunkBuffer = lines.pop();
+
+          for (const line of lines) {
+            if (line.startsWith('data: ')) {
+              try {
+                const data = JSON.parse(line.substring(6));
+
+                // 1. GESTIONE CHUNKS (STREAMING AI)
+                if (data.type === "chunk" && data.text) {
+                  if (!contentReceived) {
+                    msgDiv.innerText = "";
+                    msgDiv.style.opacity = "1";
+                    contentReceived = true;
+                  }
+                  accumulatedText += data.text;
+                  
+                  // TRASFORMA IL MARKDOWN IN HTML
+                  msgDiv.innerHTML = marked.parse(accumulatedText);
+                  
+                  // Scroll automatico per seguire il testo
+                  chat.scrollTop = chat.scrollHeight;
+                }
+
+                // 2. GESTIONE FINE RISPOSTA (DONE)
+                if (data.type === "done") {
+                  if (!contentReceived && data.reply) {
+                    msgDiv.innerHTML = marked.parse(data.reply);
+                    msgDiv.style.opacity = "1";
+                  }
+                  if (data.card) {
+                    spawnCard(data.card.type, data.card.title, data.card.content, data.card.status);
+                  }
+                  updateTokens(data.meta);
+                }
+
+                if (data.type === "error") {
+                  msgDiv.innerHTML = `<span style="color:red">Errore: ${data.error}</span>`;
+                }
+              } catch (e) { console.error("Parsing error", e); }
+            }
+          }
+        }
+      } catch (err) {
+        msgDiv.innerText = "Errore di connessione.";
+      }
+    }
+
+    // // MEMORIA EMOTIVA DI KEBLO (Inertia System)
+    let emotionalMemory = {
+        hue: 180,       // Colore attuale (parte da Azzurro Calm)
+        saturation: 1,  // Intensità attuale
+        brightness: 1,  // Luminosità attuale
+        history: []     // Storico degli ultimi stati
+    };
+
+    // Mappa dei colori target (Hue in gradi)
+    const moodPalette = {
+        'calm': 180,    // Azzurro
+        'sadness': 210, // Blu Profondo
+        'joy': 50,      // Oro/Giallo
+        'stress': 10,   // Rosso
+        'anger': 0,     // Rosso Sangue
+        'fatigue': 280, // Viola
+        'focus': 120    // Verde
+    };
+    // FIX COMUNICAZIONE CHAT (BLINDATO) ---
+async function sendNexusMessage(text) {
+  const placeholder = document.getElementById("nexus-placeholder");
+  const outText = document.getElementById("nexus-out-text");
+  const mascot = document.getElementById("keblo-mascot"); // <--- PRENDI MASCOTTE
+  
+  // 1. ATTIVA MASCOTTE (BUSY)
+  mascot.classList.add("busy");
+   // 🚀 ANIMAZIONE "ANALYZING..." (Inserisci QUESTA RIGA QUI)
+  const tkInfo = document.getElementById("nexus-token-info"); // <--- Se non esiste, non succede nulla
+   if(tkInfo) {
+    tkInfo.innerHTML = `
+      <div style="display:flex; align-items:center; gap:8px; opacity:0.6;">
+        <div class="loading-spinner" style="width:10px; height:10px; border-width:2px;"></div>
+        <span style="font-size:9px; letter-spacing:1px; color:#818cf8; font-family:var(--font-mono);">ANALYZING...</span>
+      </div>
+    `;
+  }
+  // TROVA IL RETRO DELLA CARD
+  const chatCard = document.querySelector('.card.chat');
+  const historyList = chatCard ? document.getElementById(`history-${chatCard.id}`) : null;
+
+  // LOG IMMEDIATO DEL PROMPT
+  if (historyList) {
+    const time = new Date().toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
+    const logItem = document.createElement('div');
+    logItem.className = 'history-item';
+    logItem.style.borderLeft = "2px solid var(--a-chat)";
+    logItem.style.paddingLeft = "10px";
+    logItem.innerHTML = `
+      <div style="display:flex; justify-content:space-between; margin-bottom:4px;">
+        <span style="color:var(--a-chat); font-weight:900; font-size:9px;">>>> PROMPT</span>
+        <span style="opacity:0.3; font-size:8px;">${time}</span>
+      </div>
+      <div style="font-family:var(--font-mono); font-size:11px; opacity:0.8;">${text}</div>
+    `;
+    historyList.prepend(logItem);
+  }
+
+  // PREPARAZIONE INTERFACCIA
+  if(placeholder) placeholder.style.display = "none";
+  outText.style.display = "block";
+  outText.innerHTML = `<span class="loading-spinner"></span> <span style="opacity:0.7; font-family:'Consolas', monospace; font-size:12px;">ELABORAZIONE...</span>`;
+
+  let accumulatedText = "";
+  let receivedAnyText = false;
+
+  try {
+    const response = await fetch("/api/chat", {
+      credentials: "include",
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text })
+    });
+
+    const reader = response.body.getReader();
+    const decoder = new TextDecoder();
+
+    while (true) {
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      const chunk = decoder.decode(value, { stream: true });
+      const lines = chunk.split('\n\n');
+
+      for (const line of lines) {
+        if (line.startsWith('data: ')) {
+          try {
+            const data = JSON.parse(line.substring(6).trim());
+
+            if (data.type === "chunk" && data.text) {
+              if (!receivedAnyText) { 
+                outText.innerHTML = ""; 
+                receivedAnyText = true; 
+              }
+              accumulatedText += data.text;
+              outText.innerHTML = typeof marked !== 'undefined' ? marked.parse(accumulatedText) : accumulatedText;
+            }
+            
+            if (data.type === "done") {
+               const finalReply = accumulatedText || data.reply;
+               if (!receivedAnyText && data.reply) {
+                 outText.innerHTML = typeof marked !== 'undefined' ? marked.parse(data.reply) : data.reply;
+               }
+               
+
+               // LOG DELLA RISPOSTA
+               if (historyList) {
+                  const logRes = document.createElement('div');
+                  logRes.className = 'history-item';
+                  logRes.style.borderLeft = "2px solid #4ade80";
+                  logRes.style.paddingLeft = "10px";
+                  logRes.style.marginTop = "5px";
+                  logRes.style.background = "rgba(74, 222, 128, 0.03)";
+                  logRes.innerHTML = `
+                    <div style="color:#4ade80; font-weight:900; font-size:9px; margin-bottom:4px;"><<< RESPONSE</div>
+                    <div style="font-family:var(--font-mono); font-size:10px; opacity:0.6;">${finalReply.substring(0, 300)}${finalReply.length > 300 ? '...' : ''}</div>
+                  `;
+                  historyList.prepend(logRes);
+               }
+
+               // 2. GESTIONE MASCOTTE POST-INFERENZA
+                 mascot.classList.remove("busy");
+
+                  const newMood = data.mood || 'calm';
+                  console.log("Nuovo input emotivo:", newMood);
+
+                  // 1. Applichiamo la "Media Ponderata" (L'emozione attuale sposta la media del 40%)
+                  const targetHue = moodPalette[newMood] || 180;
+                  
+                  // Calcolo del mix: Keblo mantiene il 60% del colore precedente e assorbe il 40% del nuovo
+                  emotionalMemory.hue = (emotionalMemory.hue * 0.6) + (targetHue * 0.4);
+                  
+                  // Più emozioni forti ci sono, più la saturazione aumenta (Keblo diventa più "carico")
+                  if (newMood !== 'calm') {
+                      emotionalMemory.saturation = Math.min(emotionalMemory.saturation + 0.5, 8);
+                      emotionalMemory.brightness = Math.max(emotionalMemory.brightness - 0.05, 0.7);
+                  } else {
+                      // Se sei calmo, Keblo "guarisce" lentamente tornando limpido
+                      emotionalMemory.saturation = Math.max(emotionalMemory.saturation - 0.3, 1);
+                      emotionalMemory.brightness = Math.min(emotionalMemory.brightness + 0.05, 1.1);
+                  }
+
+                  // 2. Applichiamo il filtro dinamico calcolato
+                  // Usiamo sepia(1) per resettare la base e hue-rotate per il mix
+                  mascot.style.filter = `
+                      sepia(1) 
+                      saturate(${emotionalMemory.saturation}) 
+                      hue-rotate(${emotionalMemory.hue - 50}deg) 
+                      brightness(${emotionalMemory.brightness})
+                      drop-shadow(0 0 20px hsla(${emotionalMemory.hue}, 100%, 50%, 0.4))
+                  `;
+              
+               // --- 🚀 AGGIORNAMENTO METRICHE NEXUS ---
+               if (data.meta) {
+                 console.log(" [DEBUG] Meta ricevuto dal server:", data.meta); // LOG 2
+                 const tkInfo = document.getElementById("nexus-token-info");
+                 console.log(" [DEBUG] Elemento nexus-token-info trovato?", tkInfo); // LOG 3
+
+               if (data.type === "done") {
+               // ... (tua logica di chiusura, mascotte, etc.) ...
+               
+               // --- 🚀 AGGIORNAMENTO METRICHE FINALI ---
+               const dashboard = document.getElementById("nexus-dashboard");
+              if(dashboard) dashboard.style.display = "flex";
+
+              // INIETTA LE METRICHE
+              const tkInfo = document.getElementById("nexus-token-info");
+              if (tkInfo && data.meta) {
+                  const prompt = data.meta.promptTokens || 0;
+                  const total = data.meta.tokenUsed || 0;
+                  const speed = data.meta.speed || "0.00";
+
+                  tkInfo.innerHTML = `
+                    <div style="display:flex; gap:4px;">
+                      <span style="color:#22d3ee; border:1px solid rgba(34,211,238,0.2); padding:2px 5px; border-radius:4px; font-size:12px; font-weight:900;">${prompt}<small>IN</small></span>
+                      <span style="color:#818cf8; border:1px solid rgba(129,140,248,0.2); padding:2px 5px; border-radius:4px; font-size:12px; font-weight:900;">${total}<small>OUT</small></span>
+                      <span style="color:#4ade80; border:1px solid rgba(74,222,128,0.2); padding:2px 5px; border-radius:4px; font-size:12px; font-weight:900;">⚡${speed}</span>
+                    </div>
+                  `;
+              }
+               
+               // ... (resto del codice: confidence, v-controls, etc.) ...
+            } 
+               }
+               if (data.card) spawnCard(data.card.type, data.card.title, data.card.content);
+               
+               window.lastAssistantTs = data.ts;
+               const confBar = document.getElementById("confidence-bar");
+               if(confBar) confBar.style.display = "block";
+               const vControls = document.getElementById("v-controls"); // <--- NUOVO
+               if(vControls) vControls.style.display = "flex";          // <--- NUOVO
+            }
+          } catch (e) {}
+        }
+      }
+    }
+  } catch (err) {
+    outText.innerHTML = `<span style="color:#ef4444;">ERRORE DI CONNESSIONE.</span>`;
+    mascot.classList.remove("busy"); // Libera la mascotte
+  }
+}
+// Funzione per gestire i click sui quadratini X1, X5, ecc.
+function setBatch(cardId, count, el) {
+    document.getElementById(cardId).dataset.batchCount = count;
+    const chips = el.parentElement.querySelectorAll('.batch-chip');
+    chips.forEach(c => {
+        c.style.background = "rgba(255,255,255,0.05)";
+        c.style.borderColor = "rgba(244, 114, 182, 0.3)";
+    });
+    el.style.background = "#f472b6";
+    el.style.borderColor = "#f472b6";
+}
+
+// Funzione per la generazione in sequenza
+async function runVisionBatch(cardId) {
+    const prompt = document.getElementById(`v-prompt-${cardId}`).value;
+    const resDiv = document.getElementById(`v-res-${cardId}`);
+    const btn = document.getElementById(`v-btn-${cardId}`);
+    const count = parseInt(document.getElementById(cardId).dataset.batchCount) || 1;
+
+    if (!prompt) return;
+
+    btn.disabled = true;
+    resDiv.innerHTML = ""; // Pulisce la galleria
+    
+    for (let i = 1; i <= count; i++) {
+        btn.innerText = `PRODUZIONE: UNITÀ ${i} DI ${count}...`;
+        
+        try {
+            const response = await fetch("/api/generate-image", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ prompt })
+            });
+            const data = await response.json();
+
+            if (data.ok) {
+                const img = document.createElement('img');
+                img.src = `${data.url}?t=${Date.now()}`;
+                img.style.cssText = "width:100%; aspect-ratio:1; object-fit:cover; border-radius:8px; border:1px solid rgba(255,255,255,0.1); cursor:pointer;";
+                img.onclick = () => window.open(img.src);
+                resDiv.appendChild(img);
+                resDiv.scrollTop = resDiv.scrollHeight;
+            }
+        } catch (e) { console.error("Batch error", e); }
+    }
+
+    btn.disabled = false;
+    btn.innerText = "PRODUZIONE COMPLETATA";
+    setTimeout(() => { btn.innerText = "AVVIA PRODUZIONE SERIALE"; }, 3000);
+}
+//Funzione Log Prompt AI per veder cosa ce o non ce 
+function addLogToChatBack(type, text) {
+  const chatCard = document.querySelector('.card.chat');
+  if (!chatCard) return;
+
+  const historyList = document.getElementById(`history-${chatCard.id}`);
+  if (!historyList) return;
+
+  const item = document.createElement('div');
+  item.className = 'history-item';
+  
+  const ora = new Date().toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  
+  // Scegliamo il colore in base al tipo: Prompt (Azzurro/Viola) o Risposta (Verde)
+  const isUser = type === 'PROMPT';
+  const color = isUser ? 'var(--a-chat)' : '#4ade80'; 
+  const label = isUser ? '>>> INVIATO' : '<<< RICEVUTO';
+
+  item.innerHTML = `
+    <div style="display:flex; justify-content:space-between; margin-bottom:5px; border-bottom:1px solid rgba(255,255,255,0.05); padding-bottom:2px;">
+      <span style="color:${color}; font-weight:900; font-size:9px; letter-spacing:1px;">${label}</span>
+      <span style="opacity:0.3; font-size:9px;">${ora}</span>
+    </div>
+    <div style="font-family:var(--font-mono); font-size:11px; color:rgba(255,255,255,0.7); line-height:1.4; padding:5px 0 10px 0;">
+      ${text}
+    </div>
+  `;
+
+  historyList.prepend(item);
+}
+//Gestione confidence Semaforo
+window.setConfidence = async function(color) {
+  console.log("CLICK", color, window.lastAssistantTs);
+
+  if (!window.lastAssistantTs) {
+    console.warn("Nessun TS salvato");
+    return;
+    }
+
+  const confidence =
+    color === "green" ? 0.8 :
+    color === "yellow" ? 0.5 : 0.2;
+
+  try {
+    await fetch("/api/set-confidence", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({
+        ts: window.lastAssistantTs,
+        traffic: color,
+        confidence
+      })
+    });
+
+    console.log("Confidence salvata:", color);
+  } catch (err) {
+    console.error("Errore confidence:", err);
+  }
+};    
+//Function Refresh Intellgence per la Card  
+async function refreshIntelligenceCard(cardId) {
+  const sandboxList = document.getElementById(`sandboxList_${cardId}`);
+  const selectionDiv = document.getElementById(`selection-${cardId}`);
+  const radioList = document.getElementById(`file-radios-${cardId}`);
+  
+  if (!sandboxList) return;
+
+  // Nascondiamo il vecchio titolo e la vecchia lista ridondante
+  if (selectionDiv) selectionDiv.style.display = "none";
+  if (radioList) radioList.style.display = "none";
+
+  try {
+    const r = await fetch('/api/user-files', { credentials: 'include' });
+    const data = await r.json();
+
+    if (data.files.length === 0) {
+      sandboxList.innerHTML = "<div style='opacity:0.3;text-align:center;font-size:10px;padding:20px;'>SANDBOX VUOTA</div>";
+      return;
+    }
+
+    // Configurazione Scrollbar Unificata
+    sandboxList.style.maxHeight = "320px"; // Più spazio ora che è l'unica lista
+    sandboxList.style.overflowY = "auto";
+    sandboxList.style.paddingRight = "5px";
+
+    sandboxList.innerHTML = data.files.map((f, i) => `
+      <div class="sandbox-file-item" style="display:flex; flex-direction:column; padding:12px; margin-bottom:10px; background:rgba(255,255,255,0.04); border-radius:12px; border-left:4px solid #22d3ee; transition: background 0.2s;">
+        
+        <!-- RIGA TESTATA: CHECKBOX + NOME + CESTINO -->
+        <div style="display:flex; align-items:center; gap:10px; margin-bottom:8px;">
+          <input type="checkbox" class="file-check" value="${f.name}" id="check-${i}-${cardId}" style="width:16px; height:16px; cursor:pointer; accent-color:#22d3ee;">
+          
+          <label for="check-${i}-${cardId}" style="flex:1; font-size:12px; font-weight:900; color:#fff; cursor:pointer; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+            ${f.name}
+          </label>
+           <span onclick="window.KebloVoice.speak('${f.summary.replace(/'/g, "\\'")}', this)"style="cursor:pointer; opacity:0.8; font-size:14px; padding:0 5px;" title="Ascolta sintesi">🔊</span>
+          <span class="del-file-btn" onclick="deleteFileIntelligence('${f.name}', '${cardId}')" style="cursor:pointer; opacity:0.6; font-size:14px;" title="Elimina file">🗑️</span>
+        </div>
+        
+        <!-- RIGA TAGS (Spostata sotto per ordine) -->
+        <div style="display:flex; gap:4px; flex-wrap:wrap; margin-bottom:6px; padding-left:26px;">
+          ${f.tags.map(t => `<span style="font-size:8px; background:rgba(34, 211, 238, 0.1); color:#22d3ee; padding:1px 5px; border-radius:4px; border:1px solid rgba(34, 211, 238, 0.2);">#${t.toUpperCase()}</span>`).join('')}
+        </div>
+
+        <!-- RIASSUNTO -->
+        <div style="font-size:10px; color:rgba(255,255,255,0.5); line-height:1.4; padding-left:26px; border-top:1px solid rgba(255,255,255,0.03); padding-top:6px;">
+          ${f.summary}
+        </div>
+      </div>`).join('');
+
+  } catch (e) { console.error("Refresh error:", e); }
+}
+
+// 🎙️ BRIEFING VOCALE: Keblo legge l'agenda usando la 3090 per riassumere
+async function runAgendaBriefing(cardId) {
+    const listDiv = document.getElementById(`list-${cardId}`);
+    const btn = document.getElementById(`briefing-btn-${cardId}`);
+    const textContent = listDiv.innerText;
+
+    if (textContent.includes("NESSUN IMPEGNO") || textContent.length < 15) {
+        window.KebloVoice.speak("Non ci sono impegni segnati per questo giorno. La tua agenda è libera.", btn);
+        return;
+    }
+
+    btn.innerHTML = "🌀"; // Animazione caricamento
+    
+    try {
+        const res = await fetch("http://localhost:11435/api/generate", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                model: "llama3:8b",
+                prompt: `Sei l'assistente vocale di Keblo OS. 
+                RISPONDI SEMPRE E SOLO IN LINGUA ITALIANA.
+                Sintetizza questi impegni in un breve riassunto vocale cordiale e motivante: ${textContent}. 
+                NON usare altre lingue. Rispondi solo con la frase da leggere in italiano.`,
+                stream: false
+            })
+        });
+        const data = await res.json();
+        // Usa il sistema vocale che abbiamo creato!
+        window.KebloVoice.speak(data.response, btn);
+    } catch (e) {
+        window.KebloVoice.speak("Si è verificato un errore nel recupero del briefing.", btn);
+    } finally {
+        btn.innerHTML = "🎙️";
+    }
+}
+
+// Visualizza impegni del giorno con stile migliorato
+async function showEventsForDay(cardId, day, month, year) {
+  const card = document.getElementById(cardId);
+  const label = document.getElementById(`day-label-${cardId}`);
+  
+  // Gestione visiva della selezione sul calendario
+  card.querySelectorAll('.cal-day').forEach(d => d.classList.remove('selected'));
+  if (event && event.target && event.target.classList.contains('cal-day')) {
+      event.target.classList.add('selected');
+  }
+  
+  card.dataset.selectedFullDate = `${year}-${month + 1}-${day}`;
+  if(label) label.innerHTML = `<span style="color:#a855f7;">//</span> LOG_${day}.${month + 1}.${year}`;
+
+  const listDiv = document.getElementById(`list-${cardId}`);
+  listDiv.innerHTML = `<div style="text-align:center; padding-top:40px;"><div class="loading-spinner"></div></div>`;
+
+  try {
+    const res = await fetch("/api/reminders", { credentials: "include" });
+    const data = await res.json();
+    const daily = (data.reminders || []).filter(r => {
+      const dAt = new Date(r.dueAt);
+      return dAt.getDate() === day && dAt.getMonth() === month && dAt.getFullYear() === year && r.status !== 'dismissed';
+    });
+
+    if (daily.length === 0) {
+      listDiv.innerHTML = `<div style="opacity:0.15; text-align:center; padding-top:70px; font-size:9px; letter-spacing:2px;">NO_ACTIVE_ENTRIES</div>`;
+      return;
+    }
+
+   // Sostituisci il blocco listDiv.innerHTML dentro showEventsForDay con questo:
+listDiv.innerHTML = daily.map(i => `
+  <div class="event-card" style="display:flex; align-items:center; justify-content:space-between; padding:12px; background:rgba(255,255,255,0.03); border-radius:12px; margin-bottom:10px; border-left:4px solid #a855f7;">
+    
+    <!-- TESTO PULITO: Solo il nome dell'impegno -->
+    <div style="flex:1; cursor:pointer;" onclick="editAgendaEvent('${i.id}', '${i.text.replace(/'/g, "\\'")}', '${cardId}')">
+      <div style="color:#fff; font-size:14px; font-weight:600;">${i.text}</div>
+    </div>
+
+    <!-- AZIONI: Solo matita e X -->
+    <div style="display:flex; gap:15px; align-items:center; margin-left:15px;">
+      <span onclick="editAgendaEvent('${i.id}', '${i.text.replace(/'/g, "\\'")}', '${cardId}')" 
+            style="cursor:pointer; opacity:0.6; font-size:14px;" title="Modifica">✏️</span>
+      <span onclick="deleteEvent('${i.id}', '${cardId}')" 
+            style="cursor:pointer; color:#fb7185; opacity:0.7; font-size:18px;" title="Elimina">✕</span>
+    </div>
+  </div>`).join('');
+
+  } catch (e) { listDiv.innerHTML = "DATABASE_SYNC_ERROR"; }
+}
+// Upload specifico per la card Intelligence
+async function uploadFileIntelligence(input, cardId) {
+    const file = input.files[0]; if (!file) return;
+    const btn = document.getElementById(`uploadBtn_${cardId}`);
+    const oldText = btn.innerHTML;
+    btn.disabled = true; btn.innerHTML = `Invio in corso...`;
+
+    const fd = new FormData(); fd.append("file", file);
+    try {
+      const res = await fetch("/api/upload", { method: "POST", credentials: "include", body: fd });
+      const data = await res.json();
+      if (data.ok) {
+        logToCard(cardId, `File caricato: ${file.name}`);
+        refreshIntelligenceCard(cardId);
+      } else { alert(data.msg); }
+    } catch (e) { console.error(e); }
+    btn.disabled = false; btn.innerHTML = oldText;
+  }
+
+// Delete specifico per la card Intelligence
+async function deleteFileIntelligence(fileName, cardId) {
+  if (!confirm(`Eliminare definitivamente ${fileName}?`)) return;
+  await fetch('/api/delete-file', { 
+    method: 'DELETE', 
+    headers: { 'Content-Type': 'application/json' }, 
+    body: JSON.stringify({ fileName }) 
+  });
+  logToCard(cardId, `File eliminato: ${fileName}`);
+  refreshIntelligenceCard(cardId);
+}
+    // --- LOGICA AGENDA CON DEBUG ---
+    async function refreshAgenda(cardId) {
+      const listDiv = document.getElementById(`list-${cardId}`);
+      const queryInput = document.getElementById(`q-${cardId}`);
+      const query = queryInput ? queryInput.value.trim() : "";
+      
+      // PULISCE TUTTO SUBITO
+      listDiv.innerHTML = ""; 
+
+      try {
+        const url = query ? `/api/reminders/search?q=${encodeURIComponent(query)}` : `/api/reminders`;
+        const r = await fetch(url, { credentials: "include" });
+        const data = await r.json();
+        const items = data.hits || data.reminders || [];
+
+        if (items.length === 0) {
+          listDiv.innerHTML = `<div style="opacity:0.5;text-align:center;padding:20px;">${query ? "Nessun risultato trovato." : "Agenda libera."}</div>`;
+          return;
+        }
+
+        listDiv.innerHTML = items.map(i => `
+          <div class="event-item">
+            <div class="event-info">
+              <b>${i.text}</b>
+              <span>${new Date(i.dueAt).toLocaleString('it-IT')}</span>
+            </div>
+            <div class="del-event-btn" onclick="deleteEvent('${i.id}', '${cardId}')" style="cursor:pointer">×</div>
+          </div>`).join('');
+      } catch (e) {
+        listDiv.innerHTML = "Errore connessione.";
+      }
+    }
+   function updateCoreMetrics() {
+    const tokenEl = document.getElementById("tokenInfo");
+    if (!tokenEl) return; // Se non esiste, esce senza dare errore
+
+    const tokenText = tokenEl.innerText;
+    const match = tokenText.match(/(\d+)\s*\/\s*(\d+)/);
+    if (match) {
+      const used = parseInt(match[1]);
+      const limit = parseInt(match[2]);
+      const percent = (used / limit) * 100;
+      const bar = document.getElementById("token-bar-core");
+      const text = document.getElementById("token-text-core");
+      if (bar) bar.style.width = percent + "%";
+      if (text) text.innerText = `${used} / ${limit} TOKENS CONSUMED`;
+    }
+}
+  //Funzione logout 
+  async function logout() {
+  if (!confirm("Vuoi terminare la sessione di Keblo OS?")) return;
+  try {
+    const res = await fetch("/api/logout", { method: "POST", credentials: "include" });
+    if (res.ok) {
+      window.location.reload(); // Ricarica la pagina e mostrerà il login
+    }
+  } catch (e) {
+    console.error("Logout failed", e);
+  }
+}
+// --- FUNZIONE LOGGING NEL RETRO ---
+function logChatRequest(text) {
+  // 1. Trova la card della chat
+  const chatCard = document.querySelector('.card.chat');
+  if (!chatCard) return;
+
+  // 2. Trova la lista nel retro (usando l'ID dinamico)
+  const historyList = document.getElementById(`history-${chatCard.id}`);
+  if (!historyList) return;
+
+  // 3. Crea l'elemento log
+  const item = document.createElement('div');
+  item.className = 'history-item';
+  
+  // 4. Formatta il contenuto: ORA + TUO PROMPT
+  const time = new Date().toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' });
+  
+  item.innerHTML = `
+    <div style="display:flex; justify-content:space-between; opacity:0.6; font-size:9px; margin-bottom:2px;">
+      <span>[${time}]</span>
+      <span style="color:#a5b4fc;">USER INPUT</span>
+    </div>
+    <div style="color:#f1f5f9;">${text}</div>
+  `;
+
+  // 5. Inserisci IN CIMA (prepend) così vedi subito l'ultimo
+  historyList.prepend(item);
+}
+ 
+   // 2. Questa funzione ora invia la data selezionata se non ne scrivi una nel testo
+async function quickAddEvent(cardId) {
+  const card = document.getElementById(cardId);
+  const input = document.getElementById(`add-${cardId}`);
+  const text = input.value.trim();
+  if (!text) return;
+
+  // Recuperiamo la data salvata nella card
+  const dateStr = card.dataset.selectedFullDate; 
+  let selectedDateISO = null;
+
+  if (dateStr) {
+    // 🚀 FIX: Gestiamo sia il formato con "-" che quello con "/"
+    const separator = dateStr.includes('-') ? '-' : '/';
+    const parts = dateStr.split(separator);
+
+    if (parts.length === 3) {
+        let y, m, d;
+        // Se la prima parte è l'anno (es: 2026-4-19)
+        if (parts[0].length === 4) {
+            [y, m, d] = parts;
+        } else {
+            // Se la prima parte è il giorno (es: 19/4/2026)
+            [d, m, y] = parts;
+        }
+        // Costruiamo la stringa pulita YYYY-MM-DD
+        selectedDateISO = `${y}-${m.toString().padStart(2, '0')}-${d.toString().padStart(2, '0')}`;
+    }
+  }
+
+  try {
+    const r = await fetch("/api/reminders/quick-add", { 
+      method: "POST", 
+      headers: {"Content-Type":"application/json"}, 
+      credentials: "include", 
+      body: JSON.stringify({ 
+        text: text, 
+        selectedDate: selectedDateISO 
+      }) 
+    });
+    const res = await r.json();
+    
+    if (res.ok) {
+      input.value = "";
+      logToCard(cardId, `Nuovo impegno: ${text}`);
+      
+      // Rinfreschiamo subito tutto per vedere il nuovo puntino e la lista
+      if (selectedDateISO) {
+        const [y, m, d] = selectedDateISO.split('-').map(Number);
+        await showEventsForDay(cardId, d, m - 1, y);
+        await renderCalendar(cardId);
+      }
+    } else {
+      alert(res.msg || "Errore durante l'aggiunta");
+    }
+  } catch (e) {
+    console.error("ERRORE QUICK ADD:", e);
+  }
+}
+    async function showArchived(cardId) {
+      const listDiv = document.getElementById(`list-${cardId}`);
+      listDiv.innerHTML = "<em>Recupero archivio...</em>";
+
+      try {
+        const r = await fetch("/api/reminders/archived", { credentials: "include" });
+        const data = await r.json();
+        
+        if (data.archived.length === 0) {
+          listDiv.innerHTML = "<div style='opacity:0.5;text-align:center;padding:10px;'>Nessun elemento archiviato.</div>";
+          return;
+        }
+
+        // Creiamo una lista testuale semplice
+        const html = data.archived.map(item => `
+          <div style="font-size:11px; padding:5px; border-bottom:1px solid rgba(255,255,255,0.05); opacity:0.6;">
+            <b>${item.text}</b><br>
+            <small>Era previsto per: ${new Date(item.dueAt).toLocaleString('it-IT')}</small>
+          </div>
+        `).join('');
+
+        listDiv.innerHTML = `
+          <div style="background:rgba(0,0,0,0.1); border-radius:10px; padding:5px;">
+            <div style="font-size:9px; font-weight:bold; margin-bottom:5px; text-align:center; color:#94a3b8;">ELENCO ARCHIVIATI</div>
+            ${html}
+            <button class="card-btn" style="margin-top:10px; font-size:10px;" onclick="refreshAgenda('${cardId}')">TORNA AD AGENDA</button>
+          </div>
+        `;
+      } catch (e) {
+        listDiv.innerHTML = "Errore durante il recupero.";
+      }
+    }
+    async function editAgendaEvent(id, oldText, cardId) {
+    const newText = prompt("Modifica l'impegno:", oldText);
+    if (newText === null || newText.trim() === "" || newText === oldText) return;
+
+    try {
+        const res = await fetch(`/api/reminders/${id}`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ newText: newText.trim() })
+        });
+        const data = await res.json();
+        if (data.ok) {
+            // Rinfresca la lista per vedere il cambio
+            const [y, m, d] = document.getElementById(cardId).dataset.selectedFullDate.split('-').map(Number);
+            showEventsForDay(cardId, d, m-1, y);
+        }
+    } catch (e) { alert("Errore connessione."); }
+}
+
+   async function deleteEvent(id, cardId) {
+  // 1. Chiamata al server per segnare come dismissed
+  try {
+    const res = await fetch(`/api/reminders/${id}`, { 
+        method: 'DELETE', 
+        credentials: "include" 
+    });
+    const data = await res.json();
+
+    if (data.ok) {
+      logToCard(cardId, `Evento archiviato.`);
+
+      // 2. Recuperiamo la data attualmente selezionata dal dataset della card
+      const card = document.getElementById(cardId);
+      const dateStr = card.dataset.selectedFullDate; // Formato: "2026-3-19"
+
+      if (dateStr) {
+        const [y, m, d] = dateStr.split('-').map(Number);
+        
+        // 3. 🚀 IL DOPPIO FIX REATTIVO:
+        // Ricarica la lista degli impegni (Timeline)
+        await showEventsForDay(cardId, d, m - 1, y);
+        
+        // Ricarica l'intero calendario per togliere il puntino (Glow)
+        await renderCalendar(cardId);
+      }
+    }
+  } catch (e) {
+    console.error("Errore durante l'eliminazione:", e);
+  }
+}
+//Funzione inizializzo dashboard
+function initDashboard() {
+      const isLaptop = window.innerWidth < 1500;
+      const LEFT_COL = "30px";
+      const CENTER_COL = isLaptop ? "360px" : "440px"; 
+      const RIGHT_COL = "30px";
+      const ROW_1 = 30;
+
+      // --- 1. CARD APERTE ---
+      // Agenda (Ora include il Diario)
+      spawnCard("event", "AGENDA", "", { top: "30px", left: CENTER_COL }, true);
+      
+      // Keblo Core (Chat)
+      spawnCard("chat", "KEBLO CORE", "", { top: "100px", left: "calc(50% - 300px)" }, false);
+      
+      //CARD Diario
+      spawnCard("journal", "DIARIO PERSONALE", "", { top: "30px", left: "400px" }, true);
+
+      // Radar (La nuova card indipendente per il meteo)
+      spawnCard("radar", "SATELLITE RADAR", "", { top: "180px", right: RIGHT_COL }, true);
+
+      // --- 2. CARD NEL DOCK (Partono chiuse) ---
+      spawnCard("vision", "VISION STATION", "", { top: "250px", left: LEFT_COL }, true);
+      spawnCard("intelligence", "INTELLIGENCE STATION", "", { top: `${ROW_1}px`, left: LEFT_COL }, true);
+      spawnCard("memo", "SCRATCHPAD", "", { top: "480px", left: LEFT_COL }, true);
+      spawnCard("news_station", "INTERNET", "", { top: "680px", right: RIGHT_COL }, true);
+      spawnCard("core", "SYSTEM", "", { top: "30px", right: RIGHT_COL, height:"120px" }, true);
+    }
+
+// Navigazione Mesi
+function changeMonth(cardId, delta) {
+  const card = document.getElementById(cardId);
+  let m = parseInt(card.dataset.month) + delta;
+  let y = parseInt(card.dataset.year);
+  if (m > 11) { m = 0; y++; }
+  if (m < 0) { m = 11; y--; }
+  card.dataset.month = m;
+  card.dataset.year = y;
+  renderCalendar(cardId);
+}
+
+// Rendering della Griglia
+async function renderCalendar(cardId) {
+  const card = document.getElementById(cardId);
+  const m = parseInt(card.dataset.month);
+  const y = parseInt(card.dataset.year);
+  const grid = document.getElementById(`cal-grid-${cardId}`);
+  const title = document.getElementById(`cal-month-title-${cardId}`);
+  
+  const monthNames = ["Gennaio", "Febbraio", "Marzo", "Aprile", "Maggio", "Giugno", "Luglio", "Agosto", "Settembre", "Ottobre", "Novembre", "Dicembre"];
+  title.innerText = `${monthNames[m]} ${y}`;
+
+  // Recupera eventi dal server per evidenziare i giorni
+  const res = await fetch("/api/reminders", { credentials: "include" });
+  const data = await res.json();
+  const reminders = data.reminders || [];
+
+  grid.innerHTML = ['Lun','Mar','Mer','Gio','Ven','Sab','Dom'].map(d => `<div class="cal-day-name">${d}</div>`).join('');
+
+  const firstDay = new Date(y, m, 1).getDay();
+  const offset = firstDay === 0 ? 6 : firstDay - 1;
+  const daysInMonth = new Date(y, m + 1, 0).getDate();
+
+  // Giorni vuoti mese precedente
+  for(let i=0; i<offset; i++) grid.innerHTML += `<div class="cal-day other-month"></div>`;
+
+  // Giorni del mese
+  const today = new Date();
+  for(let d=1; d<=daysInMonth; d++) {
+    const isToday = today.getDate() === d && today.getMonth() === m && today.getFullYear() === y;
+    
+    // Controlla se ci sono eventi in questo giorno
+    const hasEvent = reminders.some(r => {
+      const dAt = new Date(r.dueAt);
+      return dAt.getDate() === d && dAt.getMonth() === m && dAt.getFullYear() === y;
+    });
+
+    grid.innerHTML += `
+      <div class="cal-day ${isToday?'today':''} ${hasEvent?'has-event':''}" 
+           onclick="showEventsForDay('${cardId}', ${d}, ${m}, ${y})">
+        ${d}
+      </div>`;
+  }
+}
+
+
+// Funzione per cambiare scheda nella News Station
+    function switchNewsTab(cardId, tabName) {
+      // 1. Spegni tutti i bottoni e le viste
+      document.getElementById(`btn-rss-${cardId}`).classList.remove('active');
+      document.getElementById(`btn-ai-${cardId}`).classList.remove('active');
+      document.getElementById(`view-rss-${cardId}`).classList.remove('active');
+      document.getElementById(`view-ai-${cardId}`).classList.remove('active');
+
+      // 2. Accendi quello cliccato
+      document.getElementById(`btn-${tabName}-${cardId}`).classList.add('active');
+      document.getElementById(`view-${tabName}-${cardId}`).classList.add('active');
+    }
+
+    //Funzione Generazione immagine Card e visione 
+async function runVisionInference(cardId) {
+  const prompt = document.getElementById(`v-prompt-${cardId}`).value;
+  const resDiv = document.getElementById(`v-res-${cardId}`);
+  const btn = document.getElementById(`v-btn-${cardId}`);
+
+  if (!prompt) return;
+
+  btn.disabled = true;
+  btn.innerText = "GENERAZIONE...";
+  resDiv.innerHTML = `<div class="loading-spinner"></div>`;
+  logToCard(cardId, `Richiesta immagine: ${prompt}`);
+
+  try {
+    const response = await fetch("/api/generate-image", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ prompt })
+    });
+    const data = await response.json();
+
+    if (data.ok) {
+      resDiv.innerHTML = `<img src="${data.url}?t=${Date.now()}" onclick="window.open(this.src)">`;
+      logToCard(cardId, `Immagine salvata in output.`);
+    } else {
+      resDiv.innerHTML = `<span style="color:#ef4444; font-size:10px;">ERRORE: ${data.msg}</span>`;
+    }
+  } catch (e) {
+    resDiv.innerHTML = `<span style="color:#ef4444; font-size:10px;">ERRORE DI CONNESSIONE</span>`;
+  } finally {
+    btn.disabled = false;
+    btn.innerText = "GENERA IMMAGINE";
+  }
+}
+
+/* --- FIX MINIMIZZA NEL DOCK (DEFINITIVO) --- */
+function toggleMinimize(btn) {
+  const card = btn.closest('.card');
+  const dock = document.getElementById('dock');
+  const cardId = card.id;
+  
+  // Cerca il titolo. Se non c'è il titolo standard, usa un nome generico o quello del Nexus
+  let cardTitle = "APP";
+  const titleEl = card.querySelector('.card-title');
+  if (titleEl) {
+      cardTitle = titleEl.innerText;
+  } else if (card.classList.contains('chat')) {
+      cardTitle = "NEXUS CORE";
+  } else if (card.classList.contains('reader')) {
+      cardTitle = "READER";
+  }
+
+  // 1. Nascondi la card con animazione CSS
+  card.classList.add('minimized-to-dock');
+
+  // 2. Crea l'elemento nel Dock
+  const dockItem = document.createElement('div');
+  dockItem.className = 'dock-item';
+  dockItem.id = `dock-item-${cardId}`;
+  
+  // Colore icona in base al tipo di card
+  let iconColor = "#fff";
+  if (card.classList.contains('intelligence')) iconColor = "#0ea5e9"; // Ciano
+  if (card.classList.contains('core')) iconColor = "#22d3ee";         // Verde acqua
+  if (card.classList.contains('event')) iconColor = "#a855f7";        // Viola
+  if (card.classList.contains('news')) iconColor = "#3b82f6";         // Blu
+  if (card.classList.contains('chat')) iconColor = "#6366f1";         // Indaco (Nexus)
+  if (card.classList.contains('reader')) iconColor = "#f472b6";       // Rosa
+
+  dockItem.innerHTML = `<span style="color:${iconColor}; font-size:14px;">●</span> ${cardTitle}`;
+  
+  // 3. Click sul dock item per ripristinare
+  dockItem.onclick = () => {
+    card.classList.remove('minimized-to-dock');
+    dockItem.remove();
+    if (dock.children.length === 0) dock.classList.remove('active');
+  };
+
+  dock.appendChild(dockItem);
+  dock.classList.add('active'); // Mostra il dock
+}
+
+/* --- LOGICA RSS FEEDER --- */// --- CARICAMENTO FEED (CON FILTRO SCADENZA) ---
+async function loadAllFeeds(cardId, topics) {
+  const listContainer = document.getElementById(`rss-feed-${cardId}`);
+  if (!listContainer) return;
+
+  let allNews = [];
+  
+  // --- IMPOSTA IL LIMITE DI ETÀ DELLE NOTIZIE ---
+  const MAX_DAYS_OLD = 7; // Scarta le notizie più vecchie di 7 giorni
+  const maxAgeMs = MAX_DAYS_OLD * 24 * 60 * 60 * 1000;
+  const now = Date.now();
+
+  const shuffled = topics.sort(() => 0.5 - Math.random()).slice(0, 3);
+
+  for (const topic of shuffled) {
+    try {
+      const res = await fetch("/api/fetch-rss", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ topic })
+      });
+      
+      const xmlText = await res.text();
+      const parser = new DOMParser();
+      const xmlDoc = parser.parseFromString(xmlText, "text/xml");
+      const items = xmlDoc.querySelectorAll("item");
+
+      let addedForThisTopic = 0;
+
+      items.forEach((item) => {
+        if (addedForThisTopic >= 10) return; // Max 10 notizie RECENTI per topic
+
+        // Estrai la data della notizia
+        const pubDateStr = item.querySelector("pubDate") ? item.querySelector("pubDate").textContent : null;
+        const articleDate = new Date(pubDateStr || now).getTime();
+
+        // FILTRO: È più vecchia di 7 giorni?
+        if ((now - articleDate) < maxAgeMs) {
+          allNews.push({
+            title: item.querySelector("title").textContent,
+            link: item.querySelector("link").textContent,
+            date: new Date(articleDate),
+            source: topic
+          });
+          addedForThisTopic++; // Contiamo solo se l'abbiamo effettivamente aggiunta
+        }
+      });
+
+    } catch (e) { 
+      console.log("RSS Fail for", topic); 
+    }
+  }
+
+  // Ordina tutto dal più recente al più vecchio
+  allNews.sort((a, b) => b.date - a.date);
+
+  // Se dopo il filtro non è rimasto nulla di recente:
+  if (allNews.length === 0) {
+    listContainer.innerHTML = `
+      <div style="text-align:center; padding:30px; opacity:0.5;">
+        <div style="font-size:24px; margin-bottom:10px;">⏳</div>
+        <div>Nessuna notizia recente (ultimi ${MAX_DAYS_OLD} giorni).</div>
+      </div>`;
+    return;
+  }
+
+  // Altrimenti, renderizza la lista pulita
+  renderRssList(cardId, allNews);
+}
+
+// --- GESTIONE INTERESSI DINAMICI (RSS) ---
+
+// 1. Recupera la lista (Default: VUOTA)
+    function getRssInterests() {
+      const saved = localStorage.getItem("keblo_rss_interests");
+      return saved ? JSON.parse(saved) : []; 
+    }
+
+// 2. Aggiunge un nuovo interesse (CON LIMITE MAX 7)
+    function addRssInterest(cardId) {
+      const input = document.getElementById(`new-tag-${cardId}`);
+      const topic = input.value.trim();
+      if (!topic) return;
+
+      const interests = getRssInterests();
+      
+      // BLOCCO LIMITE 7
+      if (interests.length >= 7) {
+        alert("Limite raggiunto! Puoi seguire massimo 7 argomenti. Rimuovine uno per aggiungerne altri.");
+        return;
+      }
+      
+      // Evita duplicati
+      if (!interests.includes(topic)) {
+        interests.unshift(topic); // Aggiunge in cima
+        localStorage.setItem("keblo_rss_interests", JSON.stringify(interests));
+        
+        renderRssTags(cardId);
+        input.value = "";
+        
+        // Carica subito notizie sul nuovo topic
+        filterRss(cardId, topic);
+      }
+    }
+    //2.5 Funziona per rimuovere un RSS 
+    // --- FUNZIONE PER RIMUOVERE UN INTERESSE RSS ---
+function removeRssInterest(cardId, topic) {
+  // 1. Recupera la lista attuale
+  let interests = getRssInterests();
+
+  // 2. Filtra la lista togliendo quello selezionato
+  interests = interests.filter(t => t !== topic);
+
+  // 3. Salva la nuova lista nel localStorage
+  localStorage.setItem("keblo_rss_interests", JSON.stringify(interests));
+
+  // 4. Aggiorna la grafica dei tag nella card
+  renderRssTags(cardId);
+
+  // 5. Se non ci sono più interessi, pulisci il feed, altrimenti ricarica
+  const listContainer = document.getElementById(`rss-feed-${cardId}`);
+  if (interests.length > 0) {
+    loadAllFeeds(cardId, interests);
+  } else {
+    listContainer.innerHTML = `
+      <div style="text-align:center; padding:40px; opacity:0.4;">
+         <div style="font-size:30px; margin-bottom:10px;">📭</div>
+         <div style="font-size:10px;">NESSUN FEED ATTIVO</div>
+      </div>`;
+  }
+  
+  logToCard(cardId, `Interesse rimosso: ${topic}`);
+}
+    
+// 3. Rinomina  un interesse (Uguale a prima    // Funzione per modificare un tag esistente
+    function renameRssInterest(cardId, oldTopic) {
+      // Apre una finestrella per cambiare nome
+      const newTopic = prompt(`Modifica argomento "${oldTopic}":`, oldTopic);
+      
+      // Se l'utente ha scritto qualcosa ed è diverso da prima
+      if (newTopic && newTopic.trim() !== "" && newTopic !== oldTopic) {
+        let interests = getRssInterests();
+        
+        // Trova l'indice del vecchio tag e sostituiscilo
+        const index = interests.indexOf(oldTopic);
+        if (index !== -1) {
+          interests[index] = newTopic.trim();
+          localStorage.setItem("keblo_rss_interests", JSON.stringify(interests));
+          
+          // Aggiorna la grafica
+          renderRssTags(cardId);
+          
+          // Carica subito le notizie del nuovo nome
+          filterRss(cardId, newTopic.trim());
+        }
+      }
+}
+//Trigger per la vision Avanzata
+async function triggerVision(tipo) {
+    // 1. Prendiamo il testo dall'ultima risposta del Core
+    const testoKeblo = document.getElementById("nexus-out-text").innerText;
+    const mascot = document.getElementById("keblo-mascot");
+    
+    if (!testoKeblo) return alert("Nessun testo da visualizzare.");
+
+    mascot.classList.add("busy");
+    
+    try {
+        const response = await fetch("/api/generate-image", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ 
+                prompt: testoKeblo, 
+                visionType: tipo 
+            })
+        });
+        const data = await response.json();
+
+        if (data.ok) {
+            // 🚀 FIX: Cerchiamo la card Vision attiva
+            const visionCard = document.querySelector('.card.vision');
+            if (visionCard) {
+                // Cerchiamo il nuovo contenitore della galleria
+                const resDiv = document.getElementById(`v-res-${visionCard.id}`);
+                
+                if (resDiv) {
+                    // Se c'è ancora la scritta di standby, la puliamo
+                    if (resDiv.innerText.includes("READY_FOR_BATCH")) resDiv.innerHTML = "";
+
+                    // Creiamo l'immagine e la aggiungiamo in CIMA (prepend) alla galleria
+                    const img = document.createElement('img');
+                    img.src = `${data.url}?t=${Date.now()}`;
+                    img.style.cssText = "width:100%; aspect-ratio:1; object-fit:cover; border-radius:8px; border:1px solid rgba(255,255,255,0.1); cursor:pointer;";
+                    img.onclick = () => window.open(img.src);
+                    
+                    resDiv.prepend(img); // La nuova immagine appare per prima
+                    
+                    // Se la card Vision è chiusa nel dock, la riapriamo in automatico
+                    if (visionCard.classList.contains('minimized-to-dock')) {
+                        const dockItem = document.getElementById(`dock-item-${visionCard.id}`);
+                        if(dockItem) dockItem.click();
+                    }
+                }
+            }
+            console.log("Visione inviata dal Core alla Galleria!");
+        }
+    } catch (e) {
+        console.error("Errore collegamento Vision Core:", e);
+    } finally {
+        mascot.classList.remove("busy");
+    }
+}
+//Funzione per il semaforo 
+function renderAssistantMessage(text, confidence = 0.5) {
+  const container = document.getElementById("nexus-out-text");
+
+  let color = "yellow";
+  if (confidence >= 0.6) color = "green";
+  else if (confidence < 0.4) color = "red";
+
+  container.innerHTML = `
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+      <div>${text}</div>
+      <div style="display:flex; gap:6px;">
+        <span onclick="setConfidence('green')" style="cursor:pointer; color:${color==='green'?'#4ade80':'#555'};">●</span>
+        <span onclick="setConfidence('yellow')" style="cursor:pointer; color:${color==='yellow'?'#facc15':'#555'};">●</span>
+        <span onclick="setConfidence('red')" style="cursor:pointer; color:${color==='red'?'#ef4444':'#555'};">●</span>
+      </div>
+    </div>
+  `;
+}
+
+
+// 4. Render (Uguale a prima)
+  function renderRssTags(cardId) {
+  const container = document.getElementById(`rss-tags-${cardId}`);
+  const interests = getRssInterests();
+
+  container.innerHTML = interests.map(tag => `
+    <span class="rss-tag" style="display:inline-flex; align-items:center; gap:6px; padding-right:6px;">
+      <!-- Cliccando sul testo, carichi le notizie -->
+      <span onclick="filterRss('${cardId}', '${tag}')" style="cursor:pointer;">${tag}</span>
+      
+      <!-- Divisore leggero -->
+      <span style="opacity:0.2; border-left:1px solid white; height:10px;"></span>
+
+      <!-- Tasto MODIFICA (Matita) -->
+      <span onclick="renameRssInterest('${cardId}', '${tag}')" 
+            style="opacity:0.6; font-size:10px; cursor:pointer; padding:2px;" 
+            title="Modifica nome">✏️</span>
+
+      <!-- Tasto RIMUOVI (X) -->
+      <span onclick="removeRssInterest('${cardId}', '${tag}')" 
+            style="opacity:0.6; font-size:10px; cursor:pointer; padding:2px; color:#fb7185;" 
+            title="Rimuovi">✕</span>
+    </span>
+  `).join('');
+}
+
+/* --- FUNZIONI ESCLUSIVE PER IL DIARIO --- */
+// 1. Carica lo storico
+// --- FUNZIONI DIARIO PULITE ---
+function getDiaryTimeAgo(dateStr) {
+  if (!dateStr) return "tempo ignoto";
+  const now = new Date();
+  const then = new Date(dateStr);
+  const diffInMs = now - then;
+  const diffInMins = Math.floor(diffInMs / 60000);
+
+  if (diffInMins < 1) return "proprio ora";
+  if (diffInMins < 60) return `${diffInMins} min fa`;
+  if (diffInMins < 1440) return `${Math.floor(diffInMins / 60)} ore fa`;
+  if (diffInMins < 2880) return "ieri";
+  
+  // Se è più vecchio di 2 giorni, mettiamo la data semplice
+  return then.toLocaleDateString('it-IT', { day: 'numeric', month: 'short' });
+}
+
+//Funzione caricamento History Diario nella Card
+async function loadDiaryHistory(cid) {
+  const container = document.getElementById(`diary-feed-${cid}`);
+  try {
+    const r = await fetch("/api/diary-history");
+    const h = await r.json();
+    
+    if (h && h.length > 0) {
+        container.innerHTML = h.map(x => {
+            const quando = getDiaryTimeAgo(x.date);
+            return `
+            <div class="timeline-entry">
+                <div class="timeline-dot"></div>
+                <div class="timeline-time">${quando}</div>
+                <div class="timeline-card">
+                    <div class="timeline-user-msg">${x.user}</div>
+                    <div class="timeline-ai-msg">
+                        <span style="color:var(--a-journal); font-weight:900; font-style:normal;">AI:</span> ${x.ai}
+                    </div>
+                </div>
+            </div>`;
+        }).join('');
+    }
+  } catch (e) { console.log("Diario offline"); }
+}
+
+//Funzione invio Messaggio nel Diario
+async function sendDiaryMessage(cid, t) {
+  const c = document.getElementById(`diary-feed-${cid}`);
+  const tempId = 'msg-' + Date.now();
+
+  const newEntry = `
+    <div class="timeline-entry" id="${tempId}">
+        <div class="timeline-dot"></div>
+        <div class="timeline-time">proprio ora</div>
+        <div class="timeline-card">
+            <div class="timeline-user-msg">${t}</div>
+            <div class="timeline-ai-msg" id="ai-res-${tempId}">
+                <span class="loading-spinner"></span> 
+                <span style="opacity:0.5">Keblo sta scrivendo...</span>
+            </div>
+        </div>
+    </div>`;
+
+  c.insertAdjacentHTML('afterbegin', newEntry);
+  
+  try {
+    const r = await fetch("/api/diary-chat", {
+        method:"POST", headers:{"Content-Type":"application/json"}, body:JSON.stringify({text:t})
+    });
+    const d = await r.json();
+    if(d.ok) loadDiaryHistory(cid); // Ricarica per aggiornare i tempi
+  } catch (e) {
+    document.getElementById(`ai-res-${tempId}`).innerHTML = "⚠️ Errore.";
+  }
+}
+
+//Funzione rendedRss
+function renderRssList(cardId, newsArray) {
+  const listContainer = document.getElementById(`rss-feed-${cardId}`);
+  if(!listContainer) return;
+
+  // Ordina per data (se possibile) o mischia per effetto "feed vivo"
+  // Qui mischiamo per non avere blocchi monolitici
+  newsArray.sort(() => 0.5 - Math.random());
+
+  listContainer.innerHTML = newsArray.map(item => {
+    // Formattiamo la data in modo breve
+    let timeStr = "";
+    if (item.date) {
+      const d = new Date(item.date);
+      timeStr = `${d.getHours()}:${d.getMinutes().toString().padStart(2, '0')}`;
+    }
+
+    return `
+      <div class="rss-item">
+        <div class="rss-meta" style="margin-bottom:2px; color:#6366f1;">
+          <span>${item.source.toUpperCase()}</span>
+          <span>${timeStr}</span>
+        </div>
+        <!-- Cliccando il titolo si apre il Reader Interno -->
+        <div class="rss-title" onclick="openDeepReader('${item.link}', '${item.title.replace(/'/g, "\\'")}')">
+          ${item.title}
+        </div>
+      </div>
+    `;
+  }).join('');
+  
+  logToCard(cardId, `Feed aggiornato: ${newsArray.length} nuove notizie.`);
+}
+
+// --- FUNZIONE APERTURA READER ---    // --- FUNZIONE APERTURA READER (SINGLE INSTANCE) ---
+    async function openDeepReader(url, title) {
+  let card = document.querySelector('.card.reader');
+  let cardId;
+
+  if (!card) {
+    spawnCard("reader", "DEEP READER", "", { width: "500px", height: "600px", top: "100px", left: "100px" });
+    card = document.querySelector('.card.reader'); 
+  } else {
+    card.classList.remove('minimized-to-dock');
+    const dockItem = document.getElementById(`dock-item-${card.id}`);
+    if(dockItem) dockItem.remove();
+    if(document.getElementById('dock').children.length === 0) document.getElementById('dock').classList.remove('active');
+    highestZ++;
+    card.style.zIndex = highestZ;
+  }
+
+  cardId = card.id;
+  const contentDiv = document.getElementById(`content-${cardId}`);
+
+  contentDiv.innerHTML = `
+    <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; color:#64748b;">
+      <div class="loading-spinner"></div>
+      <div style="margin-top:15px; font-weight:bold; font-size:12px;">LETTURA E CROSS-CHECKING...</div>
+    </div>
+  `;
+
+  try {
+    const res = await fetch("/api/deep-read", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ url })
+    });
+    const data = await res.json();
+
+    if (data.ok) {
+      contentDiv.innerHTML = `
+        <!-- IMMAGINE -->
+        ${data.articleImage ? `
+          <div style="margin-bottom:20px; width:100%;">
+            <img src="${data.articleImage}" style="width:100%; max-height:280px; object-fit:cover; border-radius:14px; border:1px solid rgba(255,255,255,0.12); box-shadow: 0 10px 30px rgba(0,0,0,0.5);">
+          </div>
+        ` : ''}
+
+        <!-- HEADER CON TASTO VERIFICA -->
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:15px; margin-bottom:10px;">
+          <div class="reader-title" style="flex:1; margin:0;">${title}</div>
+          <button class="card-btn" style="width:auto; padding:6px 12px; background:#a855f7; color:white; font-size:9px; white-space:nowrap;" 
+                  onclick="runFactCheck('${cardId}', '${title.replace(/'/g, "\\'")}')">🔍 VERIFICA FONTI</button>
+        </div>
+        
+        <div class="reader-source" style="font-size:11px; opacity:0.6; margin-bottom:15px; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:10px;">
+          FONTE: <a href="${url}" target="_blank" style="color:#22d3ee; text-decoration:none;">Apri originale ↗</a>
+        </div>
+
+        <!-- AREA REPORT FACT-CHECK (Nascosta all'inizio) -->
+        <div id="fc-res-${cardId}" style="display:none; background:rgba(168, 85, 247, 0.1); border:1px solid rgba(168, 85, 247, 0.3); border-radius:12px; padding:12px; margin-bottom:20px; font-size:13px; line-height:1.5;">
+        </div>
+
+        <!-- TESTO RIASSUNTO -->
+        <div class="reader-text" style="color:#e2e8f0; font-family:'Georgia',serif; line-height:1.7; font-size:15px;">
+          ${data.summary.replace(/\n/g, '<br>')}
+        </div>
+      `;
+    } else {
+      contentDiv.innerHTML = `<div style="padding:20px; color:#ef4444;">Errore: ${data.error}</div>`;
+    }
+  } catch (e) {
+    contentDiv.innerHTML = `<div style="padding:20px; color:#ef4444;">Errore di connessione.</div>`;
+  }
+}
+
+// 🚀 AGGIUNGI ANCHE QUESTA FUNZIONE SOTTO
+async function runFactCheck(cardId, title) {
+  const resDiv = document.getElementById(`fc-res-${cardId}`);
+  const summaryText = document.querySelector(`#content-${cardId} .reader-text`).innerText;
+  
+  resDiv.style.display = "block";
+  resDiv.innerHTML = `<div class="loading-spinner" style="width:12px; height:12px;"></div> <span style="font-size:10px; font-weight:900; letter-spacing:1px; margin-left:10px;">ANALISI CROSS-SOURCE IN CORSO...</span>`;
+
+  try {
+    const res = await fetch("/api/fact-check", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ title, originalSummary: summaryText })
+    });
+    const data = await res.json();
+    
+    if (data.ok) {
+      resDiv.innerHTML = `
+        <div style="font-size:9px; font-weight:900; color:#a855f7; margin-bottom:8px; letter-spacing:1.5px; text-transform:uppercase;">🛡️ Fact-Check Report:</div>
+        <div style="color:rgba(233, 213, 255, 0.9);">${typeof marked !== 'undefined' ? marked.parse(data.report) : data.report}</div>
+      `;
+    } else {
+      resDiv.innerHTML = "⚠️ Impossibile completare la verifica al momento.";
+    }
+  } catch (e) {
+    resDiv.innerHTML = "⚠️ Errore di connessione al modulo Intelligence.";
+  }
+}
+
+// --- OROLOGIO IN TEMPO REALE ---
+function startSystemClock() {
+      const timeEl = document.getElementById('clock-time');
+      const dateEl = document.getElementById('clock-date');
+      
+      // Controllo di sicurezza: se non trova gli elementi, riprova tra poco
+      if (!timeEl || !dateEl) {
+        console.warn("Clock elements not found, retrying...");
+        setTimeout(startSystemClock, 500);
+        return;
+      }
+
+      function update() {
+        const now = new Date();
+        
+        // ORARIO
+        const hours = String(now.getHours()).padStart(2, '0');
+        const minutes = String(now.getMinutes()).padStart(2, '0');
+        timeEl.innerText = `${hours}:${minutes}`;
+
+        // DATA
+        const options = { weekday: 'long', day: 'numeric', month: 'long' };
+        // Mettiamo la prima lettera maiuscola per eleganza
+        let dateStr = now.toLocaleDateString('it-IT', options);
+        dateStr = dateStr.charAt(0).toUpperCase() + dateStr.slice(1);
+        
+        dateEl.innerText = dateStr;
+      }
+
+      update(); // Aggiorna subito
+      setInterval(update, 1000); // Poi ogni secondo
+    }
+
+// Funzione filtro manuale (clic sui tag in alto)
+async function filterRss(cardId, topic) {
+  const listContainer = document.getElementById(`rss-feed-${cardId}`);
+  listContainer.innerHTML = `<div class="loading-spinner"></div> Caricamento ${topic}...`;
+  
+  // Evidenzia il tag
+  const tags = document.getElementById(`rss-tags-${cardId}`).children;
+  for(let t of tags) t.classList.remove('active');
+  event.target.classList.add('active');
+
+  // Carica solo quel topic
+  loadAllFeeds(cardId, [topic]); 
+  // Nota: loadAllFeeds è fatta per array, gli passiamo un array di 1 elemento
+}
+  
+// Controlla la sessione al caricamento
+    window.addEventListener('DOMContentLoaded', async () => {
+      // Avvia subito l'orologio (anche prima del login, è bello da vedere)
+      startSystemClock(); 
+      const hasSession = await ensureSession();
+      if (hasSession) {
+        document.getElementById("login-overlay").style.display = "none";
+        initDashboard();
+      } else {
+        // Mostra l'overlay di login
+        document.getElementById("login-overlay").style.display = "flex";
+      }
+    });
+  </script>
+</body>
+</html>

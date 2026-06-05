@@ -1,0 +1,879 @@
+// --- 1. GESTIONE IMPORT ---
+import express from "express";
+import "dotenv/config";
+import session from "express-session";
+import { addReminder, getReminders, updateReminder, searchEvents } from "./reminders_repo.js";
+import { processInput, initialState } from "./keblo_engine.js";
+import { audit, userAudit } from "./custode.js";
+import { startScheduler } from "./scheduler.js";
+import { getRelevantNews, buildNewsSnippets, cleanNewsQuery, rerankNews } from "./news_pipeline.js";
+import { parseDueDate } from "./time_parser.js";
+import { ensureConversationSession, appendTurn, readLastTurns, searchTurns, semanticSearchTurns } from "./conversation_repo.js";
+import fs from "fs";
+import path from "path";
+import multer from "multer";
+import { createRequire } from "module";
+
+const require = createRequire(import.meta.url);
+
+// --- 2. 🛠️ FIX PER NODE v18 (POLYFILLS) ---
+// Devono essere definiti PRIMA di caricare pdf-parse
+if (typeof global.DOMMatrix === 'undefined') {
+    global.DOMMatrix = class DOMMatrix {
+        constructor() {
+            this.a = 1; this.b = 0; this.c = 0; this.d = 1; this.e = 0; this.f = 0;
+        }
+    };
+}
+if (typeof global.ImageData === 'undefined') {
+    global.ImageData = class ImageData {};
+}
+if (typeof global.Path2D === 'undefined') {
+    global.Path2D = class Path2D {};
+}
+
+// --- 3. CARICAMENTO LIBRERIE LEGACY ---
+const pdf = require("pdf-parse");
+
+// --- 4. CONFIGURAZIONE APP ---
+const app = express();
+app.use(express.json());
+app.use(express.static("public"));
+
+const SESSION_SECRET = process.env.SESSION_SECRET || "CHANGE_ME_IN_PROD";
+app.use(session({
+  secret: SESSION_SECRET,
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production"
+  }
+}));
+
+// --- 4.1 SESSION HANDSHAKE (non sporca la history) ---
+app.post("/api/session", async (req, res) => {
+  if (!req.session.user) {
+    req.session.user = { id: "test_user", state: initialState() };
+  }
+  try {
+    await ensureConversationSession(req.session.user.id);
+  } catch (e) {
+    console.error("SESSION ensureConversationSession error:", e);
+  }
+  res.json({ ok: true, userId: req.session.user.id });
+});
+
+// --- 5. HELPER FUNCTIONS ---
+function chunkText(text, chunkSize = 500, overlap = 50) {
+  const chunks = [];
+  let start = 0;
+  while (start < text.length) {
+    const end = start + chunkSize;
+    let chunk = text.substring(start, Math.min(end, text.length));
+    if (end < text.length) {
+      const breakIndex = Math.max(chunk.lastIndexOf('.'), chunk.lastIndexOf(' '), chunk.lastIndexOf('\n'));
+      if (breakIndex > chunkSize * 0.7) {
+        chunk = text.substring(start, start + breakIndex + 1);
+        start = start + breakIndex + 1 - overlap;
+      } else {
+        start = end - overlap;
+      }
+    } else {
+      start = text.length;
+    }
+    if (chunk.trim()) chunks.push(chunk.trim());
+  }
+  return chunks;
+}
+
+// ... da qui in poi prosegui con le tue rotte (app.post("/api/login"), ecc.)
+app.post("/api/login", async (req, res) => {
+  const { email } = req.body;
+
+  req.session.user = {
+    id: "u_" + Date.now(),
+    email,
+    state: initialState()
+  };
+
+  await ensureConversationSession(req.session.user.id);
+
+  audit("USER_LOGIN", { email });
+  res.json({ ok: true });
+});
+
+app.post("/api/chat", async (req, res) => {
+  if (!req.session.user) {
+    req.session.user = { id: "test_user", state: initialState() };
+  }
+
+  const userId = req.session.user.id;
+  await ensureConversationSession(userId);
+
+  const { text } = req.body;
+  const rawText = (text || "");
+  const t = rawText.trim().toLowerCase();
+
+  // Handshake: non scrive nello storico
+  if (t === "init_session" || t === "ping" || t === "session") {
+    return res.json({ reply: "ok", card: null, meta: { tokenUsed: 0, tokenLimit: 10000, blocked: false } });
+  }
+
+  // --- 1. PRIORITÀ: ALLARMI E FOLLOW-UP (Proattività) ---
+  const reminders = getReminders(userId);
+
+  // A. ORA ESATTA (Fired) - Massima priorità
+  const fired = reminders.find(r => r.status === "fired" && !r.acknowledged);
+  if (fired) {
+    updateReminder(userId, fired.id, { acknowledged: true });
+    const reply = `⏰ È IL MOMENTO: ${fired.text}`;
+    await appendTurn(userId, { 
+      role: "assistant", 
+      text: reply,
+      meta: { tokenUsed: 0, tokenLimit: 10000, blocked: false }
+    });
+    return res.json({ 
+      reply, 
+      card: { 
+        type: "reminder", 
+        title: "Ora!", 
+        content: fired.text, 
+        status: "fired" 
+      },
+      meta: { tokenUsed: 0, tokenLimit: 10000, blocked: false }
+    });
+  }
+
+  // B. FOLLOW-UP (Feedback) - Seconda priorità
+  const feedback = reminders.find(r => r.followUpReady && !r.feedbackDone);
+  if (feedback && !t.includes("si") && !t.includes("sì") && !t.includes("no")) {
+    updateReminder(userId, feedback.id, { feedbackDone: true });
+    const reply = `💬 Volevo chiederti: com'è andata con "${feedback.text}"?`;
+    await appendTurn(userId, { 
+      role: "assistant", 
+      text: reply,
+      meta: { tokenUsed: 0, tokenLimit: 10000, blocked: false }
+    });
+    return res.json({ 
+      reply, 
+      card: null,
+      meta: { tokenUsed: 0, tokenLimit: 10000, blocked: false }
+    });
+  }
+
+  // C. EMERSIONE (1h prima) - Terza priorità
+  const emerging = reminders.find(
+    r => r.status === "pending" && 
+         r.notifiedBefore === true && 
+         !r.emerged
+  );
+  if (emerging) {
+    updateReminder(userId, emerging.id, { emerged: true });
+    const reply = `🔔 Tra un'ora hai: ${emerging.text}`;
+    await appendTurn(userId, { 
+      role: "assistant", 
+      text: reply,
+      meta: { tokenUsed: 0, tokenLimit: 10000, blocked: false }
+    });
+    return res.json({ 
+      reply, 
+      card: { 
+        type: "reminder", 
+        title: "Promemoria", 
+        content: emerging.text, 
+        status: "alert" 
+      },
+      meta: { tokenUsed: 0, tokenLimit: 10000, blocked: false }
+    });
+  }
+
+  // --- 2. RICERCA NEI FILE (Nuova funzionalità) ---
+  if (t.includes("cosa dice il file") || t.includes("cerca nel documento") || t.includes("analizza il file")) {
+    try {
+      // Estrai nome file e query
+      const fileNameMatch = text.match(/file\s+([\w.]+)/i) || text.match(/documento\s+([\w.]+)/i);
+      const fileName = fileNameMatch?.[1];
+      
+      let query = "";
+      if (fileName) {
+        query = text.replace(new RegExp(`(file|documento)\\s+${fileName}`, 'i'), '').trim();
+      } else {
+        // Se non c'è nome file specifico, cerca in tutti i file
+        query = text.replace(/cosa dice (il )?|cerca (nel )?|analizza (il )?/gi, '').trim();
+      }
+
+      console.log(`📁 Ricerca file: fileName=${fileName}, query="${query}"`);
+
+      // Directory dei file dell'utente
+      const userFilesDir = path.join(process.cwd(), "storage", "users", userId, "files");
+      
+      if (!fs.existsSync(userFilesDir)) {
+        fs.mkdirSync(userFilesDir, { recursive: true });
+      }
+
+      let filesToSearch = [];
+      
+      if (fileName) {
+        // Cerca file specifico
+        const filePath = path.join(userFilesDir, fileName + ".txt");
+        if (fs.existsSync(filePath)) {
+          filesToSearch.push({ name: fileName, path: filePath });
+        } else {
+          // Prova senza estensione .txt
+          const filePath2 = path.join(userFilesDir, fileName);
+          if (fs.existsSync(filePath2)) {
+            filesToSearch.push({ name: fileName, path: filePath2 });
+          }
+        }
+      } else {
+        // Cerca in tutti i file .txt
+        const allFiles = fs.readdirSync(userFilesDir).filter(f => f.endsWith('.txt'));
+        allFiles.forEach(f => {
+          filesToSearch.push({ name: f.replace('.txt', ''), path: path.join(userFilesDir, f) });
+        });
+      }
+
+      if (filesToSearch.length === 0) {
+        const reply = fileName 
+          ? `Non ho trovato il file "${fileName}" nella tua directory.`
+          : "Non ho trovato file nella tua directory.";
+        
+        await appendTurn(userId, { 
+          role: "assistant", 
+          text: reply,
+          meta: { tokenUsed: 0, tokenLimit: 10000, blocked: false }
+        });
+        
+        return res.json({ 
+          reply, 
+          card: { 
+            type: "search", 
+            title: "Ricerca file", 
+            content: reply, 
+            status: "done" 
+          },
+          meta: { tokenUsed: 0, tokenLimit: 10000, blocked: false }
+        });
+      }
+
+      // Cerca nei file trovati
+      const allChunks = [];
+      
+      for (const file of filesToSearch) {
+        try {
+          const fullText = fs.readFileSync(file.path, "utf-8");
+          const chunks = chunkText(fullText);
+          
+          chunks.forEach((chunk, chunkIndex) => {
+            allChunks.push({
+              id: `file_${file.name}_chunk_${chunkIndex}`,
+              text: chunk,
+              fileName: file.name
+            });
+          });
+        } catch (err) {
+          console.error(`Errore lettura file ${file.path}:`, err);
+        }
+      }
+
+      if (allChunks.length === 0) {
+        const reply = "I file sono vuoti o non leggibili.";
+        await appendTurn(userId, { 
+          role: "assistant", 
+          text: reply,
+          meta: { tokenUsed: 0, tokenLimit: 10000, blocked: false }
+        });
+        
+        return res.json({ 
+          reply, 
+          card: { 
+            type: "search", 
+            title: "Ricerca file", 
+            content: reply, 
+            status: "done" 
+          },
+          meta: { tokenUsed: 0, tokenLimit: 10000, blocked: false }
+        });
+      }
+
+      // Usa il reranker per trovare i chunk più rilevanti
+      let topChunks = allChunks;
+      if (query.trim()) {
+        const docs = allChunks.map(c => ({ id: c.id, text: c.text }));
+        const rankedDocs = await rerankNews(query, docs);
+        
+        // Mappa i risultati ranked ai chunk completi
+        const rankedIds = rankedDocs.map(d => d.id);
+        topChunks = rankedIds
+          .map(id => allChunks.find(c => c.id === id))
+          .filter(Boolean)
+          .slice(0, 5); // Prendi i top 5
+      }
+
+      // Costruisci risposta
+      let answer = "";
+      if (query.trim()) {
+        if (topChunks.length > 0) {
+          const context = topChunks.map(c => `[Da ${c.fileName}]: ${c.text.substring(0, 200)}...`).join("\n\n");
+          
+          // Usa la pipeline news per generare una risposta strutturata
+          answer = await buildNewsSnippets(
+            topChunks.map(c => ({ title: c.fileName, snippet: c.text.substring(0, 500), url: "" })),
+            `Ricerca: ${query}`,
+            `Cerca nei file per: ${query}`
+          );
+        } else {
+          answer = "Non ho trovato contenuti rilevanti nei tuoi file.";
+        }
+      } else {
+        // Se non c'è query specifica, mostra riepilogo file
+        const fileSummary = filesToSearch.map(f => {
+          try {
+            const content = fs.readFileSync(f.path, "utf-8");
+            return `📄 ${f.name}: ${content.length} caratteri`;
+          } catch (err) {
+            return `📄 ${f.name}: errore lettura`;
+          }
+        }).join("\n");
+        
+        answer = `Ecco i tuoi file:\n${fileSummary}`;
+      }
+
+      const reply = answer;
+      await appendTurn(userId, { 
+        role: "assistant", 
+        text: reply,
+        card: { 
+          type: "search", 
+          title: filesToSearch.length === 1 ? `Analisi ${filesToSearch[0].name}` : "Analisi file",
+          content: answer,
+          status: "done" 
+        },
+        meta: { tokenUsed: 0, tokenLimit: 10000, blocked: false }
+      });
+      
+      return res.json({ 
+        reply, 
+        card: { 
+          type: "search", 
+          title: filesToSearch.length === 1 ? `Analisi ${filesToSearch[0].name}` : "Analisi file",
+          content: answer,
+          status: "done" 
+        },
+        meta: { tokenUsed: 0, tokenLimit: 10000, blocked: false }
+      });
+    } catch (err) {
+      console.error("File search error:", err);
+      // Continua con il normale flusso di chat
+    }
+  }
+    
+  // --- 3. GESTIONE MEMORIA SEMANTICA ---
+  if (t.includes("ti ricordi") || t.includes("cosa avevamo detto") || t.includes("com'è andata") || t.includes("memoria")) {
+    try {
+      const hits = await searchTurns(userId, text, 10); // Usa searchTurns esistente come fallback
+      if (hits.length > 0) {
+        const memoryContext = hits.map(h => `${h.role}: ${h.text}`).join("\n");
+        req.session.user.state.memoryContext = memoryContext;
+        
+        // Se l'utente chiede specificamente della memoria, rispondiamo subito
+        if (t.includes("ti ricordi") || t.includes("memoria")) {
+          const summary = hits.slice(0, 3).map(h => 
+            `- ${h.role === "user" ? "Tu" : "Io"}: "${h.text.substring(0, 100)}${h.text.length > 100 ? '...' : ''}"`
+          ).join("\n");
+          
+          const reply = `Ecco cosa ricordo della nostra conversazione:\n${summary}`;
+          await appendTurn(userId, { 
+            role: "assistant", 
+            text: reply,
+            meta: { tokenUsed: 0, tokenLimit: 10000, blocked: false }
+          });
+          return res.json({ 
+            reply, 
+            card: null,
+            meta: { tokenUsed: 0, tokenLimit: 10000, blocked: false }
+          });
+        }
+      }
+    } catch (err) {
+      console.error("Memory search error:", err);
+    }
+  }
+
+  // --- 4. LOGICA STANDARD (ProcessInput + Pending) ---
+  await appendTurn(userId, { 
+    role: "user", 
+    text,
+    meta: { tokenUsed: 0, tokenLimit: 10000, blocked: false }
+  });
+
+  userAudit(userId, "CHAT_INPUT", { chars: text.length });
+
+  const isConfirm = ["si", "sì", "conferma", "ok", "va bene", "yes"].includes(t);
+  const isCancel = ["no", "annulla", "cancella", "delete"].includes(t);
+
+  // ✅ Gestione conferma/annulla per pendingReminder (versione migliorata)
+  if (req.session.user.pendingReminder && (isConfirm || isCancel)) {
+    if (isCancel) {
+      const reply = "Ok, annullato.";
+      req.session.user.pendingReminder = null;
+      await appendTurn(userId, { 
+        role: "assistant", 
+        text: reply,
+        meta: { tokenUsed: 0, tokenLimit: 10000, blocked: false }
+      });
+      return res.json({ 
+        reply, 
+        card: null,
+        meta: { tokenUsed: 0, tokenLimit: 10000, blocked: false }
+      });
+    }
+
+    // ✅ Conferma - con nuovo parser e follow-up
+    const p = req.session.user.pendingReminder;
+    const parsed = parseDueDate(p.text); // Ora restituisce {date, recurring}
+    
+    const dueDate = p.dueAt || (parsed && parsed.date ? parsed.date.toISOString() : null);
+    if (!dueDate) {
+      // Data non valida, chiedi chiarimenti
+      const reply = "Per favore, specifica una data o un'ora valida.";
+      await appendTurn(userId, { 
+        role: "assistant", 
+        text: reply,
+        meta: { tokenUsed: 0, tokenLimit: 10000, blocked: false }
+      });
+      return res.json({ 
+        reply, 
+        card: null,
+        meta: { tokenUsed: 0, tokenLimit: 10000, blocked: false }
+      });
+    }
+
+    const newReminder = {
+      id: "r_" + Date.now(), 
+      userId, 
+      text: p.text,
+      dueAt: dueDate,
+      recurring: parsed?.recurring || null,
+      status: "pending", 
+      createdAt: new Date().toISOString(),
+      acknowledged: false,
+      emerged: false,
+      followUpReady: false,
+      feedbackDone: false,
+      needsFeedback: true // Attiva il follow-up automatico
+    };
+
+    addReminder(userId, newReminder);
+    req.session.user.pendingReminder = null;
+
+    const reply = `✅ Ottimo. Promemoria impostato per ${new Date(dueDate).toLocaleString("it-IT")}.`;
+    await appendTurn(userId, { 
+      role: "assistant", 
+      text: reply,
+      meta: { tokenUsed: 0, tokenLimit: 10000, blocked: false }
+    });
+    return res.json({ 
+      reply, 
+      card: { 
+        type: "reminder", 
+        title: "Promemoria salvato", 
+        content: `Ricorderò: "${p.text}"`,
+        status: "confirmed" 
+      },
+      meta: { tokenUsed: 0, tokenLimit: 10000, blocked: false }
+    });
+  }
+
+  try {
+    const result = await processInput(text, req.session.user.state);
+    
+    // 🔎 LOGICA RICERCA (Dopo result = await processInput...)
+    if (result.card?.type === "search") {
+      try {
+        const queryRicerca = text.replace(/cerca|trova|ricerca/gi, "").trim();
+        
+        console.log(`🔎 Eseguo ricerca per: ${queryRicerca}`);
+
+        const hits = await searchEvents(userId, queryRicerca);
+
+        if (hits.length > 0) {
+          const content = hits
+            .map(h => `📍 ${h.text}\n   (${h.date})`)
+            .join("\n\n");
+
+          // --- FIX LOGICA ---
+          result.reply = `Ecco cosa ho trovato per "${queryRicerca}":`; // Sovrascrive "Vuoi salvare?"
+          result.card.content = content;
+          result.card.status = "done"; // Rimuove i tasti Conferma/Annulla
+        } else {
+          result.reply = "Non ho trovato nulla nei tuoi impegni.";
+          result.card.content = "Nessun risultato trovato.";
+          result.card.status = "done"; // Anche se vuoto, la ricerca è conclusa
+        }
+      } catch (err) {
+        console.error("SEARCH ERROR:", err);
+        result.reply = "Errore durante la ricerca.";
+      }
+    }
+
+    // 🕒 Se nasce una card REMINDER, la memorizziamo come pending
+    console.log("DEBUG CARD:", result.card);
+    if (result.card?.type === "reminder" && result.card.status === "pending") {
+      // Usa il testo ORIGINALE dell'utente per il parsing
+      const parsed = parseDueDate(text);
+      
+      console.log("DEBUG: Parsed date =", parsed);
+      
+      req.session.user.pendingReminder = {
+        text: text,  // Usa il testo completo
+        dueAt: parsed && parsed.date ? parsed.date.toISOString() : null
+      };
+
+      if (parsed && parsed.date) {
+        result.reply = `Vuoi che imposti il promemoria per ${parsed.date.toLocaleString("it-IT")}?`;
+      } else {
+        result.reply = "Per quando vuoi questo promemoria? (es: domani alle 18, tra 2 ore)";
+      }
+    }
+
+    // 📰 FIX NEWS PIPELINE: Intercettiamo la card prima che venga inviata
+    if (result.card?.type === "news") {
+      try {
+        const topic = cleanNewsQuery(text) || text;
+        console.log(`🔎 [NEWS PIPELINE] Avvio ricerca per: ${topic}`);
+        
+        // Risposta immediata di Keblo invece di "Vuoi salvare?"
+        result.reply = `Sto analizzando le ultime notizie su "${topic}"...`;
+        
+        const newsResults = await getRelevantNews(topic);
+        if (newsResults && newsResults.length > 0) {
+          const summary = await buildNewsSnippets(newsResults, topic, text);
+          result.card.content = summary;
+          result.reply = `Ecco cosa ho trovato su ${topic}:`;
+        } else {
+          result.card.content = "Non ho trovato notizie recenti su questo argomento.";
+        }
+        
+        // Fondamentale: forziamo lo stato a done per saltare la conferma (Si/No)
+        result.card.status = "done";
+      } catch (err) {
+        console.error("NEWS ERROR:", err);
+        result.card.content = "Errore nel recupero delle notizie.";
+        result.card.status = "error";
+      }
+    }
+
+    // Logga la risposta dell'assistente
+    await appendTurn(userId, {
+      role: "assistant",
+      text: result.reply,
+      card: result.card ?? null,
+      meta: result.meta ?? { tokenUsed: 0, tokenLimit: 10000, blocked: false }
+    });
+
+    // Pulisci il context memoria dopo l'uso
+    if (req.session.user.state.memoryContext) {
+      req.session.user.state.memoryContext = null;
+    }
+
+    res.json(result);
+  } catch (err) {
+    console.error(err);
+    await appendTurn(userId, {
+      role: "system",
+      text: `Errore: ${err.message}`,
+      meta: { tokenUsed: 0, tokenLimit: 10000, blocked: false, error: true }
+    });
+    res.status(500).json({ 
+      error: "Engine error",
+      meta: { tokenUsed: 0, tokenLimit: 10000, blocked: false }
+    });
+  }
+});
+
+// Endpoint per leggere lo storico
+app.get("/api/history", async (req, res) => {
+  if (!req.session.user) return res.status(401).json({ error: "not logged" });
+  const userId = req.session.user.id;
+  const limit = Number(req.query.limit || 30);
+  const turns = await readLastTurns(userId, limit);
+  res.json({ userId, turns });
+});
+
+// Endpoint per cercare nello storico
+app.get("/api/history/search", async (req, res) => {
+  if (!req.session.user) return res.status(401).json({ error: "not logged" });
+  const userId = req.session.user.id;
+  const q = String(req.query.q || "");
+  const limit = Number(req.query.limit || 30);
+  const hits = await searchTurns(userId, q, limit);
+  res.json({ userId, q, hits });
+});
+
+// Endpoint per i promemoria attivi
+app.get("/api/reminders", async (req, res) => {
+  if (!req.session.user) return res.status(401).json({ error: "not logged" });
+  const userId = req.session.user.id;
+  const reminders = getReminders(userId);
+  res.json({ userId, reminders });
+});
+
+// Configurazione Multer per gestire i file in memoria
+const storage = multer.memoryStorage();
+const upload = multer({ 
+  storage: storage,
+  limits: { fileSize: 5 * 1024 * 1024 } // Limite 5MB totale per file
+});
+
+app.post("/api/upload", upload.single("file"), async (req, res) => {
+  try {
+    if (!req.session.user) return res.status(401).json({ ok: false, msg: "Sessione scaduta" });
+    if (!req.file) return res.status(400).json({ ok: false, msg: "Nessun file inviato" });
+
+    const userId = req.session.user.id;
+    const userFilesDir = path.join(process.cwd(), "storage", "users", userId, "files");
+
+    // Crea la cartella se non esiste
+    if (!fs.existsSync(userFilesDir)) {
+      fs.mkdirSync(userFilesDir, { recursive: true });
+    }
+
+    // Controlliamo il limite di 5 file
+    const existingFiles = fs.readdirSync(userFilesDir).filter(f => !f.endsWith(".txt"));
+    if (existingFiles.length >= 5) {
+      return res.status(400).json({ ok: false, msg: "Limite di 5 file raggiunto. Cancella qualcosa." });
+    }
+
+    const fileName = req.file.originalname;
+    const filePath = path.join(userFilesDir, fileName);
+
+    // 1. Salviamo il file originale
+    fs.writeFileSync(filePath, req.file.buffer);
+
+    // 2. Estraiamo il testo (Conversione PDF -> Testo)
+    let extractedText = "";
+    if (fileName.toLowerCase().endsWith(".pdf")) {
+      console.log(`📄 Conversione PDF in corso: ${fileName}`);
+      try {
+        const data = await pdf(req.file.buffer);
+        extractedText = data?.text || "";
+      } catch (e) {
+        console.error("PDF parse error:", e);
+        extractedText = "";
+      }
+    } else {
+      // best-effort: se è binario verrà fuori spazzatura, ma non crasha
+      extractedText = req.file.buffer.toString("utf-8");
+    }
+
+    if (!extractedText || !extractedText.trim()) {
+      extractedText = "[Nessun testo estratto]";
+    }
+
+    // 3. Salviamo la versione .txt per il Reranker (stesso nome ma estensione .txt)
+    const txtPath = path.join(userFilesDir, fileName.replace(/\.[^/.]+$/, "") + ".txt");
+    fs.writeFileSync(txtPath, extractedText);
+
+    console.log(`✅ File pronto per Reranker: ${txtPath}`);
+    res.json({ ok: true, message: "File caricato e analizzato con successo!" });
+
+  } catch (err) {
+    console.error("❌ Errore durante l'upload:", err);
+    res.status(500).json({ ok: false, msg: "Errore interno durante l'analisi del file." });
+  }
+});
+
+// --- NUOVO: Endpoint per eliminare un file ---
+app.delete("/api/delete-file", (req, res) => {
+  if (!req.session.user) return res.status(401).json({ ok: false, msg: "Non loggato" });
+  const { fileName } = req.body;
+  const userId = req.session.user.id;
+  const userFilesDir = path.join(process.cwd(), "storage", "users", userId, "files");
+  try {
+    const filePath = path.join(userFilesDir, fileName);
+    const txtPath = path.join(userFilesDir, fileName.replace(/\.[^/.]+$/, "") + ".txt");
+    if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
+    if (fs.existsSync(txtPath)) fs.unlinkSync(txtPath);
+    res.json({ ok: true });
+  } catch (err) {
+    res.status(500).json({ ok: false, msg: "Errore eliminazione" });
+  }
+});
+
+// --- Endpoint per la lista file dell'utente ---
+app.get("/api/user-files", (req, res) => {
+    // Controlla la sessione
+    if (!req.session.user) return res.status(401).json({ error: "not logged" });
+    
+    const userId = req.session.user.id;
+    const dir = path.join(process.cwd(), "storage", "users", userId, "files");
+    
+    if (!fs.existsSync(dir)) return res.json({ files: [] });
+    
+    // Prendiamo solo i file originali (evitiamo i .txt duplicati nell'elenco)
+    const files = fs.readdirSync(dir).filter(f => !f.endsWith(".txt"));
+    res.json({ files });
+});
+
+// --- Endpoint per l'inferenza indipendente della Card News ---
+app.post("/api/news-inference", async (req, res) => {
+  const { topic } = req.body;
+  if (!topic) return res.status(400).json({ ok: false, content: "Inserisci un argomento." });
+
+  console.log(`📡 [WEB INFERENCE] Avvio ricerca per: ${topic}`);
+
+  try {
+    // 1. Ricerca Web (usa la funzione esistente nel tuo news_pipeline.js)
+    const newsResults = await getRelevantNews(topic);
+    
+    if (newsResults && newsResults.length > 0) {
+      // 2. Analisi e Riassunto (usa buildNewsSnippets)
+      const summary = await buildNewsSnippets(newsResults, topic, `Analisi workstation per ${topic}`);
+      res.json({ ok: true, content: summary });
+    } else {
+      res.json({ ok: true, content: "Nessun risultato trovato per questo argomento." });
+    }
+  } catch (err) {
+    console.error("ERRORE INFERENZA NEWS:", err);
+    res.status(500).json({ ok: false, content: "Errore durante l'elaborazione dei dati: " + err.message });
+  }
+});
+
+// --- Endpoint Ricerca Semantica in Streaming per la Card ---
+app.post("/api/card-search-stream", async (req, res) => {
+  // SSE headers subito, così anche gli errori arrivano corretti
+  res.setHeader("Content-Type", "text/event-stream; charset=utf-8");
+  res.setHeader("Cache-Control", "no-cache, no-transform");
+  res.setHeader("Connection", "keep-alive");
+
+  // helper per inviare eventi
+  const sendEvent = (obj) => {
+    try {
+      res.write(`data: ${JSON.stringify(obj)}\n\n`);
+    } catch {
+      // ignora
+    }
+  };
+
+  try {
+    // Session check
+    if (!req.session.user) {
+      sendEvent({ error: "Sessione non valida" });
+      return res.end();
+    }
+
+    const userId = req.session.user.id;
+
+    const fileNameRaw = String(req.body?.fileName || "").trim();
+    const queryRaw = String(req.body?.query || "").trim();
+
+    if (!fileNameRaw || !queryRaw) {
+      sendEvent({ error: "Parametri mancanti (fileName/query)" });
+      return res.end();
+    }
+
+    // Sanitizzazione fileName (blocca traversal)
+    const fileName = path.basename(fileNameRaw);
+    if (fileName !== fileNameRaw || fileName.includes("..") || fileName.includes("/") || fileName.includes("\\")) {
+      sendEvent({ error: "Nome file non valido" });
+      return res.end();
+    }
+
+    // Limite query (evita prompt enormi)
+    const query = queryRaw.slice(0, 1200);
+
+    const txtPath = path.join(process.cwd(), "storage", "users", userId, "files", fileName.replace(/\.[^/.]+$/, "") + ".txt");
+    if (!fs.existsSync(txtPath)) {
+      sendEvent({ error: "File di testo non trovato" });
+      return res.end();
+    }
+
+    const fullText = fs.readFileSync(txtPath, "utf-8");
+    if (!fullText.trim()) {
+      sendEvent({ error: "File vuoto" });
+      return res.end();
+    }
+
+    const chunks = chunkText(fullText, 600);
+    const docs = chunks.map((c, i) => ({ id: `c${i}`, text: c }));
+
+    // 1) Reranker
+    let ranked = docs;
+    try {
+      ranked = await rerankNews(query, docs);
+    } catch (e) {
+      console.error("RERANK ERROR:", e);
+      ranked = docs; // fallback
+    }
+
+    // top contesto: se rerankNews ritorna {id,text} ok, altrimenti rimappa
+    const topContext = ranked.slice(0, 3).map((r) => r.text || r?.snippet || "").filter(Boolean).join("\n\n");
+    if (!topContext) {
+      sendEvent({ error: "Nessun contesto utile trovato nel file" });
+      return res.end();
+    }
+
+    // 2) Ollama streaming
+    const prompt = `Analizza questo testo tratto dal file ${fileName} e rispondi alla domanda: ${query}
+
+CONTESTO:
+${topContext}
+
+RISPOSTA:`;
+
+    const ollamaRes = await fetch("http://localhost:11434/api/generate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model: process.env.OLLAMA_MODEL || "gpt-oss:20b",
+        prompt,
+        stream: true
+      })
+    });
+
+    if (!ollamaRes.ok || !ollamaRes.body) {
+      const txt = await ollamaRes.text().catch(() => "");
+      sendEvent({ error: `Ollama error (${ollamaRes.status}): ${txt?.slice(0, 300) || "no body"}` });
+      return res.end();
+    }
+
+    const reader = ollamaRes.body.getReader();
+    const decoder = new TextDecoder();
+
+    // chiusura pulita se il client chiude la connessione
+    let clientClosed = false;
+    req.on("close", () => { clientClosed = true; });
+
+    while (true) {
+      if (clientClosed) break;
+      const { done, value } = await reader.read();
+      if (done) break;
+
+      const chunk = decoder.decode(value);
+      const lines = chunk.split("\n");
+
+      for (const line of lines) {
+        if (!line.trim()) continue;
+        try {
+          const json = JSON.parse(line);
+          if (json.response) sendEvent({ text: json.response });
+          if (json.error) sendEvent({ error: String(json.error) });
+        } catch {
+          // ignora: Ollama può spezzare JSON in chunk non allineati
+        }
+      }
+    }
+
+    return res.end();
+  } catch (err) {
+    console.error("CARD SEARCH STREAM ERROR:", err);
+    sendEvent({ error: err.message || "Errore sconosciuto" });
+    return res.end();
+  }
+});
+
+startScheduler();
+app.listen(3000, () => console.log("🚀 Keblo Dashboard Micro-Servizi running on http://localhost:3000"));

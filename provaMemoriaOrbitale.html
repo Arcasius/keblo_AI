@@ -1,0 +1,949 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Keblo Memory Universe</title>
+  <style>
+    :root {
+      --bg: #07111f;
+      --panel: rgba(12, 22, 38, 0.82);
+      --panel-border: rgba(132, 163, 214, 0.18);
+      --text: #e7eefc;
+      --muted: #90a3c8;
+      --accent: #7dd3fc;
+      --short: rgba(125, 211, 252, 0.18);
+      --medium: rgba(167, 139, 250, 0.14);
+      --long: rgba(244, 114, 182, 0.12);
+      --structural: #7dd3fc;
+      --semantic: #a78bfa;
+      --episodic: #f472b6;
+      --working: #fbbf24;
+      --inferred: #34d399;
+      --line: rgba(173, 189, 255, 0.16);
+      --glow: rgba(125, 211, 252, 0.28);
+    }
+
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      color: var(--text);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at 20% 20%, rgba(125, 211, 252, 0.08), transparent 22%),
+        radial-gradient(circle at 80% 30%, rgba(167, 139, 250, 0.08), transparent 24%),
+        radial-gradient(circle at 50% 80%, rgba(244, 114, 182, 0.06), transparent 28%),
+        linear-gradient(180deg, #040a12 0%, var(--bg) 100%);
+      overflow: hidden;
+    }
+
+    .stars, .stars::before, .stars::after {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      content: "";
+      background-repeat: repeat;
+      opacity: 0.45;
+    }
+
+    .stars {
+      background-image:
+        radial-gradient(circle, rgba(255,255,255,0.8) 0 1px, transparent 1.5px),
+        radial-gradient(circle, rgba(125,211,252,0.5) 0 1px, transparent 1.5px);
+      background-size: 180px 180px, 240px 240px;
+      background-position: 20px 10px, 110px 70px;
+    }
+
+    .app {
+      display: grid;
+      grid-template-columns: 310px 1fr 340px;
+      gap: 16px;
+      height: 100vh;
+      padding: 16px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .panel {
+      background: var(--panel);
+      border: 1px solid var(--panel-border);
+      border-radius: 24px;
+      backdrop-filter: blur(14px);
+      box-shadow: 0 14px 40px rgba(0,0,0,0.24);
+      overflow: hidden;
+    }
+
+    .panel-inner {
+      padding: 18px;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .title {
+      font-size: 0.86rem;
+      letter-spacing: 0.16em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin: 0;
+    }
+
+    .headline {
+      margin: 0;
+      font-size: 1.55rem;
+      line-height: 1.1;
+    }
+
+    .subtle {
+      color: var(--muted);
+      font-size: 0.95rem;
+      line-height: 1.5;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .stat-card {
+      padding: 14px;
+      border-radius: 18px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.07);
+    }
+
+    .stat-card .big {
+      font-size: 1.25rem;
+      font-weight: 700;
+      display: block;
+      margin-top: 8px;
+    }
+
+    .legend {
+      display: grid;
+      gap: 8px;
+    }
+
+    .legend-item, .orbit-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 10px 12px;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.06);
+      font-size: 0.92rem;
+    }
+
+    .swatch {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+      box-shadow: 0 0 18px currentColor;
+      flex: 0 0 auto;
+    }
+
+    .legend-left {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .viewer {
+      position: relative;
+      overflow: hidden;
+      min-width: 0;
+    }
+
+    .viewer canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+      cursor: grab;
+    }
+
+    .viewer canvas.dragging { cursor: grabbing; }
+
+    .viewer-overlay {
+      position: absolute;
+      inset: 16px 16px auto 16px;
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      pointer-events: none;
+    }
+
+    .chip-group {
+      display: inline-flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      pointer-events: auto;
+    }
+
+    .chip {
+      border: 1px solid rgba(255,255,255,0.09);
+      background: rgba(8, 16, 28, 0.78);
+      color: var(--text);
+      border-radius: 999px;
+      padding: 8px 12px;
+      font-size: 0.84rem;
+      cursor: pointer;
+      transition: 120ms ease;
+    }
+
+    .chip:hover, .chip.active {
+      transform: translateY(-1px);
+      border-color: rgba(125,211,252,0.35);
+      background: rgba(14, 28, 46, 0.9);
+    }
+
+    .detail-empty {
+      flex: 1;
+      display: grid;
+      place-items: center;
+      color: var(--muted);
+      text-align: center;
+      border-radius: 18px;
+      border: 1px dashed rgba(255,255,255,0.1);
+      padding: 24px;
+    }
+
+    .detail-card {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .memory-type {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      width: max-content;
+      border-radius: 999px;
+      padding: 6px 10px;
+      background: rgba(255,255,255,0.05);
+      font-size: 0.82rem;
+      color: var(--muted);
+      border: 1px solid rgba(255,255,255,0.07);
+    }
+
+    .memory-text {
+      font-size: 1.05rem;
+      line-height: 1.55;
+      padding: 14px;
+      border-radius: 18px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.06);
+    }
+
+    .kv-list {
+      display: grid;
+      gap: 8px;
+    }
+
+    .kv {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 10px 12px;
+      border-radius: 14px;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid rgba(255,255,255,0.05);
+      font-size: 0.92rem;
+    }
+
+    .kv span:last-child {
+      color: var(--muted);
+      text-align: right;
+    }
+
+    .tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .tag {
+      padding: 7px 10px;
+      border-radius: 999px;
+      font-size: 0.78rem;
+      background: rgba(125, 211, 252, 0.08);
+      color: #cdefff;
+      border: 1px solid rgba(125, 211, 252, 0.15);
+    }
+
+    .footer-note {
+      margin-top: auto;
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+
+    @media (max-width: 1280px) {
+      .app { grid-template-columns: 280px 1fr 300px; }
+    }
+
+    @media (max-width: 1080px) {
+      body { overflow: auto; }
+      .app {
+        height: auto;
+        min-height: 100vh;
+        grid-template-columns: 1fr;
+      }
+      .viewer { min-height: 70vh; }
+    }
+  </style>
+</head>
+<body>
+  <div class="stars"></div>
+  <div class="app">
+    <aside class="panel">
+      <div class="panel-inner">
+        <p class="title">Keblo</p>
+        <h1 class="headline">Memory Universe</h1>
+        <div class="subtle">Vista orbitale dei ricordi. I nodi si distribuiscono per orbita, tipo e intensità. I duplicati saltano fuori subito.</div>
+
+        <div class="stats" id="stats"></div>
+
+        <div>
+          <p class="title">Tipi di memoria</p>
+          <div class="legend" id="typeLegend"></div>
+        </div>
+
+        <div>
+          <p class="title">Orbite</p>
+          <div class="legend" id="orbitLegend"></div>
+        </div>
+
+        <div class="footer-note">Carica i file <strong>keblo_user_memories_v2.json</strong> e <strong>keblo_user_links_v2.json</strong> nella stessa cartella di questo file, oppure modifica i percorsi in basso nello script.</div>
+      </div>
+    </aside>
+
+    <main class="panel viewer">
+      <canvas id="universe"></canvas>
+      <div class="viewer-overlay">
+        <div class="chip-group" id="typeFilters"></div>
+        <div class="chip-group">
+          <button class="chip" id="toggleLabels">Dettagli hover: ON</button>
+          <button class="chip" id="toggleLinks">Link: ON</button>
+          <button class="chip" id="toggleDuplicates">Doppioni: ON</button>
+          <button class="chip" id="resetView">Reset view</button>
+        </div>
+      </div>
+    </main>
+
+    <aside class="panel">
+      <div class="panel-inner">
+        <p class="title">Dettaglio nodo</p>
+        <div id="detail"></div>
+      </div>
+    </aside>
+  </div>
+
+  <script>
+    const CONFIG = {
+      memoriesPath: './keblo_user_memories_v2.json',
+      linksPath: './keblo_user_links_v2.json',
+      orbitRadius: { short: 190, medium: 320, long: 470 },
+      orbitBand: { short: 60, medium: 70, long: 90 },
+      typeColors: {
+        structural: '#7dd3fc',
+        semantic: '#a78bfa',
+        episodic: '#f472b6',
+        working: '#fbbf24',
+        inferred: '#34d399'
+      },
+      orbitColors: {
+        short: 'rgba(125, 211, 252, 0.18)',
+        medium: 'rgba(167, 139, 250, 0.14)',
+        long: 'rgba(244, 114, 182, 0.12)'
+      },
+      nodeSize: { min: 7, max: 15 },
+      showNumericLabels: true
+    };
+
+    const canvas = document.getElementById('universe');
+    const ctx = canvas.getContext('2d');
+    const statsEl = document.getElementById('stats');
+    const detailEl = document.getElementById('detail');
+    const typeLegendEl = document.getElementById('typeLegend');
+    const orbitLegendEl = document.getElementById('orbitLegend');
+    const typeFiltersEl = document.getElementById('typeFilters');
+
+    let width = 0;
+    let height = 0;
+    let centerX = 0;
+    let centerY = 0;
+    let nodes = [];
+    let links = [];
+    let selectedNode = null;
+    let hoveredNode = null;
+    let panX = 0;
+    let panY = 0;
+    let scale = 1;
+    let showLabels = true;
+    let showLinks = true;
+    let showDuplicates = true;
+    let dragging = false;
+    let dragMode = null;
+    let dragNodeId = null;
+    let dragStart = { x: 0, y: 0, panX: 0, panY: 0 };
+    let activeTypes = new Set();
+    let animationFrame = null;
+
+    const toTitle = (s) => (s || '').charAt(0).toUpperCase() + (s || '').slice(1);
+    const fmt = (n, digits = 2) => (Number.isFinite(n) ? n.toFixed(digits) : '—');
+    const clamp = (n, a, b) => Math.max(a, Math.min(b, n));
+    const normalizeText = (s) => (s || '').toLowerCase().replace(/\s+/g, ' ').trim();
+
+    function buildStats(memories) {
+      const countsByType = {};
+      const countsByOrbit = { short: 0, medium: 0, long: 0 };
+      let activationSum = 0;
+      let duplicates = 0;
+      const seenTexts = new Set();
+
+      for (const m of memories) {
+        const type = m.type.primary || 'unknown';
+        const orbit = m.activation.orbital_level || 'short';
+        countsByType[type] = (countsByType[type] || 0) + 1;
+        countsByOrbit[orbit] = (countsByOrbit[orbit] || 0) + 1;
+        activationSum += m.activation.current || 0;
+        const normText = (m.content.text || '').trim().toLowerCase();
+        if (seenTexts.has(normText)) duplicates += 1;
+        else seenTexts.add(normText);
+      }
+
+      const avgActivation = memories.length ? activationSum / memories.length : 0;
+      statsEl.innerHTML = `
+        <div class="stat-card">
+          <div class="subtle">Ricordi</div>
+          <span class="big">${memories.length}</span>
+        </div>
+        <div class="stat-card">
+          <div class="subtle">Link</div>
+          <span class="big">${links.length}</span>
+        </div>
+        <div class="stat-card">
+          <div class="subtle">Attivazione media</div>
+          <span class="big">${fmt(avgActivation)}</span>
+        </div>
+        <div class="stat-card">
+          <div class="subtle">Duplicati testo</div>
+          <span class="big">${duplicates}</span>
+        </div>
+      `;
+
+      typeLegendEl.innerHTML = Object.entries(countsByType)
+        .sort((a, b) => b[1] - a[1])
+        .map(([type, count]) => `
+          <div class="legend-item">
+            <span class="legend-left"><span class="swatch" style="color:${CONFIG.typeColors[type] || '#94a3b8'}; background:${CONFIG.typeColors[type] || '#94a3b8'}"></span>${toTitle(type)}</span>
+            <strong>${count}</strong>
+          </div>
+        `)
+        .join('');
+
+      orbitLegendEl.innerHTML = ['short', 'medium', 'long']
+        .map((orbit) => `
+          <div class="orbit-item">
+            <span class="legend-left"><span class="swatch" style="color:${orbit === 'short' ? '#7dd3fc' : orbit === 'medium' ? '#a78bfa' : '#f472b6'}; background:${orbit === 'short' ? '#7dd3fc' : orbit === 'medium' ? '#a78bfa' : '#f472b6'}"></span>${orbit.toUpperCase()}</span>
+            <strong>${countsByOrbit[orbit] || 0}</strong>
+          </div>
+        `)
+        .join('');
+
+      const types = [...new Set(memories.map((m) => m.type.primary || 'unknown'))];
+      if (activeTypes.size === 0) types.forEach((t) => activeTypes.add(t));
+      typeFiltersEl.innerHTML = types.map((type) => `
+        <button class="chip ${activeTypes.has(type) ? 'active' : ''}" data-type="${type}">${toTitle(type)}</button>
+      `).join('');
+      [...typeFiltersEl.querySelectorAll('[data-type]')].forEach((btn) => {
+        btn.onclick = () => {
+          const type = btn.dataset.type;
+          if (activeTypes.has(type)) activeTypes.delete(type);
+          else activeTypes.add(type);
+          btn.classList.toggle('active');
+        };
+      });
+    }
+
+    function buildNode(memory, index, orbitIndex = 0, orbitTotal = 1) {
+      const orbit = memory.activation.orbital_level || 'short';
+      const radiusBase = CONFIG.orbitRadius[orbit] || 190;
+      const band = CONFIG.orbitBand[orbit] || 60;
+
+      const slotAngle = ((orbitIndex + 1) / (orbitTotal + 1)) * Math.PI * 2;
+      const angle = slotAngle + (Math.random() - 0.5) * 0.22;
+      const radialOffset = (Math.random() - 0.5) * Math.min(28, band * 0.4);
+
+      const type = memory.type.primary || 'unknown';
+      const importance = clamp(memory.affective?.importance ?? 0.5, 0.2, 1.0);
+      const activation = clamp(memory.activation?.current ?? 0.5, 0.1, 1.0);
+      const size = CONFIG.nodeSize.min + ((activation * 0.55 + importance * 0.45) * (CONFIG.nodeSize.max - CONFIG.nodeSize.min));
+
+      return {
+        id: memory.id,
+        index: index + 1,
+        memory,
+        type,
+        orbit,
+        angle,
+        radiusTarget: radiusBase + radialOffset,
+        radiusCurrent: radiusBase + radialOffset,
+        size,
+        x: Math.cos(angle) * (radiusBase + radialOffset),
+        y: Math.sin(angle) * (radiusBase + radialOffset),
+        vx: 0,
+        vy: 0,
+        color: CONFIG.typeColors[type] || '#94a3b8',
+        label: memory.content?.text || memory.id,
+        shortLabel: String(index + 1),
+        speed: 0.001 + (0.15 + activation) * 0.0009,
+        glow: 0.22 + activation * 0.18,
+        isDuplicate: false,
+      };
+    }
+
+    function buildLink(rawLink) {
+      return {
+        source: rawLink.source || rawLink.source_id || rawLink.from || null,
+        target: rawLink.target || rawLink.target_id || rawLink.to || null,
+        weight: rawLink.weight ?? 0.5,
+        type: rawLink.type || 'semantic'
+      };
+    }
+
+    function normalizeData(memoriesData, linksData) {
+      const memoryList = Array.isArray(memoriesData)
+        ? memoriesData
+        : Object.values(memoriesData || {});
+
+      const byOrbit = { short: [], medium: [], long: [] };
+
+      memoryList.forEach((m) => {
+        const orbit = m.activation?.orbital_level || 'short';
+        if (!byOrbit[orbit]) byOrbit[orbit] = [];
+        byOrbit[orbit].push(m);
+      });
+
+      const arranged = [];
+
+      for (const orbit of ['short', 'medium', 'long']) {
+        const bucket = byOrbit[orbit] || [];
+        bucket.forEach((m, i) => arranged.push(buildNode(m, arranged.length, i, bucket.length)));
+      }
+
+      const counts = new Map();
+      for (const node of arranged) {
+        const key = normalizeText(node.memory.content?.text || '');
+        counts.set(key, (counts.get(key) || 0) + 1);
+      }
+
+      for (const node of arranged) {
+        const key = normalizeText(node.memory.content?.text || '');
+        node.isDuplicate = (counts.get(key) || 0) > 1;
+      }
+
+      nodes = arranged;
+
+      const rawLinks = Array.isArray(linksData)
+        ? linksData
+        : Object.values(linksData || {});
+
+      links = rawLinks.map(buildLink).filter((l) => l.source && l.target);
+      buildStats(memoryList);
+    }
+
+    function renderDetail(node) {
+      if (!node) {
+        detailEl.innerHTML = `<div class="detail-empty">Seleziona un nodo per leggere il ricordo, i tag e lo stato orbitale.</div>`;
+        return;
+      }
+      const m = node.memory;
+      detailEl.innerHTML = `
+        <div class="detail-card">
+          <div class="memory-type"><span class="swatch" style="color:${node.color}; background:${node.color}"></span>${toTitle(node.type)} · ${node.orbit.toUpperCase()} ${node.isDuplicate ? '· ⚠️ DUPLICATO' : ''}</div>
+          <div class="memory-text">${escapeHtml(m.content?.text || '')}</div>
+          <div class="kv-list">
+            <div class="kv"><span>Attivazione</span><span>${fmt(m.activation?.current)}</span></div>
+            <div class="kv"><span>Importanza</span><span>${fmt(m.affective?.importance)}</span></div>
+            <div class="kv"><span>Decay</span><span>${fmt(m.activation?.decay_rate, 4)}</span></div>
+            <div class="kv"><span>Fonte</span><span>${escapeHtml(m.meta?.source || '—')}</span></div>
+            <div class="kv"><span>Accessi</span><span>${m.activation?.access_count ?? 0}</span></div>
+            <div class="kv"><span>ID</span><span>${escapeHtml(m.id)}</span></div>
+          </div>
+          <div>
+            <p class="title">Tag</p>
+            <div class="tags">${(m.content?.tags || []).length ? (m.content.tags || []).map((tag) => `<span class="tag">${escapeHtml(tag)}</span>`).join('') : '<span class="subtle">Nessun tag</span>'}</div>
+          </div>
+        </div>
+      `;
+    }
+
+    function escapeHtml(str) {
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+    }
+
+    function resize() {
+      const rect = canvas.getBoundingClientRect();
+      width = rect.width;
+      height = rect.height;
+      const dpr = window.devicePixelRatio || 1;
+      canvas.width = Math.floor(width * dpr);
+      canvas.height = Math.floor(height * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      centerX = width / 2;
+      centerY = height / 2;
+    }
+
+    function worldToScreen(x, y) {
+      return {
+        x: centerX + (x + panX) * scale,
+        y: centerY + (y + panY) * scale
+      };
+    }
+
+    function screenToWorld(x, y) {
+      return {
+        x: (x - centerX) / scale - panX,
+        y: (y - centerY) / scale - panY
+      };
+    }
+
+    function updatePhysics() {
+      const visibleNodes = nodes.filter((n) => activeTypes.has(n.type));
+
+      for (const node of visibleNodes) {
+        if (dragging && dragNodeId === node.id) continue;
+
+        node.angle += node.speed;
+
+        const targetX = Math.cos(node.angle) * node.radiusTarget;
+        const targetY = Math.sin(node.angle) * node.radiusTarget;
+
+        node.vx += (targetX - node.x) * 0.007;
+        node.vy += (targetY - node.y) * 0.007;
+
+        node.vx *= 0.90;
+        node.vy *= 0.90;
+
+        node.x += node.vx;
+        node.y += node.vy;
+      }
+
+      for (let i = 0; i < visibleNodes.length; i++) {
+        for (let j = i + 1; j < visibleNodes.length; j++) {
+          const a = visibleNodes[i];
+          const b = visibleNodes[j];
+
+          const dx = b.x - a.x;
+          const dy = b.y - a.y;
+          const dist = Math.sqrt(dx * dx + dy * dy) || 0.001;
+
+          const sameOrbitBoost = a.orbit === b.orbit ? 1.35 : 1;
+          const minDist = (a.size + b.size + 12) * sameOrbitBoost;
+
+          if (dist < minDist) {
+            const push = (minDist - dist) * 0.03;
+            const nx = dx / dist;
+            const ny = dy / dist;
+
+            a.vx -= nx * push;
+            a.vy -= ny * push;
+            b.vx += nx * push;
+            b.vy += ny * push;
+          }
+        }
+      }
+
+      for (const link of links) {
+        const a = nodes.find((n) => n.id === link.source);
+        const b = nodes.find((n) => n.id === link.target);
+
+        if (!a || !b || !activeTypes.has(a.type) || !activeTypes.has(b.type)) continue;
+
+        const dx = b.x - a.x;
+        const dy = b.y - a.y;
+        const dist = Math.sqrt(dx * dx + dy * dy) || 1;
+
+        const desired = 120;
+        const force = ((dist - desired) / desired) * 0.002 * (link.weight || 0.5);
+
+        a.vx += dx * force;
+        a.vy += dy * force;
+        b.vx -= dx * force;
+        b.vy -= dy * force;
+      }
+    }
+
+    function drawOrbit(radius, fillColor, label) {
+      const p = worldToScreen(0, 0);
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, radius * scale, 0, Math.PI * 2);
+      ctx.fillStyle = fillColor;
+      ctx.fill();
+      ctx.lineWidth = 1;
+      ctx.strokeStyle = 'rgba(173, 189, 255, 0.09)';
+      ctx.stroke();
+      ctx.fillStyle = 'rgba(231, 238, 252, 0.34)';
+      ctx.font = '12px Inter, sans-serif';
+      ctx.fillText(label, p.x + 10, p.y - radius * scale + 18);
+    }
+
+    function drawCore() {
+      const p = worldToScreen(0, 0);
+      const coreRadius = 26 * scale;
+      const grad = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, coreRadius * 2.8);
+      grad.addColorStop(0, 'rgba(125, 211, 252, 0.95)');
+      grad.addColorStop(0.3, 'rgba(125, 211, 252, 0.3)');
+      grad.addColorStop(1, 'rgba(125, 211, 252, 0)');
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, coreRadius * 2.6, 0, Math.PI * 2);
+      ctx.fillStyle = grad;
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(p.x, p.y, coreRadius, 0, Math.PI * 2);
+      ctx.fillStyle = '#bdefff';
+      ctx.shadowBlur = 24;
+      ctx.shadowColor = 'rgba(125, 211, 252, 0.7)';
+      ctx.fill();
+      ctx.shadowBlur = 0;
+      ctx.fillStyle = '#07111f';
+      ctx.font = `${Math.max(12, 12 * scale)}px Inter, sans-serif`;
+      ctx.textAlign = 'center';
+      ctx.fillText('K', p.x, p.y + 4);
+      ctx.textAlign = 'left';
+    }
+
+    function drawLinks() {
+      if (!showLinks) return;
+      for (const link of links) {
+        const a = nodes.find((n) => n.id === link.source);
+        const b = nodes.find((n) => n.id === link.target);
+        if (!a || !b || !activeTypes.has(a.type) || !activeTypes.has(b.type)) continue;
+        const pa = worldToScreen(a.x, a.y);
+        const pb = worldToScreen(b.x, b.y);
+        ctx.beginPath();
+        ctx.moveTo(pa.x, pa.y);
+        ctx.lineTo(pb.x, pb.y);
+        ctx.strokeStyle = `rgba(125, 211, 252, ${0.1 + (link.weight || 0.5) * 0.25})`;
+        ctx.lineWidth = 1 + (link.weight || 0.5) * 2;
+        ctx.stroke();
+      }
+    }
+
+    function truncateLabel(text, max = 28) {
+      return text.length > max ? `${text.slice(0, max - 1)}…` : text;
+    }
+
+    function drawNodes() {
+      const visibleNodes = nodes.filter((n) => activeTypes.has(n.type));
+
+      for (const node of visibleNodes) {
+        const p = worldToScreen(node.x, node.y);
+        const radius = node.size * scale;
+        const isSelected = selectedNode?.id === node.id;
+        const isHovered = hoveredNode?.id === node.id;
+
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, radius * 1.8, 0, Math.PI * 2);
+        ctx.shadowBlur = 18;
+        ctx.shadowColor = node.isDuplicate && showDuplicates ? 'rgba(255, 110, 110, 0.9)' : node.color;
+        ctx.fillStyle = node.isDuplicate && showDuplicates ? 'rgba(255, 110, 110, 0.14)' : node.color + '1c';
+        ctx.fill();
+        ctx.shadowBlur = 0;
+
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, radius, 0, Math.PI * 2);
+        ctx.fillStyle = node.color;
+        ctx.fill();
+
+        if (node.isDuplicate && showDuplicates) {
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, radius + 3, 0, Math.PI * 2);
+          ctx.strokeStyle = 'rgba(255, 120, 120, 0.95)';
+          ctx.lineWidth = 2;
+          ctx.stroke();
+        }
+
+        if (isSelected || isHovered) {
+          ctx.beginPath();
+          ctx.arc(p.x, p.y, radius + 5, 0, Math.PI * 2);
+          ctx.strokeStyle = isSelected ? 'rgba(255,255,255,0.95)' : 'rgba(255,255,255,0.5)';
+          ctx.lineWidth = 2;
+          ctx.stroke();
+        }
+
+        ctx.fillStyle = '#07111f';
+        ctx.font = `${Math.max(10, radius * 0.95)}px Inter, sans-serif`;
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'middle';
+        ctx.fillText(node.shortLabel, p.x, p.y + 0.5);
+
+        if (showDuplicates && node.isDuplicate) {
+          ctx.fillStyle = '#ffd9d9';
+          ctx.font = 'bold 10px Inter, sans-serif';
+          ctx.fillText('!', p.x + radius + 6, p.y - radius - 2);
+        }
+
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'alphabetic';
+
+        if (showLabels && scale >= 0.95 && (isSelected || isHovered)) {
+          ctx.fillStyle = 'rgba(231, 238, 252, 0.95)';
+          ctx.font = '12px Inter, sans-serif';
+          ctx.fillText(truncateLabel(node.label), p.x + radius + 8, p.y + 4);
+        }
+      }
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, width, height);
+      drawOrbit(CONFIG.orbitRadius.short, CONFIG.orbitColors.short, 'SHORT');
+      drawOrbit(CONFIG.orbitRadius.medium, CONFIG.orbitColors.medium, 'MEDIUM');
+      drawOrbit(CONFIG.orbitRadius.long, CONFIG.orbitColors.long, 'LONG');
+      drawCore();
+      drawLinks();
+      drawNodes();
+    }
+
+    function animate() {
+      updatePhysics();
+      draw();
+      animationFrame = requestAnimationFrame(animate);
+    }
+
+    function findNodeAt(x, y) {
+      const world = screenToWorld(x, y);
+      const visibleNodes = nodes.filter((n) => activeTypes.has(n.type));
+      for (let i = visibleNodes.length - 1; i >= 0; i--) {
+        const node = visibleNodes[i];
+        const dx = world.x - node.x;
+        const dy = world.y - node.y;
+        if (Math.sqrt(dx * dx + dy * dy) <= node.size + 5) return node;
+      }
+      return null;
+    }
+
+    function setupInteractions() {
+      canvas.addEventListener('mousemove', (e) => {
+        const rect = canvas.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+
+        if (dragging && dragMode === 'pan') {
+          panX = dragStart.panX + (x - dragStart.x) / scale;
+          panY = dragStart.panY + (y - dragStart.y) / scale;
+          return;
+        }
+
+        if (dragging && dragMode === 'node' && dragNodeId) {
+          const node = nodes.find((n) => n.id === dragNodeId);
+          if (!node) return;
+          const world = screenToWorld(x, y);
+          node.x = world.x;
+          node.y = world.y;
+          node.vx = 0;
+          node.vy = 0;
+          return;
+        }
+
+        hoveredNode = findNodeAt(x, y);
+      });
+
+      canvas.addEventListener('mousedown', (e) => {
+        const rect = canvas.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        const node = findNodeAt(x, y);
+        dragging = true;
+        canvas.classList.add('dragging');
+        if (node) {
+          dragMode = 'node';
+          dragNodeId = node.id;
+        } else {
+          dragMode = 'pan';
+          dragStart = { x, y, panX, panY };
+        }
+      });
+
+      window.addEventListener('mouseup', () => {
+        dragging = false;
+        dragMode = null;
+        dragNodeId = null;
+        canvas.classList.remove('dragging');
+      });
+
+      canvas.addEventListener('click', (e) => {
+        const rect = canvas.getBoundingClientRect();
+        const x = e.clientX - rect.left;
+        const y = e.clientY - rect.top;
+        const node = findNodeAt(x, y);
+        if (node) {
+          selectedNode = node;
+          renderDetail(node);
+        }
+      });
+
+      canvas.addEventListener('wheel', (e) => {
+        e.preventDefault();
+        const delta = e.deltaY < 0 ? 1.08 : 0.92;
+        scale = clamp(scale * delta, 0.5, 1.9);
+      }, { passive: false });
+
+      document.getElementById('toggleLabels').onclick = (e) => {
+        showLabels = !showLabels;
+        e.currentTarget.textContent = `Dettagli hover: ${showLabels ? 'ON' : 'OFF'}`;
+      };
+      document.getElementById('toggleLinks').onclick = (e) => {
+        showLinks = !showLinks;
+        e.currentTarget.textContent = `Link: ${showLinks ? 'ON' : 'OFF'}`;
+      };
+      document.getElementById('toggleDuplicates').onclick = (e) => {
+        showDuplicates = !showDuplicates;
+        e.currentTarget.textContent = `Doppioni: ${showDuplicates ? 'ON' : 'OFF'}`;
+      };
+      document.getElementById('resetView').onclick = () => {
+        panX = 0;
+        panY = 0;
+        scale = 1;
+      };
+    }
+
+    async function loadJson(path) {
+      const res = await fetch(path);
+      if (!res.ok) throw new Error(`Impossibile caricare ${path}`);
+      return await res.json();
+    }
+
+    async function boot() {
+      try {
+        resize();
+        setupInteractions();
+        renderDetail(null);
+        const [memoriesData, linksData] = await Promise.all([
+          loadJson(CONFIG.memoriesPath),
+          loadJson(CONFIG.linksPath).catch(() => ({}))
+        ]);
+        normalizeData(memoriesData, linksData);
+        if (animationFrame) cancelAnimationFrame(animationFrame);
+        animate();
+      } catch (err) {
+        detailEl.innerHTML = `<div class="detail-empty">Errore nel caricamento dei JSON.<br><br><span class="subtle">${escapeHtml(err.message)}</span></div>`;
+      }
+    }
+
+    window.addEventListener('resize', resize);
+    boot();
+  </script>
+</body>
+</html>
