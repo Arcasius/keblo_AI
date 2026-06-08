@@ -16,7 +16,6 @@ import { analyzeConversationTurn } from "./intent_memory_router.js";
 import { getRelevantNews, buildNewsSnippets, cleanNewsQuery, rerankNews } from "./news_pipeline.js";
 import { parseDueDate } from "./time_parser.js";
 import { ensureConversationSession, appendTurn, readLastTurns, readAllTurns, readLastGreenExchanges,readContextTurns, searchTurns, convFilePath, semanticSearchTurns } from "./conversation_repo.js";
-import { createOrbitaleMemoryAdapter } from "./src/memory/orbitale/index.js";
 import fs from "fs";
 import { buildWorldBrief, readWorldBrief } from "./world_brief.js";
 import { startWorldBriefScheduler } from "./world_brief_scheduler.js";
@@ -29,43 +28,11 @@ import { gptReply, gptDiaryReply,gptReplyStream} from './llm_router.js'; // Assi
 // --- AGGIUNGI QUESTO PER RICREARE __dirname ---
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
-const FIX_TIMELINE_DIR = path.join(__dirname, "storage", "system");
-const FIX_TIMELINE_FILE = path.join(FIX_TIMELINE_DIR, "fix_timeline.json");
-const FIX_STATUSES = new Set(["todo", "active", "testing", "blocked", "done", "rollback"]);
-const FIX_PRIORITIES = new Set(["alta", "media", "bassa"]);
-const FIX_SEED = [
-  ["STT v1 implementato senza auto-send", "done", "chat", "alta"],
-  ["Auto-send opzionale dopo STT", "todo", "chat", "alta"],
-  ["Eliminare duplicazione log chat/STT", "todo", "chat", "media"],
-  ["Sistemare doppia route /api/audio-stream", "todo", "server", "media"],
-  ["Ripulire server.js in moduli separati", "todo", "architettura", "alta"],
-  ["Separare card logic da index.html", "todo", "frontend", "alta"],
-  ["Creare Project Nexus card", "todo", "nexus", "alta"],
-  ["Migliorare news: poche fonti ma profonde", "todo", "news", "alta"]
-];
 const storage = multer.memoryStorage();
 const upload = multer({ 
   storage: storage,
   limits: { fileSize: 20 * 1024 * 1024 } // Limite 5MB
 })
-const STT_AUDIO_MIME_TYPES = new Set([
-  "audio/webm",
-  "audio/ogg",
-  "audio/mpeg",
-  "audio/mp4",
-  "audio/wav",
-  "audio/x-wav"
-]);
-const uploadAudio = multer({
-  storage: multer.memoryStorage(),
-  limits: { fileSize: 20 * 1024 * 1024 },
-  fileFilter: (req, file, callback) => {
-    if (STT_AUDIO_MIME_TYPES.has(file.mimetype)) return callback(null, true);
-    const error = new Error("Formato audio non supportato.");
-    error.code = "INVALID_AUDIO_TYPE";
-    callback(error);
-  }
-});
 //import * as cheerio from "cheerio";
 const require = createRequire(import.meta.url);
 
@@ -96,259 +63,6 @@ const app = express();
 app.use(express.json({ limit: '20mb' })); // Permette invii fino a 20 Mega
 app.use(express.urlencoded({ limit: '20mb', extended: true }));
 app.use(express.static("public"));
-
-let orbitaleShadowAdapter = null;
-
-function isOrbitaleShadowEnabled() {
-  return process.env.ORBITALE_MEMORY_ENABLED === "true";
-}
-
-function getOrbitaleShadowAdapter() {
-  if (!isOrbitaleShadowEnabled()) {
-    console.log("[orbitale-shadow] disabled");
-    return null;
-  }
-
-  if (!orbitaleShadowAdapter) {
-    orbitaleShadowAdapter = createOrbitaleMemoryAdapter({
-      enabled: true
-    });
-  }
-
-  return orbitaleShadowAdapter;
-}
-
-async function saveOrbitaleShadowTurn(userId, turn, pairedUserTurn = null) {
-  const turnId = turn?.ts || "unknown";
-  const traffic = turn?.traffic;
-
-  if (!isOrbitaleShadowEnabled()) {
-    console.log("[orbitale-shadow] disabled");
-    return { saved: false, marker: null };
-  }
-
-  if (typeof turn?.confidence === "number") {
-    console.log(`[orbitale-shadow] confidence turn=${turnId} confidence=${turn.confidence}`);
-  }
-
-  if (traffic !== "green") {
-    console.log(`[orbitale-shadow] skipped traffic=${traffic}`);
-    return { saved: false, marker: null };
-  }
-
-  const role = turn?.role;
-  const text = typeof turn?.text === "string" ? turn.text : "";
-
-  if (role !== "user" && role !== "assistant") {
-    console.log(`[orbitale-shadow] skipped unclear_role turn=${turnId} role=${role}`);
-    return { saved: false, marker: null };
-  }
-
-  if (turn?.orbitaleSaved === true && role !== "assistant") {
-    console.log(`[orbitale-shadow] skipped already_saved turn=${turnId}`);
-    return { saved: false, marker: null };
-  }
-
-  let orbitale = null;
-  try {
-    orbitale = getOrbitaleShadowAdapter();
-    if (!orbitale) {
-      return { saved: false, marker: null };
-    }
-  } catch (err) {
-    console.error(`[orbitale-shadow] error adapter turn=${turnId} ${err?.message || err}`);
-    return { saved: false, marker: null };
-  }
-
-  if (role === "assistant") {
-    if (!pairedUserTurn || pairedUserTurn.role !== "user") {
-      console.log(`[orbitale-shadow] no_safe_user_pair turn=${turnId}`);
-    } else if (pairedUserTurn.orbitaleSaved === true) {
-      console.log(`[orbitale-shadow] skipped paired already_saved turn=${pairedUserTurn.ts || "unknown"}`);
-    } else {
-      try {
-        await orbitale.saveUser(userId, typeof pairedUserTurn.text === "string" ? pairedUserTurn.text : "");
-        pairedUserTurn.orbitaleSaved = true;
-        pairedUserTurn.orbitaleSavedAt = new Date().toISOString();
-        console.log(`[orbitale-shadow] saved paired role=user turn=${pairedUserTurn.ts || "unknown"}`);
-      } catch (err) {
-        console.error(`[orbitale-shadow] error paired role=user turn=${pairedUserTurn.ts || "unknown"} ${err?.message || err}`);
-      }
-    }
-  }
-
-  if (turn?.orbitaleSaved === true) {
-    console.log(`[orbitale-shadow] skipped already_saved turn=${turnId}`);
-    return { saved: false, marker: null };
-  }
-
-  try {
-    if (role === "user") {
-      await orbitale.saveUser(userId, text);
-      console.log(`[orbitale-shadow] saved role=user turn=${turnId}`);
-    } else {
-      await orbitale.saveAssistant(userId, text);
-      console.log(`[orbitale-shadow] saved role=assistant turn=${turnId}`);
-    }
-
-    return {
-      saved: true,
-      marker: {
-        orbitaleSaved: true,
-        orbitaleSavedAt: new Date().toISOString()
-      }
-    };
-  } catch (err) {
-    console.error(`[orbitale-shadow] error turn=${turnId} ${err?.message || err}`);
-    return { saved: false, marker: null };
-  }
-}
-
-function getOrbitaleCockpitMemoryPath() {
-  return process.env.ORBITALE_MEMORY_PATH || "./orbitale_memory_data";
-}
-
-function readOrbitaleJsonFile(filePath) {
-  try {
-    if (!fs.existsSync(filePath)) {
-      return [];
-    }
-
-    const parsed = JSON.parse(fs.readFileSync(filePath, "utf8"));
-    if (Array.isArray(parsed)) {
-      return parsed.filter(Boolean);
-    }
-
-    if (parsed && typeof parsed === "object") {
-      return Object.values(parsed).filter(Boolean);
-    }
-  } catch (err) {
-    console.error("[orbitale-cockpit] read error file=" + filePath + " " + (err?.message || err));
-  }
-
-  return [];
-}
-
-function hasOrbitaleUserFiles(memoryPath, userId) {
-  return fs.existsSync(path.join(memoryPath, userId + "_memories.json")) ||
-    fs.existsSync(path.join(memoryPath, userId + "_links.json"));
-}
-
-function resolveOrbitaleCockpitUserId(req, memoryPath) {
-  const sessionUserId = req.session?.user?.id;
-  if (sessionUserId) {
-    return sessionUserId;
-  }
-
-  if (hasOrbitaleUserFiles(memoryPath, "u1")) {
-    return "u1";
-  }
-
-  return "keblo_user";
-}
-
-function getOrbitaleText(memory) {
-  return typeof memory?.content?.text === "string" ? memory.content.text :
-    typeof memory?.text === "string" ? memory.text : "";
-}
-
-function getOrbitaleRole(memory) {
-  const role = memory?.content?.role || memory?.role;
-  return role === "user" || role === "assistant" ? role : "unknown";
-}
-
-function getOrbitaleOrbit(memory) {
-  const orbit = memory?.orbitalLevel || memory?.orbital?.level;
-  return orbit === "short" || orbit === "medium" || orbit === "long" ? orbit : "unknown";
-}
-
-function getOrbitaleDepth(memory) {
-  const depth = memory?.memoryDepth || memory?.depth;
-  return depth === "temporary" || depth === "normal" || depth === "deep" ? depth : "unknown";
-}
-
-function getOrbitaleTimestamp(memory) {
-  return memory?.timestamp || memory?.created_at || memory?.meta?.timestamp || null;
-}
-
-function createOrbitaleNodeLabel(memory) {
-  const text = getOrbitaleText(memory).replace(/\s+/g, " ").trim();
-  const source = text || memory?.id || "memory";
-  return source.length > 80 ? source.slice(0, 77) + "..." : source;
-}
-
-function normalizeOrbitaleNode(memory) {
-  return {
-    id: memory?.id || "unknown",
-    label: createOrbitaleNodeLabel(memory),
-    text: getOrbitaleText(memory),
-    role: getOrbitaleRole(memory),
-    orbit: getOrbitaleOrbit(memory),
-    depth: getOrbitaleDepth(memory),
-    activation: typeof memory?.activation === "number" ? memory.activation : memory?.orbital?.activation_score ?? null,
-    importance: typeof memory?.meta?.importance === "number" ? memory.meta.importance : memory?.importance ?? null,
-    tags: Array.isArray(memory?.tags) ? memory.tags : [],
-    timestamp: getOrbitaleTimestamp(memory),
-    lastAccess: memory?.lastAccess || memory?.last_access || memory?.meta?.lastAccess || null
-  };
-}
-
-function normalizeOrbitaleLink(link) {
-  return {
-    id: link?.id || (link?.source || "unknown") + "_" + (link?.target || "unknown"),
-    source: link?.source || null,
-    target: link?.target || null,
-    weight: typeof link?.weight === "number" ? link.weight : null,
-    type: link?.type || "unknown"
-  };
-}
-
-function readOrbitaleCockpitData(req) {
-  const memoryPath = getOrbitaleCockpitMemoryPath();
-  const userId = resolveOrbitaleCockpitUserId(req, memoryPath);
-  const memories = readOrbitaleJsonFile(path.join(memoryPath, userId + "_memories.json"));
-  const links = readOrbitaleJsonFile(path.join(memoryPath, userId + "_links.json"));
-
-  return { memoryPath, userId, memories, links };
-}
-
-function countTopOrbitaleTags(memories, limit = 12) {
-  const counts = new Map();
-  for (const memory of memories) {
-    for (const tag of Array.isArray(memory?.tags) ? memory.tags : []) {
-      counts.set(tag, (counts.get(tag) || 0) + 1);
-    }
-  }
-
-  return [...counts.entries()]
-    .sort((left, right) => right[1] - left[1] || left[0].localeCompare(right[0]))
-    .slice(0, limit)
-    .map(([tag, count]) => ({ tag, count }));
-}
-
-function buildOrbitaleStatus(memories, links, memoryPath) {
-  const roles = { user: 0, assistant: 0, unknown: 0 };
-  const orbits = { short: 0, medium: 0, long: 0, unknown: 0 };
-  const depths = { temporary: 0, normal: 0, deep: 0, unknown: 0 };
-
-  for (const memory of memories) {
-    roles[getOrbitaleRole(memory)] += 1;
-    orbits[getOrbitaleOrbit(memory)] += 1;
-    depths[getOrbitaleDepth(memory)] += 1;
-  }
-
-  return {
-    ok: true,
-    enabled: isOrbitaleShadowEnabled(),
-    memoryPath,
-    memoriesCount: memories.length,
-    linksCount: links.length,
-    roles,
-    orbits,
-    depths,
-    topTags: countTopOrbitaleTags(memories)
-  };
-}
 
 // --- COPIA QUESTE NEL SERVER.JS ---
 app.post("/api/pubmed-search", async (req, res) => {
@@ -619,8 +333,198 @@ async function callLlamaForVision(text, type = 'cognitiva') {
   }
 }
 
-//Funzione estrazione Immagini 
+// --- API STT: KEBLO ASCOLTA ---
+// --- API STT: KEBLO ASCOLTA ---
+app.post("/api/stt/transcribe", isAuthenticated, upload.single("audio"), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.json({ ok: false, error: "Nessun audio ricevuto." });
+    }
 
+    const fd = new FormData();
+
+    const blob = new Blob([req.file.buffer], {
+      type: req.file.mimetype || "audio/webm"
+    });
+
+    fd.append("file", blob, req.file.originalname || "speech.webm");
+
+    const sttRes = await fetch("http://localhost:9001/transcribe", {
+      method: "POST",
+      body: fd
+    });
+
+    const data = await sttRes.json();
+    res.json(data);
+
+  } catch (e) {
+    console.error("[STT ERROR]", e);
+    res.json({ ok: false, error: "Trascrizione fallita." });
+  }
+});
+
+//Canvas Card 
+function extractHtml(raw = "") {
+  // 1. Cerca il blocco tra tag <html> (il metodo più sicuro)
+  const htmlMatch = raw.match(/<html[\s\S]*?<\/html>/i);
+  if (htmlMatch) return htmlMatch[0];
+
+  // 2. Se non c'è <html>, cerca il blocco di codice markdown ```html ... ```
+  const codeBlockMatch = raw.match(/```(?:html|javascript|code)?([\s\S]*?)```/i);
+  if (codeBlockMatch) {
+    const content = codeBlockMatch[1].trim();
+    // Se il contenuto sembra già HTML completo, ritornalo
+    if (content.toLowerCase().includes('<canvas') || content.toLowerCase().includes('<script')) {
+      return content;
+    }
+  }
+
+  // 3. Fallback: pulizia dei backtick se il modello ha risposto "nudo"
+  return raw.replace(/```html/gi, "").replace(/```/gi, "").trim();
+}
+app.post("/api/creative-canvas", isAuthenticated, async (req, res) => {
+  try {
+    const { prompt } = req.body;
+
+    if (!prompt || prompt.trim().length < 3) {
+      return res.status(400).json({
+        ok: false,
+        error: "Prompt troppo corto"
+      });
+    }
+
+    const cleanPrompt = prompt.trim();
+const systemPrompt = `
+You are an expert JavaScript canvas animation generator.
+Return ONLY one complete valid HTML file.
+
+Requirements:
+- Use HTML, CSS and vanilla JavaScript only
+- Use one full screen canvas
+- No external libraries
+- No explanations
+- Use requestAnimationFrame
+- Handle window resize
+- Wrap all JavaScript inside an IIFE: (function(){ ... })();
+- Keep the main subject large, centered and clearly recognizable
+- Limit particles to maximum 700
+
+Initialization order (MANDATORY - always follow this exact order inside the IIFE):
+1. Constants and configuration objects (COLORS, CONFIG, SETTINGS) - defined FIRST, before anything else
+2. Canvas and context setup (canvas, ctx, width, height)
+3. Pure helper functions (math utils, color utils, etc.)
+4. Particle/object arrays and init functions
+5. Draw and update functions
+6. Animation loop (requestAnimationFrame)
+7. Event listeners (resize, etc.)
+8. Bootstrap call to start the animation
+
+Runtime safety:
+- The code must not crash
+- Never pass negative radius values to ctx.arc()
+- Always clamp radius with Math.max(value, 0.1)
+- Avoid NaN and Infinity in any computed value
+- Do not redeclare variables in the same scope
+- Do not call undefined functions or methods
+- Every function called inside constructor, update or draw must be explicitly defined before use
+- Avoid using "this" unless strictly necessary
+- Prefer arrays of plain objects for particles instead of JavaScript classes
+- If using classes, every method called must exist in the class
+- Never access properties of a variable before it is declared and fully initialized
+- Never reference a variable inside an object literal if that variable is defined later in the code
+- Avoid circular references between objects at initialization time
+
+Color safety:
+- Define ALL color palettes as a single const object at the very top of the IIFE, before any other code
+- Use this pattern: const COLORS = { main: "#4fc3f7", accent: "rgba(100,200,255,0.6)", ... }
+- Never generate colors with NaN, undefined, null or out-of-range values
+- All colors passed to fillStyle, strokeStyle, shadowColor and gradient.addColorStop must be valid CSS colors
+- Clamp RGB values between 0 and 255
+- Clamp alpha values between 0 and 1
+- Prefer fixed color palettes instead of dynamically computed colors
+- For gradients, use only explicit valid CSS colors like "#000000", "rgba(255,255,255,0.5)"
+- Never compute a color string using variables that might be undefined
+
+Canvas structure:
+- Separate static objects from animated objects
+- Static objects should not move unless the scene explicitly requires it
+- Animated objects must be updated only inside the animation loop
+- Keep initialization code completely separate from draw/update code
+- Always clear or redraw the canvas at the start of each animation frame
+
+Scene:
+${cleanPrompt}
+`;
+
+    const raw = await callCreativeCanvasModel(systemPrompt);
+
+    if (!raw || typeof raw !== "string") {
+      return res.status(500).json({
+        ok: false,
+        error: "Risposta modello vuota"
+      });
+    }
+
+    if (raw.length > 250000) {
+      return res.status(413).json({
+        ok: false,
+        error: "Output troppo grande"
+      });
+    }
+
+    const html = sanitizeCanvasHtml(extractHtml(raw));
+
+    return res.json({
+      ok: true,
+      html
+    });
+
+  } catch (err) {
+    console.error("[CREATIVE CANVAS ERROR]", err);
+
+    return res.status(500).json({
+      ok: false,
+      error: err.message || "Errore generazione canvas"
+    });
+  }
+});
+function sanitizeCanvasHtml(html = "") {
+  return html
+    .replace(/<script[^>]*src=["'][^"']+["'][^>]*><\/script>/gi, "")
+    .replace(/fetch\s*\(/gi, "/* blocked fetch */(")
+    .replace(/XMLHttpRequest/gi, "BlockedXHR")
+    .replace(/WebSocket/gi, "BlockedWS")
+    .replace(/navigator\./gi, "blockedNavigator.")
+    .replace(/document\.cookie/gi, "blockedCookie")
+    .replace(/localStorage/gi, "blockedLocalStorage")
+    .replace(/sessionStorage/gi, "blockedSessionStorage");
+}
+        async function callCreativeCanvasModel(prompt) {
+          const response = await fetch("http://127.0.0.1:11434/api/generate", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              model: "qwen3.5:27b", // cambia con il tuo modello reale
+              prompt,
+              stream: false,
+              think: false,
+              options: {
+                temperature: 0.7,
+                top_p: 0.9,
+                num_ctx: 8192
+              }
+            })
+          });
+
+          if (!response.ok) {
+            throw new Error(`Ollama error ${response.status}`);
+          }
+
+          const data = await response.json();
+          return data.response || "";
+        }
+
+//Fine Canvas Card
 // Middleware per proteggere le API
 async function callLLMForEmotion(prompt) {
   // Questa funzione fa una chiamata "secca" a Ollama solo per estrarre il JSON delle emozioni
@@ -645,211 +549,6 @@ function isAuthenticated(req, res, next) {
   // Se non è loggato, blocca la richiesta
   res.status(401).json({ ok: false, msg: "Sessione non valida o scaduta" });
 }
-
-
-function createFixId() {
-  return `fix_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
-}
-
-function createFixRecord(input, timestamp = new Date().toISOString()) {
-  const status = FIX_STATUSES.has(input.status) ? input.status : "todo";
-  const priority = FIX_PRIORITIES.has(input.priority) ? input.priority : "media";
-  return {
-    id: input.id || createFixId(),
-    title: String(input.title || "").trim(),
-    area: String(input.area || "generale").trim() || "generale",
-    priority,
-    status,
-    description: String(input.description || "").trim(),
-    files: Array.isArray(input.files) ? input.files.map(String).map(value => value.trim()).filter(Boolean) : [],
-    notes: String(input.notes || "").trim(),
-    steps: Array.isArray(input.steps) && input.steps.length
-      ? input.steps
-      : [{ status, note: "Fix creato", at: timestamp }],
-    createdAt: input.createdAt || timestamp,
-    updatedAt: input.updatedAt || timestamp
-  };
-}
-
-function seedFixes() {
-  const timestamp = new Date().toISOString();
-  return FIX_SEED.map(([title, status, area, priority], index) => createFixRecord({
-    id: `fix_seed_${index + 1}`, title, status, area, priority
-  }, timestamp));
-}
-
-function writeFixes(fixes) {
-  fs.mkdirSync(FIX_TIMELINE_DIR, { recursive: true });
-  const temporaryFile = `${FIX_TIMELINE_FILE}.tmp`;
-  fs.writeFileSync(temporaryFile, JSON.stringify(fixes, null, 2), "utf8");
-  fs.renameSync(temporaryFile, FIX_TIMELINE_FILE);
-}
-
-function readFixes() {
-  fs.mkdirSync(FIX_TIMELINE_DIR, { recursive: true });
-  if (!fs.existsSync(FIX_TIMELINE_FILE)) {
-    const seeded = seedFixes();
-    writeFixes(seeded);
-    return seeded;
-  }
-  const raw = fs.readFileSync(FIX_TIMELINE_FILE, "utf8").trim();
-  if (!raw) {
-    const seeded = seedFixes();
-    writeFixes(seeded);
-    return seeded;
-  }
-  const parsed = JSON.parse(raw);
-  if (!Array.isArray(parsed)) throw new Error("fix_timeline.json deve contenere un array.");
-  if (parsed.length === 0) {
-    const seeded = seedFixes();
-    writeFixes(seeded);
-    return seeded;
-  }
-  return parsed;
-}
-
-try {
-  readFixes();
-} catch (error) {
-  console.error("[FIX CONTROL] Impossibile inizializzare lo storage:", error.message);
-}
-
-app.get("/api/fixes", isAuthenticated, (req, res) => {
-  try {
-    res.json({ ok: true, fixes: readFixes() });
-  } catch (error) {
-    console.error("[FIX CONTROL] GET error:", error);
-    res.status(500).json({ ok: false, msg: "Impossibile leggere i fix." });
-  }
-});
-
-app.post("/api/fixes", isAuthenticated, (req, res) => {
-  try {
-    const title = String(req.body?.title || "").trim();
-    if (!title) return res.status(400).json({ ok: false, msg: "Titolo obbligatorio." });
-    if (req.body?.status && !FIX_STATUSES.has(req.body.status)) return res.status(400).json({ ok: false, msg: "Stato non valido." });
-    if (req.body?.priority && !FIX_PRIORITIES.has(req.body.priority)) return res.status(400).json({ ok: false, msg: "Priorita non valida." });
-    const fixes = readFixes();
-    const fix = createFixRecord(req.body);
-    fixes.unshift(fix);
-    writeFixes(fixes);
-    res.status(201).json({ ok: true, fix });
-  } catch (error) {
-    console.error("[FIX CONTROL] POST error:", error);
-    res.status(500).json({ ok: false, msg: "Impossibile creare il fix." });
-  }
-});
-
-app.patch("/api/fixes/:id", isAuthenticated, (req, res) => {
-  try {
-    const fixes = readFixes();
-    const index = fixes.findIndex(fix => fix.id === req.params.id);
-    if (index === -1) return res.status(404).json({ ok: false, msg: "Fix non trovato." });
-    if (req.body?.status && !FIX_STATUSES.has(req.body.status)) return res.status(400).json({ ok: false, msg: "Stato non valido." });
-    if (req.body?.priority && !FIX_PRIORITIES.has(req.body.priority)) return res.status(400).json({ ok: false, msg: "Priorita non valida." });
-    const current = fixes[index];
-    const updatedAt = new Date().toISOString();
-    const next = { ...current };
-    for (const field of ["title", "area", "description", "notes"]) {
-      if (req.body?.[field] !== undefined) next[field] = String(req.body[field]).trim();
-    }
-    if (req.body?.priority !== undefined) next.priority = req.body.priority;
-    if (req.body?.files !== undefined) {
-      if (!Array.isArray(req.body.files)) return res.status(400).json({ ok: false, msg: "files deve essere un array." });
-      next.files = req.body.files.map(String).map(value => value.trim()).filter(Boolean);
-    }
-    if (req.body?.status !== undefined && req.body.status !== current.status) {
-      next.status = req.body.status;
-      next.steps = [
-        ...(Array.isArray(current.steps) ? current.steps : []),
-        { status: req.body.status, note: String(req.body.stepNote || `Stato cambiato da ${current.status} a ${req.body.status}`).trim(), at: updatedAt }
-      ];
-    }
-    if (!next.title) return res.status(400).json({ ok: false, msg: "Titolo obbligatorio." });
-    next.updatedAt = updatedAt;
-    fixes[index] = next;
-    writeFixes(fixes);
-    res.json({ ok: true, fix: next });
-  } catch (error) {
-    console.error("[FIX CONTROL] PATCH error:", error);
-    res.status(500).json({ ok: false, msg: "Impossibile aggiornare il fix." });
-  }
-});
-
-app.delete("/api/fixes/:id", isAuthenticated, (req, res) => {
-  try {
-    const fixes = readFixes();
-    const remaining = fixes.filter(fix => fix.id !== req.params.id);
-    if (remaining.length === fixes.length) return res.status(404).json({ ok: false, msg: "Fix non trovato." });
-    writeFixes(remaining);
-    res.json({ ok: true });
-  } catch (error) {
-    console.error("[FIX CONTROL] DELETE error:", error);
-    res.status(500).json({ ok: false, msg: "Impossibile eliminare il fix." });
-  }
-});
-
-app.post("/api/stt/transcribe", isAuthenticated, (req, res) => {
-  uploadAudio.single("audio")(req, res, async (uploadError) => {
-    if (uploadError) {
-      const status = uploadError instanceof multer.MulterError && uploadError.code === "LIMIT_FILE_SIZE" ? 413 : 400;
-      console.error(`[STT] error ${uploadError.message}`);
-      return res.status(status).json({ ok: false, error: uploadError.message });
-    }
-
-    if (!req.file || !req.file.buffer || req.file.buffer.length === 0 || !STT_AUDIO_MIME_TYPES.has(req.file.mimetype)) {
-      console.error("[STT] error Audio mancante o non valido.");
-      return res.status(400).json({ ok: false, error: "Audio mancante o non valido." });
-    }
-
-    console.log(`[STT] received mime=${req.file.mimetype} size=${req.file.size}`);
-    const sttUrl = process.env.STT_URL || "http://localhost:9001/transcribe";
-    const extensionByMime = {
-      "audio/webm": "webm", "audio/ogg": "ogg", "audio/mpeg": "mp3",
-      "audio/mp4": "mp4", "audio/wav": "wav", "audio/x-wav": "wav"
-    };
-    const formData = new FormData();
-    formData.append("file", new Blob([req.file.buffer], { type: req.file.mimetype }),
-      `recording.${extensionByMime[req.file.mimetype] || "audio"}`);
-
-    let timeoutId = null;
-    let signal;
-    if (typeof AbortSignal !== "undefined" && typeof AbortSignal.timeout === "function") {
-      signal = AbortSignal.timeout(30000);
-    } else {
-      const controller = new AbortController();
-      signal = controller.signal;
-      timeoutId = setTimeout(() => controller.abort(), 30000);
-    }
-
-    try {
-      const sttRes = await fetch(sttUrl, { method: "POST", body: formData, signal });
-      if (!sttRes.ok) throw new Error(`Servizio STT non disponibile (HTTP ${sttRes.status}).`);
-
-      let data;
-      try {
-        data = await sttRes.json();
-      } catch {
-        throw new Error("Risposta STT non valida.");
-      }
-
-      const text = [data?.text, data?.transcript, data?.result]
-        .find(value => typeof value === "string" && value.trim())?.trim();
-      if (!text) throw new Error("La risposta STT non contiene testo.");
-
-      console.log(`[STT] transcribed chars=${text.length}`);
-      return res.json({ ok: true, text, raw: data });
-    } catch (error) {
-      const timedOut = signal.aborted || error?.name === "AbortError" || error?.name === "TimeoutError";
-      const status = timedOut ? 504 : 502;
-      const message = timedOut ? "Timeout del servizio STT." : error.message;
-      console.error(`[STT] error ${message}`);
-      return res.status(status).json({ ok: false, error: message });
-    } finally {
-      if (timeoutId) clearTimeout(timeoutId);
-    }
-  });
-});
 // API LOGIN
 app.post("/api/login", async (req, res) => {
   const { username, password } = req.body;
@@ -1013,9 +712,14 @@ app.get("/api/audio-stream/:uid/:file", (req, res) => {
 // ensureConversationSession, appendTurn, userAudit, ingestEmotion,
 // readLastGreenExchanges, processInput, ecc.
 
+/* ============================================================
+   Brief Sezione Notizie per Keblo — v2.1
+   Aggiornato per struttura nuova: italy_general, italy_politics,
+   italy_cronaca, italy_tech, sicily, world, tech, science, climate
+   ============================================================ */
+
 function isWorldBriefRequest(text = "") {
   const t = String(text || "").toLowerCase().trim();
-
   return (
     t.includes("aggiorna notizie") ||
     t.includes("sincronizza notizie") ||
@@ -1024,40 +728,52 @@ function isWorldBriefRequest(text = "") {
     t.includes("cosa succede oggi") ||
     t.includes("notizie di oggi") ||
     t.includes("che succede in italia") ||
-    t.includes("che succede nel mondo")
+    t.includes("che succede nel mondo") ||
+    t.includes("notizie dalla sicilia") ||
+    t.includes("che succede in sicilia") ||
+    t.includes("notizie sul clima") ||
+    t.includes("el nino") ||
+    t.includes("la nina")
   );
 }
 
+// Helper: raccoglie tutti gli articoli Italia dalla nuova struttura
+function _italyArticles(brief, max = 8) {
+  return [
+    ...(brief.italy_general  || brief.italy || []),
+    ...(brief.italy_politics || []),
+    ...(brief.italy_cronaca  || []),
+    ...(brief.italy_tech     || []),
+  ].slice(0, max);
+}
+
 function formatWorldBriefForChat(brief) {
-  const italy = (brief.italy || []).slice(0, 8);
-  const world = (brief.world || []).slice(0, 8);
+  const italy   = _italyArticles(brief, 8);
+  const sicily  = (brief.sicily  || []).slice(0, 4);
+  const world   = (brief.world   || []).slice(0, 8);
+  const tech    = (brief.tech    || brief.technology || []).slice(0, 4);
+  const science = (brief.science || brief.science_health || []).slice(0, 4);
+  const climate = (brief.climate || []).slice(0, 4);
   const signals = (brief.signals || []).slice(0, 5);
 
-  const italyText = italy.length
-    ? italy.map((n, i) => `${i + 1}. ${n.title} — ${n.source}`).join("\n")
-    : "Nessuna notizia Italia disponibile.";
+  const fmtList = (arr) =>
+    arr.length
+      ? arr.map((n, i) => `${i + 1}. [${n.category || "generale"}] ${n.title} — ${n.source}`).join("\n")
+      : "Nessuna notizia disponibile.";
 
-  const worldText = world.length
-    ? world.map((n, i) => `${i + 1}. ${n.title} — ${n.source}`).join("\n")
-    : "Nessuna notizia mondo disponibile.";
+  const sections = [
+    `ITALIA\n${fmtList(italy)}`,
+    sicily.length  ? `SICILIA\n${fmtList(sicily)}`  : null,
+    `MONDO\n${fmtList(world)}`,
+    tech.length    ? `TECNOLOGIA\n${fmtList(tech)}`  : null,
+    science.length ? `SCIENZA/SALUTE\n${fmtList(science)}` : null,
+    climate.length ? `CLIMA\n${fmtList(climate)}`   : null,
+    `SEGNALI\n${signals.length ? signals.map((s, i) => `${i + 1}. ${s}`).join("\n") : "Nessun segnale disponibile."}`,
+  ].filter(Boolean);
 
-  const signalsText = signals.length
-    ? signals.map((s, i) => `${i + 1}. ${s}`).join("\n")
-    : "Nessun segnale sintetico disponibile.";
-
-  return `Ecco il brief del mondo aggiornato.
-
-ITALIA
-${italyText}
-
-MONDO
-${worldText}
-
-SEGNALI
-${signalsText}
-
-Generato: ${brief.generated_at}`;
+  return `Ecco il brief del mondo aggiornato.\n\n${sections.join("\n\n")}\n\nGenerato: ${brief.generated_at}`;
 }
+
 async function safeReadWorldBrief() {
   try {
     return await readWorldBrief();
@@ -1073,6 +789,7 @@ function isWorldRelevantTurn(text = "", intentAnalysis = null) {
     t.includes("notizie") ||
     t.includes("mondo") ||
     t.includes("italia") ||
+    t.includes("sicilia") ||
     t.includes("governo") ||
     t.includes("guerra") ||
     t.includes("ucraina") ||
@@ -1086,14 +803,19 @@ function isWorldRelevantTurn(text = "", intentAnalysis = null) {
     t.includes("borsa") ||
     t.includes("politica") ||
     t.includes("attualità") ||
-    t.includes("attualita")
+    t.includes("attualita") ||
+    t.includes("clima") ||
+    t.includes("el nino") ||
+    t.includes("la nina") ||
+    t.includes("meteo estremo") ||
+    t.includes("cronaca")
   ) {
     return true;
   }
 
   const domain = intentAnalysis?.refinedIntent?.primaryDomain?.toLowerCase() || "";
-  const topic = intentAnalysis?.shortMemory?.activeTopic?.toLowerCase() || "";
-  const need = intentAnalysis?.shortMemory?.unresolvedNeed?.toLowerCase() || "";
+  const topic  = intentAnalysis?.shortMemory?.activeTopic?.toLowerCase() || "";
+  const need   = intentAnalysis?.shortMemory?.unresolvedNeed?.toLowerCase() || "";
 
   return (
     domain.includes("news") ||
@@ -1108,7 +830,6 @@ function isWorldRelevantTurn(text = "", intentAnalysis = null) {
 
 function wantsDeepWorldContext(text = "") {
   const t = String(text || "").toLowerCase();
-
   return (
     t.includes("approfond") ||
     t.includes("analizza") ||
@@ -1125,52 +846,57 @@ function wantsDeepWorldContext(text = "") {
 function buildWorldBriefLightContext(brief) {
   if (!brief) return "";
 
-  const italy = (brief.italy || []).slice(0, 3);
-  const world = (brief.world || []).slice(0, 3);
+  const italy   = _italyArticles(brief, 5);
+  const sicily  = (brief.sicily  || []).slice(0, 2);
+  const world   = (brief.world   || []).slice(0, 4);
+  const science = (brief.science || brief.science_health || []).slice(0, 3);
+  const climate = (brief.climate || []).slice(0, 2);
   const signals = (brief.signals || []).slice(0, 3);
 
-  return `STATO DEL MONDO RECENTE (CONTEXTO LEGGERO)
-ITALIA:
-${italy.map((n, i) => `- ${n.title}`).join("\n") || "- Nessun dato disponibile"}
+  const fmt = n =>
+    `- [${n.category || "generale"}] ${n.title}${n.source && n.source !== "unknown" ? ` (${n.source})` : ""}`;
 
-MONDO:
-${world.map((n, i) => `- ${n.title}`).join("\n") || "- Nessun dato disponibile"}
+  const sections = [
+    `ITALIA:\n${italy.map(fmt).join("\n") || "- Nessun dato disponibile"}`,
+    sicily.length  ? `SICILIA:\n${sicily.map(fmt).join("\n")}` : null,
+    `MONDO:\n${world.map(fmt).join("\n") || "- Nessun dato disponibile"}`,
+    science.length ? `SCIENZA:\n${science.map(fmt).join("\n")}` : null,
+    climate.length ? `CLIMA:\n${climate.map(fmt).join("\n")}` : null,
+    `SEGNALI:\n${signals.map(s => `- ${s}`).join("\n") || "- Nessun segnale disponibile"}`,
+  ].filter(Boolean);
 
-SEGNALI:
-${signals.map(s => `- ${s}`).join("\n") || "- Nessun segnale disponibile"}
-
-Generato: ${brief.generated_at}`;
+  return `STATO DEL MONDO RECENTE (CONTEXTO LEGGERO)\n\n${sections.join("\n\n")}\n\nGenerato: ${brief.generated_at}`;
 }
 
 function buildWorldBriefDeepContext(brief) {
   if (!brief) return "";
 
-  const italy = (brief.italy || []).slice(0, 8);
-  const world = (brief.world || []).slice(0, 8);
-  const tech = (brief.technology || []).slice(0, 4);
-  const science = (brief.science_health || []).slice(0, 4);
+  const italy   = _italyArticles(brief, 10);
+  const sicily  = (brief.sicily  || []).slice(0, 3);
+  const world   = (brief.world   || []).slice(0, 8);
+  const tech    = (brief.tech    || brief.technology || []).slice(0, 4);
+  const science = (brief.science || brief.science_health || []).slice(0, 4);
+  const climate = (brief.climate || []).slice(0, 4);
   const signals = (brief.signals || []).slice(0, 5);
 
-  return `STATO DEL MONDO RECENTE (CONTESTO PROFONDO)
+  const fmtNum = (arr) =>
+    arr.length
+      ? arr.map((n, i) => `${i + 1}. [${n.category || "generale"}] ${n.title} — ${n.source}`).join("\n")
+      : "Nessun dato disponibile";
 
-ITALIA:
-${italy.map((n, i) => `${i + 1}. ${n.title} — ${n.source}`).join("\n") || "Nessun dato disponibile"}
+  const sections = [
+    `ITALIA:\n${fmtNum(italy)}`,
+    sicily.length  ? `SICILIA:\n${fmtNum(sicily)}`         : null,
+    `MONDO:\n${fmtNum(world)}`,
+    tech.length    ? `TECNOLOGIA:\n${fmtNum(tech)}`        : null,
+    science.length ? `SCIENZA/SALUTE:\n${fmtNum(science)}` : null,
+    climate.length ? `CLIMA:\n${fmtNum(climate)}`          : null,
+    `SEGNALI:\n${signals.map((s, i) => `${i + 1}. ${s}`).join("\n") || "Nessun segnale disponibile"}`,
+  ].filter(Boolean);
 
-MONDO:
-${world.map((n, i) => `${i + 1}. ${n.title} — ${n.source}`).join("\n") || "Nessun dato disponibile"}
-
-TECNOLOGIA:
-${tech.map((n, i) => `${i + 1}. ${n.title} — ${n.source}`).join("\n") || "Nessun dato disponibile"}
-
-SCIENZA/SALUTE:
-${science.map((n, i) => `${i + 1}. ${n.title} — ${n.source}`).join("\n") || "Nessun dato disponibile"}
-
-SEGNALI:
-${signals.map((s, i) => `${i + 1}. ${s}`).join("\n") || "Nessun segnale disponibile"}
-
-Generato: ${brief.generated_at}`;
+  return `STATO DEL MONDO RECENTE (CONTESTO PROFONDO)\n\n${sections.join("\n\n")}\n\nGenerato: ${brief.generated_at}`;
 }
-
+/*Fine sezione Brief dal mondo*/
 
 app.post("/api/chat", isAuthenticated, async (req, res) => {
   // Configurazione SSE
@@ -1232,24 +958,7 @@ app.post("/api/chat", isAuthenticated, async (req, res) => {
         promptTokens: 0,
         speed: "WORLD_BRIEF",
         blocked: false,
-        source: "world_brief",
-        route: {
-          baseIntent: "explain",
-          domainIntent: "news_intelligence",
-          subdomain: "world_brief",
-          domainSource: "current_text",
-          responseProfile: {
-            register: "analytical",
-            tone: "sobrio_fonti_chiare",
-            rhetoric: "low",
-            structure: "briefing",
-            depth: "medium"
-          },
-          voiceCalibration: false,
-          confidence: 1,
-          signals: ["worldBrief"],
-          contextLift: true
-        }
+        source: "world_brief"
       };
 
       await appendTurn(userId, {
@@ -1477,27 +1186,13 @@ ISTRUZIONI:
     const tps = (evalCount / (evalDuration / 1_000_000_000)).toFixed(2);
     const totalTokens = (result.raw?.prompt_eval_count || 0) + evalCount;
     const promptTokens = result.raw?.prompt_eval_count || 0;
-    const routeMeta = intentAnalysis?.domainRoute
-      ? {
-          baseIntent: intentAnalysis.domainRoute.baseIntent,
-          domainIntent: intentAnalysis.domainRoute.domainIntent,
-          subdomain: intentAnalysis.domainRoute.subdomain,
-          domainSource: intentAnalysis.domainRoute.domainSource,
-          responseProfile: intentAnalysis.domainRoute.responseProfile,
-          voiceCalibration: intentAnalysis.domainRoute.voiceCalibration,
-          confidence: intentAnalysis.domainRoute.confidence,
-          signals: intentAnalysis.domainRoute.signals,
-          contextLift: intentAnalysis.domainRoute.contextLift
-        }
-      : null;
 
     const finalMeta = {
       tokenUsed: totalTokens,
       tokenLimit: 10000,
       promptTokens,
       speed: tps,
-      blocked: totalTokens >= 10000,
-      route: routeMeta
+      blocked: totalTokens >= 10000
     };
 
     // 8. Salva assistant turn
@@ -1709,25 +1404,12 @@ app.post("/api/set-confidence", isAuthenticated, async (req, res) => {
   const turns = readAllTurns(userId);
 
   // 2. Aggiorniamo solo il turno che ci interessa
-  const updated = [];
-
-  for (let i = 0; i < turns.length; i++) {
-    const t = turns[i];
-    if (t.ts !== ts) {
-      updated.push(t);
-      continue;
+  const updated = turns.map(t => {
+    if (t.ts === ts) {
+      return { ...t, traffic, confidence };
     }
-
-    let nextTurn = { ...t, traffic, confidence };
-    const pairedUserTurn = nextTurn.role === "assistant" ? turns[i - 1] : null;
-    const shadowResult = await saveOrbitaleShadowTurn(userId, nextTurn, pairedUserTurn);
-
-    if (shadowResult.marker) {
-      nextTurn = { ...nextTurn, ...shadowResult.marker };
-    }
-
-    updated.push(nextTurn);
-  }
+    return t;
+  });
 
   const file = convFilePath(userId);
 
@@ -1742,32 +1424,6 @@ app.post("/api/set-confidence", isAuthenticated, async (req, res) => {
   res.json({ ok: true });
 });
 
-
-// Endpoint cockpit Memoria Orbitale (read-only)
-app.get("/api/orbitale/status", isAuthenticated, async (req, res) => {
-  try {
-    const { memoryPath, memories, links } = readOrbitaleCockpitData(req);
-    const status = buildOrbitaleStatus(memories, links, memoryPath);
-    console.log("[orbitale-cockpit] status memories=" + status.memoriesCount + " links=" + status.linksCount);
-    res.json(status);
-  } catch (err) {
-    console.error("[orbitale-cockpit] status error " + (err?.message || err));
-    res.json(buildOrbitaleStatus([], [], getOrbitaleCockpitMemoryPath()));
-  }
-});
-
-app.get("/api/orbitale/graph", isAuthenticated, async (req, res) => {
-  try {
-    const { memories, links } = readOrbitaleCockpitData(req);
-    const nodes = memories.map(normalizeOrbitaleNode);
-    const graphLinks = links.map(normalizeOrbitaleLink);
-    console.log("[orbitale-cockpit] graph nodes=" + nodes.length + " links=" + graphLinks.length);
-    res.json({ ok: true, nodes, links: graphLinks });
-  } catch (err) {
-    console.error("[orbitale-cockpit] graph error " + (err?.message || err));
-    res.json({ ok: true, nodes: [], links: [] });
-  }
-});
 
 // Endpoint per leggere lo storico (protetto)
 app.get("/api/history", isAuthenticated, async (req, res) => {
@@ -3241,5 +2897,4 @@ app.put("/api/reminders/:id", isAuthenticated, (req, res) => {
 startScheduler();
 startWorldBriefScheduler();
 
-const PORT = Number(process.env.PORT || 3002);
-app.listen(PORT, () => console.log("Keblo Final running on http://localhost:" + PORT));
+app.listen(3000, () => console.log("🚀 Keblo Final running on http://localhost:3000"));

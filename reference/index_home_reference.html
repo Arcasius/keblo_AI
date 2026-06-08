@@ -72,7 +72,7 @@
   --a-reader: #38bdf8;
   --a-journal: #d946ef;
   --a-vision: #f472b6;
-  --a-orbitale: #14b8a6;
+  --a-canvas: #f59e0b;
 }
 
 /* grain overlay */
@@ -585,9 +585,7 @@ body{
 .card.reader{ --accent: var(--a-reader); }
 .card.journal{ --accent: var(--a-journal); }
 .card.vision{ --accent: var(--a-vision); }
-.card.orbitale_memory{ --accent: var(--a-orbitale); }
-.card.fix_control{ --accent: #f59e0b; }
-
+.card.canvas{ --accent: var(--a-canvas);}
 /* apply accent to surfaces */
 .card.chat .card-front, .card.chat .card-back,
 .card.memo .card-front, .card.memo .card-back,
@@ -600,9 +598,8 @@ body{
 .card.news .card-front, .card.news .card-back,
 .card.reader .card-front, .card.reader .card-back,
 .card.journal .card-front, .card.journal .card-back,
-.card.vision .card-front, .card.vision .card-back,
-.card.orbitale_memory .card-front, .card.orbitale_memory .card-back,
-.card.fix_control .card-front, .card.fix_control .card-back{
+.card.canvas .card-front, .card.canvas .card-back,
+.card.vision .card-front, .card.vision .card-back{
   border-color: color-mix(in srgb, var(--accent) 55%, rgba(255,255,255,0.16));
   box-shadow:
     inset 0 1px 0 rgba(255,255,255,0.18),
@@ -623,34 +620,10 @@ body{
 .card.news .card-title,
 .card.reader .card-title,
 .card.journal .card-title,
-.card.vision .card-title,
-.card.orbitale_memory .card-title,
-.card.fix_control .card-title{
+.card.vision .card-title{
   color: color-mix(in srgb, var(--accent) 78%, rgba(255,255,255,0.92));
   text-shadow: 0 0 10px color-mix(in srgb, var(--accent) 30%, transparent);
 }
-
-.card.fix_control .card-content{ gap:8px; }
-.fix-control-toolbar{ display:grid; grid-template-columns:minmax(0, 1fr) 92px 78px 34px; gap:6px; }
-.fix-control-filter{ display:flex; align-items:center; gap:8px; }
-.fix-control-filter label{ font-size:9px; font-weight:900; letter-spacing:1px; color:#fcd34d; }
-.fix-control-list{ flex:1; min-height:0; overflow:auto; padding-right:4px; }
-.fix-control-item{ border:1px solid rgba(245,158,11,0.22); background:rgba(15,23,42,0.66); border-radius:10px; padding:9px; margin-bottom:8px; }
-.fix-control-head{ display:flex; align-items:flex-start; gap:7px; }
-.fix-control-title{ flex:1; min-width:0; font-size:11px; font-weight:900; line-height:1.35; }
-.fix-control-meta{ display:flex; flex-wrap:wrap; gap:5px; margin-top:7px; }
-.fix-control-chip{ border-radius:999px; padding:3px 7px; font-size:8px; font-weight:900; letter-spacing:.6px; text-transform:uppercase; background:rgba(255,255,255,.08); }
-.fix-status-todo{ color:#cbd5e1 !important; }.fix-status-active{ color:#60a5fa !important; }.fix-status-testing{ color:#c084fc !important; }
-.fix-status-blocked{ color:#fb7185 !important; }.fix-status-done{ color:#4ade80 !important; }.fix-status-rollback{ color:#f59e0b !important; }
-.fix-priority-alta{ color:#f87171 !important; }.fix-priority-media{ color:#facc15 !important; }.fix-priority-bassa{ color:#94a3b8 !important; }
-.fix-control-actions{ display:flex; flex-wrap:wrap; gap:4px; margin-top:8px; }
-.fix-control-actions button{ border:1px solid rgba(255,255,255,.12); border-radius:6px; background:rgba(255,255,255,.05); padding:4px 6px; cursor:pointer; font-size:8px; font-weight:800; }
-.fix-control-actions button.active{ border-color:#f59e0b; background:rgba(245,158,11,.18); color:#fde68a; }
-.fix-control-details{ margin-top:8px; border-top:1px solid rgba(255,255,255,.08); padding-top:7px; font-size:9px; line-height:1.45; }
-.fix-control-details summary{ cursor:pointer; color:#fcd34d; font-weight:900; letter-spacing:.8px; }
-.fix-control-timeline{ margin-top:6px; padding-left:10px; border-left:1px solid rgba(245,158,11,.35); }
-.fix-control-empty{ padding:35px 10px; text-align:center; opacity:.5; font-size:10px; }
-.fix-control-message{ min-height:13px; font-size:9px; color:#fca5a5; }
 
 /* ============================================================
    10) STATIONS (specific internal layouts)
@@ -863,332 +836,6 @@ body{
 }
 #nexus-out-text li {
   margin-bottom: 4px !important;
-}
-
-/* ============================================================
-   10.1B KEBLO CORE COCKPIT PATCH
-   ============================================================ */
-.card.chat .card-front{
-  background: rgba(15,23,42,0.88) !important;
-  border: 1px solid rgba(129,140,248,0.34) !important;
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,0.08),
-    inset 0 -1px 0 rgba(0,0,0,0.28),
-    0 18px 42px rgba(0,0,0,0.34),
-    0 0 18px rgba(99,102,241,0.10) !important;
-}
-
-.card.chat .card-title{
-  font-size: 11px !important;
-  letter-spacing: 2px !important;
-  color: rgba(165,180,252,0.92) !important;
-  text-shadow: 0 0 8px rgba(103,232,249,0.10) !important;
-}
-
-.card.chat #chat-input-container{
-  padding: 14px !important;
-  background: rgba(15,23,42,0.72) !important;
-  border-bottom: 1px solid rgba(148,163,184,0.16) !important;
-}
-
-.card.chat #chat-input-main{
-  min-height: 60px;
-  resize: none !important;
-  background: rgba(17,24,39,0.94) !important;
-  border: 1px solid rgba(129,140,248,0.30) !important;
-  border-radius: 8px !important;
-  color: #e5e7eb !important;
-  font-size: 13px !important;
-  line-height: 1.45 !important;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.04) !important;
-}
-
-.card.chat #chat-input-main::placeholder{
-  color: rgba(203,213,225,0.58) !important;
-}
-
-.card.chat #chat-input-main:focus{
-  border-color: rgba(103,232,249,0.44) !important;
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,0.05),
-    0 0 0 3px rgba(99,102,241,0.14) !important;
-}
-
-.card.chat #chat-stt-button{
-  width: 34px;
-  height: 34px;
-  flex: 0 0 34px;
-  border: 1px solid rgba(129,140,248,0.35);
-  border-radius: 8px;
-  background: rgba(30,41,59,0.9);
-  color: #e5e7eb;
-  cursor: pointer;
-}
-.card.chat #chat-stt-button[data-state="recording"]{
-  border-color: rgba(248,113,113,0.7);
-  background: rgba(127,29,29,0.45);
-}
-.card.chat #chat-stt-button[data-state="transcribing"]{
-  cursor: wait;
-  opacity: 0.7;
-}
-#chat-stt-status{
-  min-height: 14px;
-  margin-top: 5px;
-  color: rgba(203,213,225,0.7);
-  font-size: 10px;
-}
-.chat-stt-auto-send{
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  flex: 0 0 auto;
-  color: rgba(226,232,240,0.82);
-  font-size: 10px;
-  white-space: nowrap;
-  cursor: pointer;
-}
-.chat-stt-auto-send input{
-  margin: 0;
-  accent-color: #6366f1;
-  cursor: pointer;
-}
-.chat-stt-auto-send strong{
-  color: #a5b4fc;
-  font-weight: 700;
-}
-
-.card.chat #nexus-display{
-  padding: 16px !important;
-  background: rgba(2,6,23,0.24) !important;
-  user-select: text !important;
-  -webkit-user-select: text !important;
-}
-
-.card.chat #nexus-out-text{
-  color: #e5e7eb !important;
-  background: rgba(15,23,42,0.58) !important;
-  border: 1px solid rgba(148,163,184,0.14) !important;
-  border-radius: 14px !important;
-  padding: 16px !important;
-  font-size: 14px !important;
-  line-height: 1.65 !important;
-  white-space: normal !important;
-  word-break: normal !important;
-  overflow-wrap: anywhere !important;
-  box-shadow: inset 0 1px 18px rgba(0,0,0,0.18) !important;
-  user-select: text !important;
-  -webkit-user-select: text !important;
-}
-
-.card.chat #nexus-out-text p{
-  margin: 0 0 13px 0 !important;
-  padding: 0 !important;
-}
-
-.card.chat #nexus-out-text p:last-child,
-.card.chat #nexus-out-text ul:last-child,
-.card.chat #nexus-out-text ol:last-child,
-.card.chat #nexus-out-text pre:last-child,
-.card.chat #nexus-out-text blockquote:last-child{
-  margin-bottom: 0 !important;
-}
-
-.card.chat #nexus-out-text h1,
-.card.chat #nexus-out-text h2,
-.card.chat #nexus-out-text h3,
-.card.chat #nexus-out-text h4{
-  color: rgba(191,219,254,0.96) !important;
-  line-height: 1.25 !important;
-  letter-spacing: 0 !important;
-  border-left: 0 !important;
-  padding-left: 0 !important;
-}
-
-.card.chat #nexus-out-text h1{ font-size: 1.42em !important; margin: 0 0 14px 0 !important; }
-.card.chat #nexus-out-text h2{ font-size: 1.28em !important; margin: 18px 0 10px 0 !important; }
-.card.chat #nexus-out-text h3{ font-size: 1.14em !important; margin: 16px 0 8px 0 !important; }
-.card.chat #nexus-out-text h4{ font-size: 1.02em !important; margin: 14px 0 8px 0 !important; }
-
-.card.chat #nexus-out-text ul,
-.card.chat #nexus-out-text ol{
-  margin: 0 0 13px 0 !important;
-  padding-left: 22px !important;
-}
-
-.card.chat #nexus-out-text li{
-  margin: 0 0 6px 0 !important;
-  padding-left: 2px !important;
-}
-
-.card.chat #nexus-out-text strong{
-  color: #f8fafc !important;
-  font-weight: 800 !important;
-}
-
-.card.chat #nexus-out-text em{
-  color: rgba(203,213,225,0.92) !important;
-}
-
-.card.chat #nexus-out-text blockquote{
-  margin: 14px 0 !important;
-  padding: 10px 14px !important;
-  color: rgba(203,213,225,0.92) !important;
-  background: rgba(30,41,59,0.54) !important;
-  border-left: 3px solid rgba(103,232,249,0.36) !important;
-  border-radius: 8px !important;
-}
-
-.card.chat #nexus-out-text pre{
-  margin: 14px 0 !important;
-  padding: 13px 14px !important;
-  overflow: auto !important;
-  background: rgba(2,6,23,0.78) !important;
-  border: 1px solid rgba(148,163,184,0.16) !important;
-  border-radius: 10px !important;
-  line-height: 1.55 !important;
-}
-
-.card.chat #nexus-out-text code{
-  font-family: var(--font-mono) !important;
-  font-size: 0.92em !important;
-  color: rgba(226,232,240,0.96) !important;
-  background: rgba(15,23,42,0.72) !important;
-  border: 1px solid rgba(148,163,184,0.12) !important;
-  border-radius: 5px !important;
-  padding: 1px 5px !important;
-}
-
-.card.chat #nexus-out-text pre code{
-  display: block !important;
-  padding: 0 !important;
-  background: transparent !important;
-  border: 0 !important;
-  white-space: pre !important;
-}
-
-.card.chat #nexus-out-text table{
-  display: block !important;
-  width: 100% !important;
-  max-width: 100% !important;
-  margin: 14px 0 !important;
-  overflow-x: auto !important;
-  border-collapse: collapse !important;
-  font-size: 0.92em !important;
-}
-
-.card.chat #nexus-out-text th,
-.card.chat #nexus-out-text td{
-  padding: 8px 10px !important;
-  border: 1px solid rgba(148,163,184,0.16) !important;
-  vertical-align: top !important;
-}
-
-.card.chat #nexus-out-text th{
-  color: #f8fafc !important;
-  background: rgba(30,41,59,0.78) !important;
-}
-
-.card.chat #nexus-out-text td{
-  background: rgba(15,23,42,0.34) !important;
-}
-
-.card.chat #nexus-out-text hr{
-  border: 0 !important;
-  height: 1px !important;
-  margin: 18px 0 !important;
-  background: rgba(148,163,184,0.18) !important;
-}
-
-.card.chat #nexus-dashboard{
-  min-height: 74px !important;
-  padding: 10px 12px !important;
-  align-items: center !important;
-  justify-content: space-between !important;
-  gap: 12px !important;
-  background: rgba(15,23,42,0.92) !important;
-  border-top: 1px solid rgba(148,163,184,0.14) !important;
-}
-
-.card.chat #nexus-token-info{
-  display: flex !important;
-  align-items: center !important;
-  gap: 6px !important;
-  min-width: 142px !important;
-}
-
-.card.chat #v-controls{
-  gap: 8px !important;
-  margin-top: 0 !important;
-  padding: 0 !important;
-  transform: none !important;
-  justify-content: center !important;
-}
-
-.card.chat .v-btn-mini{
-  width: 30px !important;
-  height: 30px !important;
-  border-radius: 8px !important;
-  background: rgba(30,41,59,0.72) !important;
-  border: 1px solid rgba(148,163,184,0.18) !important;
-  opacity: 0.86 !important;
-  box-shadow: none !important;
-}
-
-.card.chat .v-btn-mini:hover{
-  background: rgba(49,46,129,0.42) !important;
-  border-color: rgba(129,140,248,0.42) !important;
-  transform: translateY(-1px) !important;
-  box-shadow: 0 6px 16px rgba(0,0,0,0.20) !important;
-}
-
-.card.chat #confidence-bar{
-  gap: 8px !important;
-  align-items: center !important;
-  min-width: 126px !important;
-  justify-content: flex-end !important;
-}
-
-.card.chat #confidence-bar button{
-  width: 16px !important;
-  height: 16px !important;
-  border: 1px solid rgba(255,255,255,0.28) !important;
-  box-shadow: none !important;
-  opacity: 0.88 !important;
-}
-
-.card.chat .card-back{
-  background: rgba(15,23,42,0.94) !important;
-  border: 1px solid rgba(129,140,248,0.24) !important;
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,0.06),
-    0 18px 42px rgba(0,0,0,0.34) !important;
-}
-
-.card.chat .history-list{
-  margin-top: 10px !important;
-  padding: 12px !important;
-  background: rgba(2,6,23,0.42) !important;
-  border: 1px solid rgba(148,163,184,0.13) !important;
-  border-radius: 10px !important;
-  color: rgba(203,213,225,0.90) !important;
-  font-size: 11.5px !important;
-  line-height: 1.55 !important;
-  overflow-wrap: anywhere !important;
-}
-
-.card.chat .history-item{
-  margin-bottom: 10px !important;
-  padding-bottom: 9px !important;
-  border-bottom: 1px solid rgba(148,163,184,0.10) !important;
-  color: rgba(203,213,225,0.88) !important;
-  word-break: normal !important;
-  overflow-wrap: anywhere !important;
-}
-
-.card.chat .history-item:last-child{
-  margin-bottom: 0 !important;
-  padding-bottom: 0 !important;
 }
 
 /* 10.2 MEMO STATION */
@@ -1900,6 +1547,58 @@ body{
 
 /* --- STATI SPECIFICI (IDLE E HOVER) --- */
 
+/*15.1 Canvas Card*/
+.card.canvas .card-content {
+  padding: 0 !important;
+  overflow: hidden;
+}
+
+.creative-canvas-wrap {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 0;
+  gap: 8px;
+}
+
+.creative-canvas-toolbar {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+
+.creative-canvas-toolbar input {
+  flex: 1;
+}
+
+.creative-canvas-toolbar button {
+  width: auto;
+  min-width: 78px;
+  padding: 9px 12px;
+}
+
+.canvas-reset-btn {
+  background: rgba(255,255,255,0.12) !important;
+  color: white !important;
+}
+
+.creative-canvas-error {
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: rgba(127, 29, 29, 0.45);
+  color: #fecaca;
+  font-size: 12px;
+}
+
+.creative-canvas-frame {
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  border: none;
+  border-radius: 14px;
+  background: #000;
+}
+/*Fine Canvas Card*/
 /* 1. Visione Cognitiva (CIANO) */
 .v-btn.cognitiva { 
   border: 1px solid rgba(34, 211, 238, 0.3);
@@ -2234,8 +1933,205 @@ window.KebloVoice = {
         }
     }
 };
+//Fine SISTEMA VOCALE GLOBALE KEBLO 
 
-    // --- INFERENZA NEWS ---
+// --- 👂 KEBLO STT: MOTORE DI ASCOLTO ---
+window.KebloSTT = {
+  recorder: null,
+  stream: null,
+  chunks: [],
+  isRecording: false,
+
+  async toggle(cardId) {
+    if (this.isRecording) this.stop(cardId);
+    else this.start(cardId);
+  },
+async start(cardId) {
+  try {
+    console.log("[STT] start", cardId);
+
+    const btn = document.getElementById(`mic-btn-${cardId}`);
+    if (!btn) {
+      console.error("[STT] bottone non trovato:", `mic-btn-${cardId}`);
+      return;
+    }
+
+    const devices = await navigator.mediaDevices.enumerateDevices();
+    console.log("[STT] devices", devices);
+
+    const mic =
+      devices.find(d => d.kind === "audioinput" && d.label.includes("Starship")) ||
+      devices.find(d => d.kind === "audioinput" && d.label !== "Default") ||
+      devices.find(d => d.kind === "audioinput");
+
+    console.log("[STT] mic scelto", mic);
+
+    if (!mic) {
+      throw new Error("Nessun audioinput trovato");
+    }
+
+    this.stream = await navigator.mediaDevices.getUserMedia({
+      audio: {
+        deviceId: { exact: mic.deviceId }
+      }
+    });
+
+    console.log("[STT] stream ottenuto", this.stream);
+
+    this.recorder = new MediaRecorder(this.stream);
+    console.log("[STT] recorder creato", this.recorder);
+
+    this.chunks = [];
+    this.isRecording = true;
+
+    btn.innerHTML = "⏹️";
+    btn.style.boxShadow = "0 0 15px #f472b6";
+    btn.style.borderColor = "#f472b6";
+
+    this.recorder.ondataavailable = e => {
+      console.log("[STT] chunk", e.data?.size);
+      if (e.data && e.data.size > 0) this.chunks.push(e.data);
+    };
+
+    this.recorder.onstop = () => {
+      console.log("[STT] stop event, chunks:", this.chunks.length);
+      this.send(cardId);
+    };
+
+    this.recorder.start();
+    // --- AUTO-STOP DOPO 2 SECONDI DI SILENZIO ---
+const audioCtx = new AudioContext();
+const source = audioCtx.createMediaStreamSource(this.stream);
+const analyser = audioCtx.createAnalyser();
+
+analyser.fftSize = 2048;
+source.connect(analyser);
+
+const dataArray = new Uint8Array(analyser.fftSize);
+
+let silenceStart = null;
+const SILENCE_LIMIT = 2000;
+const VOLUME_THRESHOLD = 8;
+
+const checkSilence = () => {
+  if (!this.isRecording) {
+    audioCtx.close();
+    return;
+  }
+
+  analyser.getByteTimeDomainData(dataArray);
+
+  let sum = 0;
+  for (let i = 0; i < dataArray.length; i++) {
+    const v = dataArray[i] - 128;
+    sum += Math.abs(v);
+  }
+
+  const volume = sum / dataArray.length;
+
+  if (volume < VOLUME_THRESHOLD) {
+    if (!silenceStart) silenceStart = Date.now();
+
+    if (Date.now() - silenceStart > SILENCE_LIMIT) {
+      console.log("[STT] silenzio rilevato, stop automatico");
+      this.stop(cardId);
+      return;
+    }
+  } else {
+    silenceStart = null;
+  }
+
+  requestAnimationFrame(checkSilence);
+};
+
+requestAnimationFrame(checkSilence);
+
+  } catch (err) {
+    console.error("[STT] errore start:", err);
+    alert("Microfono non rilevato o permesso negato.");
+    this.resetButton(cardId);
+  }
+},
+
+  stop(cardId) {
+    if (this.recorder && this.isRecording) {
+      this.recorder.stop();
+      this.isRecording = false;
+    }
+
+    if (this.stream) {
+      this.stream.getTracks().forEach(t => t.stop());
+      this.stream = null;
+    }
+
+    const btn = document.getElementById(`mic-btn-${cardId}`);
+    if (btn) {
+      btn.innerHTML = "🌀";
+      btn.style.boxShadow = "0 0 15px #22d3ee";
+      btn.style.borderColor = "#22d3ee";
+    }
+  },
+
+  async send(cardId) {
+    const blob = new Blob(this.chunks, { type: "audio/webm" });
+    this.chunks = [];
+
+    const fd = new FormData();
+    fd.append("audio", blob, "speech.webm");
+
+    try {
+      const res = await fetch("/api/stt/transcribe", {
+        method: "POST",
+        credentials: "include",
+        body: fd
+      });
+
+      const data = await res.json();
+      if (data.ok && data.text) {
+        const inp = document.getElementById("chat-input-main");
+
+        if (inp) {
+          const finalText = data.text.trim();
+
+          if (finalText) {
+            console.log("[STT] testo trascritto:", finalText);
+
+            inp.value = finalText;
+            inp.focus();
+
+            setTimeout(() => {
+              sendNexusMessage(finalText);
+              logChatRequest(finalText);
+              inp.value = "";
+            }, 600);
+          }
+        }
+      }
+   
+      else {
+        console.warn("STT risposta non valida:", data);
+      }
+    } catch (e) {
+      console.error("STT Fail:", e);
+    } finally {
+      this.resetButton(cardId);
+    }
+  },
+
+  resetButton(cardId) {
+    const btn = document.getElementById(`mic-btn-${cardId}`);
+    if (btn) {
+      btn.innerHTML = "👂";
+      btn.style.boxShadow = "none";
+      btn.style.borderColor = "#6366f1";
+    }
+
+    this.recorder = null;
+    this.isRecording = false;
+  }
+};
+//FINE MOTORE DI ASCOLTO
+// --- INFERENZA NEWS ---
   async function runNewsInference(cardId) {
   const topic = document.getElementById(`q-${cardId}`).value;
   const resDiv = document.getElementById(`res-${cardId}`);
@@ -2454,6 +2350,48 @@ function spawnCard(type, title, content, customPos = null, startMinimized = fals
   makeCardDraggable(div);
   
   const container = document.getElementById(`content-${cardId}`);
+  //Logica Canvas 
+  if (type === "canvas") {
+  div.style.width = customPos?.width || "520px";
+  div.style.height = customPos?.height || "520px";
+
+  container.innerHTML = `
+    <div class="creative-canvas-wrap">
+      <div class="creative-canvas-toolbar">
+        <input
+          id="canvas-prompt-${cardId}"
+          class="card-q"
+          placeholder="Es: albero giapponese con petali che cadono..."
+          onkeydown="if(event.key === 'Enter') runCreativeCanvas('${cardId}')"
+        />
+
+        <button
+          class="card-btn"
+          id="canvas-btn-${cardId}"
+          onclick="runCreativeCanvas('${cardId}')">
+          GENERA
+        </button>
+
+        <button
+          class="card-btn canvas-reset-btn"
+          onclick="resetCreativeCanvas('${cardId}')">
+          RESET
+        </button>
+      </div>
+
+      <div id="canvas-error-${cardId}" class="creative-canvas-error" style="display:none;"></div>
+
+      <iframe
+        id="canvas-frame-${cardId}"
+        class="creative-canvas-frame"
+        title="Creative Canvas"
+        sandbox="allow-scripts">
+      </iframe>
+    </div>
+  `;
+
+  logToCard(cardId, "Creative Canvas inizializzata", "CANVAS_READY");
+}
   
   // --- NUOVA LOGICA UNIFICATA: INTELLIGENCE ---
   if (type === "intelligence") {
@@ -2995,72 +2933,6 @@ else if (type === "event") {
       }
     }, 100);
   }
-  else if (type === "orbitale_memory") {
-    div.style.width = "640px";
-    div.style.height = "660px";
-    container.innerHTML = `
-      <div id="orbitale-wrap-${cardId}" style="display:flex; flex-direction:column; gap:10px; height:100%; overflow:hidden;">
-        <div style="display:flex; align-items:center; justify-content:space-between; gap:10px;">
-          <div style="font-size:9px; font-weight:900; letter-spacing:1px; color:#14b8a6; text-transform:uppercase;">READ ONLY</div>
-          <button class="card-btn" style="width:auto; min-width:84px; padding:6px 10px; margin:0; font-size:9px; background:rgba(20,184,166,0.22); color:#ccfbf1;" onclick="loadOrbitaleMemoryCard('${cardId}')">REFRESH</button>
-        </div>
-        <div id="orbitale-tabs-${cardId}" style="display:grid; grid-template-columns:repeat(5, minmax(0, 1fr)); gap:6px;">
-          ${["Status", "Grafo", "Nucleo", "Timeline", "MCO"].map((tab, index) => `
-            <button class="card-btn" data-orbitale-tab="${tab.toLowerCase()}" onclick="setOrbitaleMemoryTab('${cardId}', '${tab.toLowerCase()}')" style="width:100%; min-width:0; padding:7px 5px; margin:0; font-size:9px; background:${index === 0 ? "rgba(20,184,166,0.24)" : "rgba(255,255,255,0.05)"}; color:${index === 0 ? "#ccfbf1" : "rgba(255,255,255,0.72)"};">${tab}</button>
-          `).join("")}
-        </div>
-        <div id="orbitale-status-panel-${cardId}" data-orbitale-panel="status" style="display:flex; flex-direction:column; gap:10px; min-height:0; flex:1;">
-          <div id="orbitale-status-${cardId}" style="display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:8px;"></div>
-          <div id="orbitale-bars-${cardId}" style="display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:8px;"></div>
-          <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px; min-height:0; flex:1;">
-            <div style="min-height:0; display:flex; flex-direction:column;">
-              <div style="font-size:9px; font-weight:900; letter-spacing:1px; color:#99f6e4; margin-bottom:6px; text-transform:uppercase;">ULTIME MEMORIE</div>
-              <div id="orbitale-nodes-${cardId}" style="overflow:auto; min-height:0; flex:1; padding-right:4px;"></div>
-            </div>
-            <div style="min-height:0; display:flex; flex-direction:column;">
-              <div style="font-size:9px; font-weight:900; letter-spacing:1px; color:#99f6e4; margin-bottom:6px; text-transform:uppercase;">LINK</div>
-              <div id="orbitale-links-${cardId}" style="overflow:auto; min-height:0; flex:1; padding-right:4px;"></div>
-            </div>
-          </div>
-        </div>
-        <div id="orbitale-graph-${cardId}" data-orbitale-panel="grafo" style="display:none; min-height:0; flex:1; overflow:hidden;"></div>
-        <div id="orbitale-core-${cardId}" data-orbitale-panel="nucleo" style="display:none; min-height:0; flex:1; overflow:auto; padding-right:4px;"></div>
-        <div id="orbitale-timeline-${cardId}" data-orbitale-panel="timeline" style="display:none; min-height:0; flex:1; overflow:auto; padding-right:4px;"></div>
-        <div id="orbitale-mco-${cardId}" data-orbitale-panel="mco" style="display:none; min-height:0; flex:1; overflow:hidden;"></div>
-      </div>
-    `;
-    setTimeout(() => loadOrbitaleMemoryCard(cardId), 100);
-}
-  else if (type === "fix_control") {
-    div.style.width = "620px";
-    div.style.height = "620px";
-    container.innerHTML = `
-      <div class="fix-control-toolbar">
-        <input id="fix-title-${cardId}" class="card-q" type="text" placeholder="Nuovo fix..." style="margin:0; min-width:0;">
-        <input id="fix-area-${cardId}" class="card-q" type="text" placeholder="Area" style="margin:0; min-width:0;">
-        <select id="fix-priority-${cardId}" class="card-q" style="margin:0; min-width:0;">
-          <option value="alta">ALTA</option><option value="media" selected>MEDIA</option><option value="bassa">BASSA</option>
-        </select>
-        <button id="fix-add-${cardId}" class="card-btn" style="margin:0; padding:0; background:#f59e0b; color:#111827; font-size:18px;">+</button>
-      </div>
-      <div class="fix-control-filter">
-        <label for="fix-filter-${cardId}">STATO</label>
-        <select id="fix-filter-${cardId}" class="card-q" style="width:130px; margin:0; padding:6px 8px;">
-          <option value="all">ALL</option><option value="todo">TODO</option><option value="active">ACTIVE</option>
-          <option value="testing">TESTING</option><option value="blocked">BLOCKED</option><option value="done">DONE</option>
-        </select>
-        <span id="fix-count-${cardId}" style="margin-left:auto; font-size:9px; opacity:.55;"></span>
-      </div>
-      <div id="fix-message-${cardId}" class="fix-control-message"></div>
-      <div id="fix-list-${cardId}" class="fix-control-list"><div class="fix-control-empty">CARICAMENTO FIX...</div></div>
-    `;
-    document.getElementById(`fix-add-${cardId}`).onclick = () => createFixControlItem(cardId);
-    document.getElementById(`fix-filter-${cardId}`).onchange = () => renderFixControlList(cardId);
-    document.getElementById(`fix-title-${cardId}`).onkeydown = event => {
-      if (event.key === "Enter") createFixControlItem(cardId);
-    };
-    loadFixControlCard(cardId);
-  }
   else if (type === "core") {
   container.innerHTML = `
 
@@ -3155,79 +3027,65 @@ else if (type === "chat") {
       div.style.width = "600px";
       div.style.height = "550px";
 
-      // Stile esterno specifico per Chat
       const front = div.querySelector('.card-front');
       front.style.border = "1px solid #6366f1";
       front.style.boxShadow = "0 0 40px rgba(99, 102, 241, 0.2)";
 
-       container.innerHTML = `
-  <!-- AREA INPUT -->
-  <div id="chat-input-container" style="padding: 14px; border-bottom: 1px solid rgba(99,102,241,0.2);">
-  <div style="position:relative; width: 100%;">
-    <textarea id="chat-input-main" placeholder="Scrivi al sistema..."
-      style="width:100%; height:60px; padding:10px; box-sizing: border-box; border-radius:8px; border: 1px solid #6366f1; background: rgba(30, 41, 59, 0.9); color: #ffffff; font-family: 'Consolas', monospace; font-size: 13px; outline: none; resize: none;"></textarea>
+      container.innerHTML = `
+      <div id="chat-input-container" style="padding: 14px; border-bottom: 1px solid rgba(99,102,241,0.2);">
+        <div style="display:flex; gap:10px; align-items:flex-start;">
+            
+            <!-- 🚀 TEXTAREA + MIC -->
+            <div style="flex:1; position:relative;">
+                <textarea id="chat-input-main" placeholder="Scrivi o parla al sistema..."
+                    style="width:100%; height:80px; padding:10px; box-sizing: border-box; border-radius:8px; border: 1px solid #6366f1; background: rgba(30, 41, 59, 0.9); color: #ffffff; font-family: 'Consolas', monospace; font-size: 13px; outline: none; resize: none;"></textarea>
+                
+                <!-- TASTO ORECCHIO OLOGRAFICO -->
+                <button id="mic-btn-${cardId}" onclick="window.KebloSTT.toggle('${cardId}')" 
+                        style="position:absolute; bottom:8px; right:8px; background:rgba(99,102,241,0.2); border:1px solid #6366f1; border-radius:6px; width:30px; height:30px; cursor:pointer; color:white; font-size:14px; z-index:10;">👂</button>
+            </div>
+        </div>
 
-    <div style="display:flex; align-items:center; gap:8px; margin-top:8px;">
-      <button id="chat-stt-button" type="button" data-state="idle"
-              aria-label="Avvia registrazione vocale" title="Trascrivi voce">🎙️</button>
-      <label class="chat-stt-auto-send" title="Invia automaticamente dopo la trascrizione">
-        <input id="chat-stt-auto-send" type="checkbox" checked>
-        Auto-invio <strong id="chat-stt-auto-send-state">ON</strong>
-      </label>
-      <input id="chat-image-input" type="file" accept="image/*" multiple
-             style="font-size:11px; color:#cbd5e1; width:100%;">
-    </div>
-    <div id="chat-stt-status" role="status" aria-live="polite"></div>
+        <!-- AREA ALLEGATI IMMAGINI -->
+        <div style="display:flex; align-items:center; gap:8px; margin-top:8px;">
+          <input id="chat-image-input" type="file" accept="image/*" multiple style="display:none;">
+          <button onclick="document.getElementById('chat-image-input').click()" 
+                  style="background:rgba(99,102,241,0.1); border:1px solid #6366f1; border-radius:6px; padding:4px 10px; color:#fff; font-size:10px; cursor:pointer;">📎 ALLEGA IMMAGINI</button>
+          <div style="font-size:9px; opacity:0.4; flex:1; text-align:right;">ENTER: Invia | SHIFT+ENTER: A capo</div>
+        </div>
 
-    <div id="chat-image-preview" style="display:flex; gap:6px; margin-top:8px; flex-wrap:wrap;"></div>
+        <div id="chat-image-preview" style="display:flex; gap:6px; margin-top:8px; flex-wrap:wrap;"></div>
+      </div>
 
-    <div style="font-size:9px; opacity:0.4; text-align:right; margin-top:6px;">ENTER: Invia | SHIFT+ENTER: A capo</div>
-  </div>
-</div>
+      <!-- AREA RISPOSTA -->
+      <div id="nexus-display" style="flex:1; overflow-y:auto; padding:15px; position:relative; user-select:text !important; scroll-behavior: smooth;">
+        <div id="nexus-placeholder" style="display:flex; flex-direction:column; align-items:center; justify-content:center; opacity:0.3; height:100%;">
+          <div style="font-size:30px; letter-spacing:10px; font-weight:200;">KEBLO</div>
+        </div>
+        <div id="nexus-out-text" style="font-size:13px; line-height:1.5; color:#ffffff; display:none; white-space: pre-wrap; word-wrap: break-word;"></div>
+      </div>
 
-  <!-- AREA RISPOSTA -->
-  <div id="nexus-display" style="flex:1; overflow-y:auto; padding:15px; position:relative; user-select:text !important; scroll-behavior: smooth;">
-    <div id="nexus-placeholder" style="display:flex; flex-direction:column; align-items:center; justify-content:center; opacity:0.3; height:100%;">
-      <div style="font-size:30px; letter-spacing:10px; font-weight:200;">KEBLO CORE_DEV</div>
-    </div>
-    <!-- Pre-wrap mantiene gli a capo di Qwen -->
-    <div id="nexus-out-text" style="font-size:13px; line-height:1.5; color:#ffffff; display:none; white-space: pre-wrap; word-wrap: break-word;"></div>
-  </div>
-
-  <!-- 🕹️ DASHBOARD UNIFICATA -->
-  <div id="nexus-dashboard" style="display:none; padding:10px; background:rgba(15,23,42,0.8); border-top:1px solid rgba(255,255,255,0.05); align-items:center; justify-content:space-between; gap:10px;">
-    
-    <!-- 1. METRICHE (Iniezione Dinamica) -->
-    <div id="nexus-token-info" style="display:flex; gap:5px; align-items:center;">
-       <!-- Qui appare ANALYZING... poi i CHIP -->
-    </div>
-
-    <!-- 2. VISIONE (Centro) -->
-    <div id="v-controls" style="display:none; gap:8px; transform: translateY(-2px);">
-       <div class="v-btn-mini" style="cursor:pointer; opacity:0.7;" onclick="triggerVision('cognitiva')" title="Visione Cognitiva">👁️</div>
-       <div class="v-btn-mini" style="cursor:pointer; opacity:0.7;" onclick="triggerVision('schema')" title="Schema Logico">📊</div>
-       <div class="v-btn-mini" style="cursor:pointer; opacity:0.7;" onclick="triggerVision('scomponi')" title="Scomponi Dati">🧩</div>
-    </div>
- 
-    <!-- 3. CONFIDENCE (Destra) -->
-    <div id="confidence-bar" style="display:none; gap:10px; align-items:center;">
-        <span style="font-size:10px; font-weight:900; color:rgba(255,255,255,0.6); letter-spacing:1px;">CONF:</span>
-        <button onclick="setConfidence('green')" style="background:#22c55e; border:none; width:18px; height:18px; border-radius:50%; cursor:pointer;"></button>
-        <button onclick="setConfidence('yellow')" style="background:#f59e0b; border:none; width:18px; height:18px; border-radius:50%; cursor:pointer;"></button>
-        <button onclick="setConfidence('red')" style="background:#ef4444; border:none; width:18px; height:18px; border-radius:50%; cursor:pointer;"></button>
-    </div>
-  </div>
-  `;
+      <!-- DASHBOARD UNIFICATA -->
+      <div id="nexus-dashboard" style="display:none; padding:10px; background:rgba(15,23,42,0.8); border-top:1px solid rgba(255,255,255,0.05); align-items:center; justify-content:space-between; gap:10px;">
+        <div id="nexus-token-info" style="display:flex; gap:5px; align-items:center;"></div>
+        <div id="v-controls" style="display:none; gap:8px; transform: translateY(-2px);">
+           <div class="v-btn-mini" onclick="triggerVision('cognitiva')">👁️</div>
+           <div class="v-btn-mini" onclick="triggerVision('schema')">📊</div>
+           <div class="v-btn-mini" onclick="triggerVision('scomponi')">🧩</div>
+        </div>
+        <div id="confidence-bar" style="display:none; gap:10px; align-items:center;">
+            <button onclick="setConfidence('green')" style="background:#22c55e; border:none; width:18px; height:18px; border-radius:50%; cursor:pointer;"></button>
+            <button onclick="setConfidence('yellow')" style="background:#f59e0b; border:none; width:18px; height:18px; border-radius:50%; cursor:pointer;"></button>
+            <button onclick="setConfidence('red')" style="background:#ef4444; border:none; width:18px; height:18px; border-radius:50%; cursor:pointer;"></button>
+        </div>
+      </div>
+      `;
       // --- FIX EVENTO INVIO ---
       // Usiamo un piccolo timeout per assicurarci che l'HTML sia stato renderizzato
       setTimeout(() => {
           const inp = document.getElementById("chat-input-main");
           const imageInput = document.getElementById("chat-image-input");
           const preview = document.getElementById("chat-image-preview");
-
-          const sttButton = document.getElementById("chat-stt-button");
-          if (sttButton) sttButton.onclick = handleSttButtonClick;
-          initSttAutoSendToggle();
 
           if (imageInput && preview) {
             imageInput.onchange = () => {
@@ -3272,12 +3130,29 @@ else if (type === "chat") {
 
   // Rimozione vecchi listener (per sicurezza) e aggiunta nuovo
   inp.onkeydown = null;
-  inp.oninput = cancelPendingSttAutoSend;
   inp.addEventListener("keydown", (e) => {
     // Se premi ENTER senza SHIFT
     if (e.key === "Enter" && !e.shiftKey) {
       e.preventDefault(); // Blocca l'a capo
-      submitMainChatInput();
+
+      const text = inp.value.trim();
+      const selectedFiles = imageInput ? Array.from(imageInput.files) : [];
+
+      console.log("Invio rilevato:", text);
+      console.log("FILES:", selectedFiles);
+
+      if (text || selectedFiles.length > 0) {
+        // 1. Invia all'AI testo + immagini
+        sendNexusMessage(text, selectedFiles);
+
+        // 2. Scrivi nel retro (Cronologia)
+        logChatRequest(text || "[immagine allegata]");
+
+        // 3. Pulisci input
+        inp.value = "";
+        if (imageInput) imageInput.value = "";
+        if (preview) preview.innerHTML = "";
+      }
     }
   });
 } else {
@@ -3298,157 +3173,6 @@ if (startMinimized) {
     }
 }
     //Fine funzione SpawnCard
-
-const fixControlState = new Map();
-const FIX_CONTROL_STATUSES = ["todo", "active", "testing", "blocked", "done", "rollback"];
-
-function fixEscapeHtml(value) {
-  return String(value ?? "").replace(/[&<>"']/g, char => ({
-    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;"
-  })[char]);
-}
-
-function setFixControlMessage(cardId, message = "") {
-  const element = document.getElementById(`fix-message-${cardId}`);
-  if (element) element.textContent = message;
-}
-
-async function fixControlRequest(url, options = {}) {
-  const response = await fetch(url, {
-    credentials: "include",
-    ...options,
-    headers: { "Content-Type": "application/json", ...(options.headers || {}) }
-  });
-  const data = await response.json().catch(() => ({}));
-  if (!response.ok || data.ok === false) throw new Error(data.msg || `Errore HTTP ${response.status}`);
-  return data;
-}
-
-async function loadFixControlCard(cardId) {
-  try {
-    setFixControlMessage(cardId);
-    const data = await fixControlRequest("/api/fixes");
-    fixControlState.set(cardId, Array.isArray(data.fixes) ? data.fixes : []);
-    renderFixControlList(cardId);
-  } catch (error) {
-    setFixControlMessage(cardId, error.message);
-  }
-}
-
-function fixControlDate(value) {
-  const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? "-" : date.toLocaleString("it-IT", { dateStyle: "short", timeStyle: "short" });
-}
-
-function renderFixControlList(cardId) {
-  const list = document.getElementById(`fix-list-${cardId}`);
-  const filter = document.getElementById(`fix-filter-${cardId}`)?.value || "all";
-  const allFixes = fixControlState.get(cardId) || [];
-  const fixes = filter === "all" ? allFixes : allFixes.filter(fix => fix.status === filter);
-  const count = document.getElementById(`fix-count-${cardId}`);
-  if (count) count.textContent = `${fixes.length} / ${allFixes.length}`;
-  if (!list) return;
-  if (!fixes.length) {
-    list.innerHTML = '<div class="fix-control-empty">NESSUN FIX PER QUESTO FILTRO</div>';
-    return;
-  }
-  list.innerHTML = fixes.map(fix => {
-    const files = Array.isArray(fix.files) && fix.files.length ? fix.files.map(file => `<code>${fixEscapeHtml(file)}</code>`).join(" · ") : "Nessun file indicato";
-    const timeline = (Array.isArray(fix.steps) ? fix.steps : []).slice().reverse().map(step =>
-      `<div><b class="fix-status-${fixEscapeHtml(step.status)}">${fixEscapeHtml(step.status)}</b> · ${fixEscapeHtml(step.note || "Aggiornamento")} <span style="opacity:.45">${fixControlDate(step.at)}</span></div>`
-    ).join("") || "Nessun avanzamento";
-    return `
-      <article class="fix-control-item" data-fix-id="${fixEscapeHtml(fix.id)}">
-        <div class="fix-control-head">
-          <div class="fix-control-title">${fixEscapeHtml(fix.title)}</div>
-          <button class="fix-delete" title="Elimina fix" style="border:0;background:none;color:#fb7185;cursor:pointer;font-weight:900;">×</button>
-        </div>
-        <div class="fix-control-meta">
-          <span class="fix-control-chip fix-status-${fixEscapeHtml(fix.status)}">${fixEscapeHtml(fix.status)}</span>
-          <span class="fix-control-chip fix-priority-${fixEscapeHtml(fix.priority)}">${fixEscapeHtml(fix.priority)}</span>
-          <span class="fix-control-chip">${fixEscapeHtml(fix.area)}</span>
-        </div>
-        <div class="fix-control-actions">
-          ${FIX_CONTROL_STATUSES.map(status => `<button class="fix-status-button ${status === fix.status ? "active" : ""}" data-status="${status}">${status}</button>`).join("")}
-          <button class="fix-edit">DETTAGLI</button>
-        </div>
-        <details class="fix-control-details">
-          <summary>FILE E TIMELINE</summary>
-          <div style="margin-top:6px;"><b>Descrizione:</b> ${fixEscapeHtml(fix.description || "-")}</div>
-          <div><b>File:</b> ${files}</div>
-          <div><b>Note:</b> ${fixEscapeHtml(fix.notes || "-")}</div>
-          <div class="fix-control-timeline">${timeline}</div>
-        </details>
-      </article>`;
-  }).join("");
-  list.querySelectorAll(".fix-control-item").forEach(item => {
-    const id = item.dataset.fixId;
-    item.querySelectorAll(".fix-status-button").forEach(button => {
-      button.onclick = () => updateFixControlStatus(cardId, id, button.dataset.status);
-    });
-    item.querySelector(".fix-edit").onclick = () => editFixControlDetails(cardId, id);
-    item.querySelector(".fix-delete").onclick = () => deleteFixControlItem(cardId, id);
-  });
-}
-
-async function createFixControlItem(cardId) {
-  const titleInput = document.getElementById(`fix-title-${cardId}`);
-  const areaInput = document.getElementById(`fix-area-${cardId}`);
-  const priorityInput = document.getElementById(`fix-priority-${cardId}`);
-  const title = titleInput?.value.trim();
-  if (!title) return setFixControlMessage(cardId, "Inserisci il titolo del fix.");
-  try {
-    const data = await fixControlRequest("/api/fixes", {
-      method: "POST",
-      body: JSON.stringify({ title, area: areaInput?.value.trim() || "generale", priority: priorityInput?.value || "media", status: "todo" })
-    });
-    fixControlState.set(cardId, [data.fix, ...(fixControlState.get(cardId) || [])]);
-    titleInput.value = "";
-    if (areaInput) areaInput.value = "";
-    setFixControlMessage(cardId);
-    renderFixControlList(cardId);
-  } catch (error) { setFixControlMessage(cardId, error.message); }
-}
-
-async function updateFixControlStatus(cardId, id, status) {
-  try {
-    const data = await fixControlRequest(`/api/fixes/${encodeURIComponent(id)}`, { method: "PATCH", body: JSON.stringify({ status }) });
-    const fixes = (fixControlState.get(cardId) || []).map(fix => fix.id === id ? data.fix : fix);
-    fixControlState.set(cardId, fixes);
-    setFixControlMessage(cardId);
-    renderFixControlList(cardId);
-  } catch (error) { setFixControlMessage(cardId, error.message); }
-}
-
-async function editFixControlDetails(cardId, id) {
-  const fix = (fixControlState.get(cardId) || []).find(item => item.id === id);
-  if (!fix) return;
-  const description = prompt("Descrizione del fix:", fix.description || "");
-  if (description === null) return;
-  const files = prompt("File coinvolti, separati da virgola:", (fix.files || []).join(", "));
-  if (files === null) return;
-  const notes = prompt("Note:", fix.notes || "");
-  if (notes === null) return;
-  try {
-    const data = await fixControlRequest(`/api/fixes/${encodeURIComponent(id)}`, {
-      method: "PATCH",
-      body: JSON.stringify({ description, files: files.split(",").map(value => value.trim()).filter(Boolean), notes })
-    });
-    fixControlState.set(cardId, (fixControlState.get(cardId) || []).map(item => item.id === id ? data.fix : item));
-    renderFixControlList(cardId);
-  } catch (error) { setFixControlMessage(cardId, error.message); }
-}
-
-async function deleteFixControlItem(cardId, id) {
-  const fix = (fixControlState.get(cardId) || []).find(item => item.id === id);
-  if (!fix || !confirm(`Eliminare il fix "${fix.title}"?`)) return;
-  try {
-    await fixControlRequest(`/api/fixes/${encodeURIComponent(id)}`, { method: "DELETE" });
-    fixControlState.set(cardId, (fixControlState.get(cardId) || []).filter(item => item.id !== id));
-    setFixControlMessage(cardId);
-    renderFixControlList(cardId);
-  } catch (error) { setFixControlMessage(cardId, error.message); }
-}
     
     // VARIABILE GLOBALE PER LO Z-INDEX
     /* --- MOTORE DI TRASCINAMENTO COMPLETO --- */
@@ -3588,223 +3312,6 @@ async function deleteFixControlItem(cardId, id) {
         brightness: 1,  // Luminosità attuale
         history: []     // Storico degli ultimi stati
     };
-
-let sttState = "idle";
-let sttRecorder = null;
-let sttStream = null;
-let sttChunks = [];
-let sttStopTimer = null;
-let sttErrorTimer = null;
-let sttAutoSendTimer = null;
-let sttAutoSending = false;
-const STT_AUTO_SEND_STORAGE_KEY = "keblo_stt_auto_send";
-
-function setSttState(state, message = "") {
-  sttState = state;
-  const button = document.getElementById("chat-stt-button");
-  const status = document.getElementById("chat-stt-status");
-  if (button) {
-    const icons = { idle: "🎙️", recording: "⏹️", transcribing: "🌀", error: "🎙️" };
-    button.textContent = icons[state] || icons.idle;
-    button.dataset.state = state;
-    button.disabled = state === "transcribing";
-    button.setAttribute("aria-label",
-      state === "recording" ? "Ferma registrazione vocale" : "Avvia registrazione vocale");
-  }
-  if (status) {
-    status.textContent = message;
-    status.style.color = state === "error" ? "#fca5a5" : "rgba(203,213,225,0.7)";
-  }
-}
-
-function cleanupSttRecording() {
-  if (sttStopTimer) clearTimeout(sttStopTimer);
-  sttStopTimer = null;
-  if (sttStream) sttStream.getTracks().forEach(track => track.stop());
-  sttStream = null;
-  sttRecorder = null;
-  sttChunks = [];
-}
-
-function showSttError(message) {
-  cleanupSttRecording();
-  if (sttErrorTimer) clearTimeout(sttErrorTimer);
-  setSttState("error", message);
-  sttErrorTimer = setTimeout(() => {
-    sttErrorTimer = null;
-    setSttState("idle");
-  }, 4000);
-}
-
-function isSttAutoSendEnabled() {
-  try {
-    return localStorage.getItem(STT_AUTO_SEND_STORAGE_KEY) !== "false";
-  } catch {
-    return true;
-  }
-}
-
-function updateSttAutoSendLabel(enabled) {
-  const stateLabel = document.getElementById("chat-stt-auto-send-state");
-  if (stateLabel) stateLabel.textContent = enabled ? "ON" : "OFF";
-}
-
-function initSttAutoSendToggle() {
-  const toggle = document.getElementById("chat-stt-auto-send");
-  if (!toggle) return;
-  const enabled = isSttAutoSendEnabled();
-  toggle.checked = enabled;
-  updateSttAutoSendLabel(enabled);
-  toggle.onchange = () => {
-    const nextEnabled = toggle.checked;
-    try {
-      localStorage.setItem(STT_AUTO_SEND_STORAGE_KEY, String(nextEnabled));
-    } catch {}
-    updateSttAutoSendLabel(nextEnabled);
-    if (!nextEnabled) cancelPendingSttAutoSend();
-  };
-}
-
-function cancelPendingSttAutoSend() {
-  if (sttAutoSendTimer) clearTimeout(sttAutoSendTimer);
-  sttAutoSendTimer = null;
-}
-
-function submitMainChatInput() {
-  cancelPendingSttAutoSend();
-  const input = document.getElementById("chat-input-main");
-  const imageInput = document.getElementById("chat-image-input");
-  const preview = document.getElementById("chat-image-preview");
-  if (!input) return false;
-
-  const text = input.value.trim();
-  const selectedFiles = imageInput ? Array.from(imageInput.files) : [];
-  if (!text && selectedFiles.length === 0) return false;
-
-  sendNexusMessage(text, selectedFiles);
-  logChatRequest(text || "[immagine allegata]");
-  input.value = "";
-  if (imageInput) imageInput.value = "";
-  if (preview) preview.innerHTML = "";
-  return true;
-}
-
-function scheduleSttAutoSend(expectedInputValue) {
-  cancelPendingSttAutoSend();
-  if (!isSttAutoSendEnabled() || !expectedInputValue.trim()) return;
-
-  sttAutoSendTimer = setTimeout(() => {
-    sttAutoSendTimer = null;
-    const input = document.getElementById("chat-input-main");
-    if (
-      sttAutoSending ||
-      !isSttAutoSendEnabled() ||
-      !input ||
-      !input.value.trim() ||
-      input.value !== expectedInputValue
-    ) return;
-
-    sttAutoSending = true;
-    try {
-      submitMainChatInput();
-    } finally {
-      sttAutoSending = false;
-    }
-  }, 600);
-}
-
-function getSupportedSttMimeType() {
-  const candidates = [
-    "audio/webm;codecs=opus",
-    "audio/webm",
-    "audio/ogg;codecs=opus",
-    "audio/mp4"
-  ];
-  if (typeof MediaRecorder.isTypeSupported !== "function") return "";
-  return candidates.find(type => MediaRecorder.isTypeSupported(type)) || "";
-}
-
-async function startSttRecording() {
-  if (!navigator.mediaDevices?.getUserMedia || typeof MediaRecorder === "undefined") {
-    showSttError("Registrazione audio non supportata.");
-    return;
-  }
-  try {
-    if (sttErrorTimer) clearTimeout(sttErrorTimer);
-    sttErrorTimer = null;
-    sttStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    const mimeType = getSupportedSttMimeType();
-    sttRecorder = mimeType ? new MediaRecorder(sttStream, { mimeType }) : new MediaRecorder(sttStream);
-    sttChunks = [];
-    sttRecorder.ondataavailable = event => {
-      if (event.data?.size) sttChunks.push(event.data);
-    };
-    sttRecorder.onerror = () => showSttError("Errore durante la registrazione.");
-    sttRecorder.onstop = transcribeSttRecording;
-    sttRecorder.start();
-    setSttState("recording", "Registrazione in corso...");
-    sttStopTimer = setTimeout(stopSttRecording, 60000);
-  } catch {
-    showSttError("Microfono non disponibile.");
-  }
-}
-
-function stopSttRecording() {
-  if (!sttRecorder || sttRecorder.state === "inactive") return;
-  if (sttStopTimer) clearTimeout(sttStopTimer);
-  sttStopTimer = null;
-  setSttState("transcribing", "Trascrizione in corso...");
-  sttRecorder.stop();
-}
-
-async function transcribeSttRecording() {
-  const recorderMime = sttRecorder?.mimeType || sttChunks[0]?.type || "audio/webm";
-  const baseMime = recorderMime.split(";")[0];
-  const audioBlob = new Blob(sttChunks, { type: baseMime });
-  cleanupSttRecording();
-  if (!audioBlob.size) {
-    showSttError("Registrazione vuota.");
-    return;
-  }
-
-  const extensionByMime = {
-    "audio/webm": "webm", "audio/ogg": "ogg", "audio/mp4": "mp4",
-    "audio/mpeg": "mp3", "audio/wav": "wav", "audio/x-wav": "wav"
-  };
-  const formData = new FormData();
-  formData.append("audio", audioBlob, `recording.${extensionByMime[baseMime] || "webm"}`);
-
-  try {
-    const response = await fetch("/api/stt/transcribe", {
-      method: "POST",
-      credentials: "include",
-      body: formData
-    });
-    const data = await response.json().catch(() => null);
-    if (!response.ok || !data?.ok || typeof data.text !== "string" || !data.text.trim()) {
-      throw new Error(data?.error || "Trascrizione non riuscita.");
-    }
-
-    const input = document.getElementById("chat-input-main");
-    if (!input) throw new Error("Input chat non disponibile.");
-    const currentText = input.value;
-    const separator = currentText && !/\s$/.test(currentText) ? " " : "";
-    input.value = currentText ? `${currentText}${separator}${data.text.trim()}` : data.text.trim();
-    input.focus();
-    input.dispatchEvent(new Event("input", { bubbles: true }));
-    const transcribedInputValue = input.value;
-    setSttState("idle");
-    scheduleSttAutoSend(transcribedInputValue);
-  } catch (error) {
-    showSttError(error.message || "Servizio STT non disponibile.");
-  }
-}
-
-function handleSttButtonClick() {
-  if (sttState === "transcribing") return;
-  if (sttState === "recording") return stopSttRecording();
-  if (sttState === "idle" || sttState === "error") startSttRecording();
-}
 
     // Mappa dei colori target (Hue in gradi)
     const moodPalette = {
@@ -4133,7 +3640,62 @@ function setBatch(cardId, count, el) {
     el.style.background = "#f472b6";
     el.style.borderColor = "#f472b6";
 }
+//Funzione pe Canvas 
+async function runCreativeCanvas(cardId) {
+  const promptEl = document.getElementById(`canvas-prompt-${cardId}`);
+  const frame = document.getElementById(`canvas-frame-${cardId}`);
+  const btn = document.getElementById(`canvas-btn-${cardId}`);
+  const errBox = document.getElementById(`canvas-error-${cardId}`);
 
+  const prompt = promptEl.value.trim();
+  if (!prompt) return;
+
+  btn.disabled = true;
+  btn.innerText = "GENERO...";
+  errBox.style.display = "none";
+  errBox.innerText = "";
+
+  logToCard(cardId, `Prompt canvas: ${prompt}`, "CANVAS_REQUEST");
+
+  try {
+    const res = await fetch("/api/creative-canvas", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({ prompt })
+    });
+
+    const data = await res.json();
+
+    if (!res.ok || !data.ok) {
+      throw new Error(data.error || "Errore generazione canvas");
+    }
+
+    frame.srcdoc = data.html || "";
+    logToCard(cardId, "Canvas generato correttamente", "CANVAS_DONE", {
+      chars: (data.html || "").length
+    });
+
+  } catch (e) {
+    errBox.innerText = e.message || "Errore chiamata API";
+    errBox.style.display = "block";
+    frame.srcdoc = "";
+    logToCard(cardId, e.message || "Errore canvas", "CANVAS_ERROR");
+  } finally {
+    btn.disabled = false;
+    btn.innerText = "GENERA";
+  }
+}
+
+function resetCreativeCanvas(cardId) {
+  const frame = document.getElementById(`canvas-frame-${cardId}`);
+  const errBox = document.getElementById(`canvas-error-${cardId}`);
+  frame.srcdoc = "";
+  errBox.style.display = "none";
+  errBox.innerText = "";
+  logToCard(cardId, "Canvas resettato", "CANVAS_RESET");
+}
+//fine Funzione per canvas
 // Funzione per la generazione in sequenza
 // Modifica runVisionBatch per inviare i nuovi parametri
 async function runVisionBatch(cardId) {
@@ -4652,886 +4214,6 @@ async function quickAddEvent(cardId) {
     console.error("Errore durante l'eliminazione:", e);
   }
 }
-function orbitaleEscapeHtml(value) {
-  return String(value === null || value === undefined ? "" : value)
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;")
-    .replace(/'/g, "&#39;");
-}
-
-function orbitaleMetricBox(label, value) {
-  return `
-    <div style="background:rgba(20,184,166,0.10); border:1px solid rgba(20,184,166,0.22); border-radius:8px; padding:8px; min-width:0;">
-      <div style="font-size:8px; opacity:0.6; letter-spacing:1px; font-weight:900; text-transform:uppercase; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${orbitaleEscapeHtml(label)}</div>
-      <div style="font-size:20px; font-weight:900; color:#ccfbf1; line-height:1.1; margin-top:3px;">${orbitaleEscapeHtml(value)}</div>
-    </div>
-  `;
-}
-
-function orbitaleDistribution(title, values) {
-  const entries = Object.entries(values || {});
-  return `
-    <div style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:8px; padding:8px; min-width:0;">
-      <div style="font-size:8px; opacity:0.55; letter-spacing:1px; font-weight:900; text-transform:uppercase; margin-bottom:5px;">${orbitaleEscapeHtml(title)}</div>
-      ${entries.map(([key, value]) => `
-        <div style="display:flex; justify-content:space-between; gap:8px; font-size:10px; line-height:1.5;">
-          <span style="opacity:0.72; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${orbitaleEscapeHtml(key)}</span>
-          <b style="color:#99f6e4;">${orbitaleEscapeHtml(value)}</b>
-        </div>
-      `).join("")}
-    </div>
-  `;
-}
-
-function orbitaleShortId(id) {
-  const value = String(id || "");
-  return value.length > 14 ? value.slice(0, 14) + "..." : value;
-}
-
-function orbitaleNumber(value, fallback = 0) {
-  const number = Number(value);
-  return Number.isFinite(number) ? number : fallback;
-}
-
-function orbitaleFormatScore(value) {
-  if (value === null || value === undefined || value === "") return "-";
-  const number = Number(value);
-  return Number.isFinite(number) ? number.toFixed(2) : String(value);
-}
-
-function orbitaleDateValue(value) {
-  if (!value) return null;
-  const date = new Date(value);
-  return Number.isNaN(date.getTime()) ? null : date;
-}
-
-function orbitaleFormatTimestamp(value) {
-  const date = orbitaleDateValue(value);
-  if (!date) return value ? String(value) : "";
-  return date.toLocaleString();
-}
-
-function orbitaleMemoryText(node, limit = 120) {
-  const text = String(node?.text || node?.content?.text || node?.label || node?.id || "").replace(/\s+/g, " ").trim();
-  return text.length > limit ? text.slice(0, limit - 3) + "..." : text;
-}
-
-function orbitaleTags(tags, limit = 4) {
-  return Array.isArray(tags) ? tags.filter(Boolean).slice(0, limit) : [];
-}
-
-function orbitaleNodeRole(node) {
-  return node?.role || node?.content?.role || "unknown";
-}
-
-function orbitaleNodeOrbit(node) {
-  return node?.orbit || node?.orbitalLevel || "unknown";
-}
-
-function orbitaleNodeDepth(node) {
-  return node?.depth || node?.memoryDepth || "unknown";
-}
-
-function orbitaleNodeImportance(node) {
-  return orbitaleNumber(node?.importance ?? node?.meta?.importance, 0);
-}
-
-function orbitaleEmptyMessage() {
-  return "<div style='opacity:0.65; font-size:11px;'>Nessuna memoria orbitale ancora disponibile.</div>";
-}
-
-function setOrbitaleMemoryTab(cardId, tab) {
-  const wrap = document.getElementById(`orbitale-wrap-${cardId}`);
-  if (!wrap) return;
-
-  wrap.querySelectorAll("[data-orbitale-panel]").forEach(panel => {
-    panel.style.display = panel.dataset.orbitalePanel === tab ? (tab === "status" ? "flex" : "block") : "none";
-  });
-
-  wrap.querySelectorAll("[data-orbitale-tab]").forEach(button => {
-    const active = button.dataset.orbitaleTab === tab;
-    button.style.background = active ? "rgba(20,184,166,0.24)" : "rgba(255,255,255,0.05)";
-    button.style.color = active ? "#ccfbf1" : "rgba(255,255,255,0.72)";
-  });
-}
-
-function orbitaleNodeCard(node, options = {}) {
-  const tags = orbitaleTags(node.tags, options.tagLimit || 4);
-  const title = options.title ? `<div style="font-size:8px; opacity:0.55; letter-spacing:1px; font-weight:900; text-transform:uppercase; margin-bottom:4px;">${orbitaleEscapeHtml(options.title)}</div>` : "";
-  return `
-    <div style="border:1px solid rgba(20,184,166,0.16); background:rgba(20,184,166,0.06); border-radius:8px; padding:8px; margin-bottom:7px; font-size:10px; line-height:1.35;">
-      ${title}
-      <div style="display:flex; justify-content:space-between; gap:8px; margin-bottom:4px;">
-        <b style="color:#ccfbf1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${orbitaleEscapeHtml(node.label || node.id)}</b>
-        <span style="opacity:0.55; white-space:nowrap;">${orbitaleEscapeHtml(node.role || "unknown")}</span>
-      </div>
-      <div style="opacity:0.72; margin-bottom:5px;">${orbitaleEscapeHtml(orbitaleMemoryText(node, options.textLimit || 130))}</div>
-      <div style="opacity:0.62; margin-bottom:5px;">${orbitaleEscapeHtml(node.orbit || "unknown")} | ${orbitaleEscapeHtml(node.depth || "unknown")} | act ${orbitaleEscapeHtml(orbitaleFormatScore(node.activation))} | imp ${orbitaleEscapeHtml(orbitaleFormatScore(node.importance))}</div>
-      ${tags.length ? `<div style="display:flex; flex-wrap:wrap; gap:4px;">${tags.map(tag => `<span style="border:1px solid rgba(153,246,228,0.18); border-radius:999px; padding:2px 6px; color:#99f6e4; background:rgba(20,184,166,0.07);">${orbitaleEscapeHtml(tag)}</span>`).join("")}</div>` : ""}
-      ${options.time ? `<div style="opacity:0.45; margin-top:5px;">${orbitaleEscapeHtml(options.time)}</div>` : ""}
-    </div>
-  `;
-}
-
-function orbitaleRoleColor(role) {
-  if (role === "user") return "#38bdf8";
-  if (role === "assistant") return "#14b8a6";
-  return "#94a3b8";
-}
-
-function orbitaleSemanticColor(node) {
-  const tags = orbitaleTags(node?.tags, 50).map(tag => String(tag).toLowerCase());
-  const semanticColors = [
-    { tag: "health", color: "#ef4444" },
-    { tag: "project", color: "#38bdf8" },
-    { tag: "memory", color: "#a78bfa" },
-    { tag: "family", color: "#22c55e" },
-    { tag: "research", color: "#facc15" },
-    { tag: "learning", color: "#fb923c" },
-    { tag: "general", color: "#94a3b8" }
-  ];
-  const match = semanticColors.find(item => tags.some(tag => tag === item.tag || tag.includes(item.tag)));
-  return match ? match.color : orbitaleRoleColor(orbitaleNodeRole(node));
-}
-
-function orbitaleVisualRadius(node, linkCount) {
-  const visualWeight = orbitaleNumber(node?.activation, 0) + orbitaleNodeImportance(node) + (linkCount * 0.05);
-  return Math.max(8, Math.min(26, 8 + visualWeight * 8));
-}
-
-function orbitaleOrbitRadius(orbit) {
-  if (orbit === "short") return 90;
-  if (orbit === "medium") return 160;
-  return 230;
-}
-
-function orbitaleBuildGraphLayout(nodes) {
-  const buckets = { short: [], medium: [], long: [], unknown: [] };
-  nodes.forEach((node, index) => {
-    const nodeOrbit = orbitaleNodeOrbit(node);
-    const orbit = buckets[nodeOrbit] ? nodeOrbit : "unknown";
-    buckets[orbit].push({ node, index });
-  });
-
-  const positions = new Map();
-  Object.entries(buckets).forEach(([orbit, bucket]) => {
-    const radius = orbitaleOrbitRadius(orbit);
-    const total = Math.max(bucket.length, 1);
-    bucket.forEach((entry, orbitIndex) => {
-      const angle = ((orbitIndex / total) * Math.PI * 2) - (Math.PI / 2);
-      positions.set(entry.node.id, {
-        x: 300 + Math.cos(angle) * radius,
-        y: 280 + Math.sin(angle) * radius
-      });
-    });
-  });
-
-  return positions;
-}
-
-function renderOrbitGraphCard(target, nodes, links) {
-  if (!target) return;
-  if (!nodes.length) {
-    target.innerHTML = orbitaleEmptyMessage();
-    return;
-  }
-
-  const nodeIds = new Set(nodes.map(node => node.id).filter(Boolean));
-  const nodesById = new Map(nodes.filter(node => node?.id).map(node => [node.id, node]));
-  const validLinks = links.filter(link => link && nodeIds.has(link.source) && nodeIds.has(link.target));
-  const visibleLinks = validLinks.slice(0, 80);
-  const linkCounts = new Map(nodes.map(node => [node.id, 0]));
-  validLinks.forEach(link => {
-    linkCounts.set(link.source, (linkCounts.get(link.source) || 0) + 1);
-    linkCounts.set(link.target, (linkCounts.get(link.target) || 0) + 1);
-  });
-
-  const positions = orbitaleBuildGraphLayout(nodes);
-  const orbitLines = [
-    { orbit: "short", color: "rgba(125,211,252,0.25)" },
-    { orbit: "medium", color: "rgba(20,184,166,0.22)" },
-    { orbit: "long", color: "rgba(244,114,182,0.20)" }
-  ];
-
-  let selectedNodeId = target.dataset.orbitaleSelectedNode || "";
-  if (!nodeIds.has(selectedNodeId)) selectedNodeId = "";
-  target.dataset.orbitaleSelectedNode = selectedNodeId;
-
-  const connectedNodeIds = new Set();
-  const selectedLinks = selectedNodeId ? validLinks.filter(link => {
-    const connected = link.source === selectedNodeId || link.target === selectedNodeId;
-    if (connected) {
-      connectedNodeIds.add(link.source);
-      connectedNodeIds.add(link.target);
-    }
-    return connected;
-  }) : [];
-  const selectedLinkIds = new Set(selectedLinks.map(link => link.id || `${link.source}|${link.target}`));
-
-  const nodeFocusOpacity = (nodeId) => {
-    if (!selectedNodeId) return 1;
-    return nodeId === selectedNodeId || connectedNodeIds.has(nodeId) ? 1 : 0.15;
-  };
-
-  const linkFocusOpacity = (link) => {
-    if (!selectedNodeId) return 1;
-    const linkId = link.id || `${link.source}|${link.target}`;
-    return selectedLinkIds.has(linkId) ? 1 : 0.15;
-  };
-
-  const renderInspector = (nodeId) => {
-    const node = nodesById.get(nodeId);
-    if (!node) {
-      return `
-        <div style="height:100%; display:flex; align-items:center; justify-content:center; color:rgba(226,232,240,0.58); font-size:11px; text-align:center; padding:16px;">
-          Seleziona un nodo
-        </div>
-      `;
-    }
-
-    const nodeLinks = validLinks.filter(link => link.source === node.id || link.target === node.id);
-    const tagList = orbitaleTags(node.tags, 20);
-    return `
-      <div style="height:100%; display:flex; flex-direction:column; gap:10px; overflow:auto; padding-right:3px;">
-        <div>
-          <div style="font-size:8px; opacity:0.58; letter-spacing:1px; font-weight:900; text-transform:uppercase; margin-bottom:6px;">NODO SELEZIONATO</div>
-          <div style="color:#ccfbf1; font-weight:900; font-size:11px; line-height:1.3; word-break:break-all;">${orbitaleEscapeHtml(node.id || "-")}</div>
-        </div>
-        <div style="display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:6px; font-size:10px;">
-          ${[
-            ["role", orbitaleNodeRole(node)],
-            ["orbit", orbitaleNodeOrbit(node)],
-            ["depth", orbitaleNodeDepth(node)],
-            ["activation", orbitaleFormatScore(node.activation)],
-            ["importance", orbitaleFormatScore(orbitaleNodeImportance(node))],
-            ["collegamenti", nodeLinks.length]
-          ].map(([label, value]) => `
-            <div style="background:rgba(255,255,255,0.045); border:1px solid rgba(255,255,255,0.08); border-radius:7px; padding:6px; min-width:0;">
-              <div style="font-size:8px; opacity:0.5; text-transform:uppercase; font-weight:900; margin-bottom:3px;">${orbitaleEscapeHtml(label)}</div>
-              <div style="color:rgba(226,232,240,0.88); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${orbitaleEscapeHtml(value)}</div>
-            </div>
-          `).join("")}
-        </div>
-        <div style="font-size:10px;">
-          <div style="font-size:8px; opacity:0.5; text-transform:uppercase; font-weight:900; margin-bottom:5px;">tags</div>
-          ${tagList.length ? `<div style="display:flex; flex-wrap:wrap; gap:4px;">${tagList.map(tag => `<span style="border:1px solid rgba(153,246,228,0.18); border-radius:999px; padding:2px 6px; color:#99f6e4; background:rgba(20,184,166,0.07);">${orbitaleEscapeHtml(tag)}</span>`).join("")}</div>` : `<div style="opacity:0.55;">-</div>`}
-        </div>
-        <div style="font-size:10px; line-height:1.4;">
-          <div style="font-size:8px; opacity:0.5; text-transform:uppercase; font-weight:900; margin-bottom:5px;">preview testo</div>
-          <div style="opacity:0.78;">${orbitaleEscapeHtml(orbitaleMemoryText(node, 250) || "-")}</div>
-        </div>
-        <div style="font-size:10px; line-height:1.35;">
-          <div style="font-size:8px; opacity:0.5; text-transform:uppercase; font-weight:900; margin-bottom:6px;">Collegamenti</div>
-          ${nodeLinks.slice(0, 15).map(link => {
-            const sourceLabel = orbitaleMemoryText(nodesById.get(link.source), 24) || orbitaleShortId(link.source);
-            const targetLabel = orbitaleMemoryText(nodesById.get(link.target), 24) || orbitaleShortId(link.target);
-            return `
-              <div style="border:1px solid rgba(255,255,255,0.08); background:rgba(255,255,255,0.04); border-radius:7px; padding:7px; margin-bottom:6px;">
-                <div style="color:rgba(226,232,240,0.88); overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${orbitaleEscapeHtml(sourceLabel)}</div>
-                <div style="opacity:0.65;">&harr; ${orbitaleEscapeHtml(targetLabel)}</div>
-                <div style="color:#ccfbf1; margin-top:3px;">peso ${orbitaleEscapeHtml(orbitaleFormatScore(link.weight))}</div>
-              </div>
-            `;
-          }).join("") || `<div style="opacity:0.55;">Nessun collegamento.</div>`}
-        </div>
-      </div>
-    `;
-  };
-
-  target.innerHTML = `
-    <div style="height:100%; display:flex; flex-direction:column; gap:8px; overflow:hidden;">
-      <div style="display:flex; justify-content:space-between; gap:10px; font-size:9px; font-weight:900; letter-spacing:1px; color:#99f6e4; text-transform:uppercase;">
-        <span>GRAFO ORBITALE</span>
-        <span style="opacity:0.65;">${nodes.length} nodi | ${visibleLinks.length}/${links.length} link</span>
-      </div>
-      <div style="flex:1; min-height:0; display:grid; grid-template-columns:minmax(0, 1fr) minmax(190px, 240px); gap:8px; overflow:hidden;">
-        <div style="min-height:0; border:1px solid rgba(20,184,166,0.16); border-radius:8px; background:rgba(2,6,23,0.26); overflow:auto;">
-          <svg viewBox="0 0 600 560" width="100%" height="100%" role="img" aria-label="Grafo orbitale interattivo" style="min-width:600px; min-height:560px; display:block;">
-            <rect width="600" height="560" fill="rgba(2,6,23,0.20)"></rect>
-            ${orbitLines.map(item => `<circle cx="300" cy="280" r="${orbitaleOrbitRadius(item.orbit)}" fill="none" stroke="${item.color}" stroke-width="1" stroke-dasharray="4 8"></circle>`).join("")}
-            ${visibleLinks.map(link => {
-              const source = positions.get(link.source);
-              const targetPos = positions.get(link.target);
-              if (!source || !targetPos) return "";
-              const linkId = link.id || `${link.source}|${link.target}`;
-              const baseWidth = Math.max(1, Math.min(5, 1 + orbitaleNumber(link.weight, 0.3) * 4));
-              const width = selectedLinkIds.has(linkId) ? baseWidth + 2 : baseWidth;
-              return `<line data-orbitale-link="1" x1="${source.x.toFixed(1)}" y1="${source.y.toFixed(1)}" x2="${targetPos.x.toFixed(1)}" y2="${targetPos.y.toFixed(1)}" stroke="rgba(153,246,228,0.46)" stroke-opacity="${linkFocusOpacity(link).toFixed(2)}" stroke-width="${width.toFixed(1)}" stroke-linecap="round"><title>${orbitaleEscapeHtml(link.type || "link")} | weight ${orbitaleFormatScore(link.weight)}</title></line>`;
-            }).join("")}
-            ${nodes.map(node => {
-              const pos = positions.get(node.id);
-              if (!pos) return "";
-              const baseSize = orbitaleVisualRadius(node, linkCounts.get(node.id) || 0);
-              const size = node.id === selectedNodeId ? baseSize * 1.25 : baseSize;
-              const color = orbitaleSemanticColor(node);
-              const label = orbitaleMemoryText(node, 26);
-              const detail = [
-                orbitaleNodeRole(node),
-                orbitaleNodeOrbit(node),
-                orbitaleNodeDepth(node),
-                `activation ${orbitaleFormatScore(node.activation)}`,
-                `importance ${orbitaleFormatScore(orbitaleNodeImportance(node))}`,
-                `links ${linkCounts.get(node.id) || 0}`,
-                `tags ${orbitaleTags(node.tags, 6).join(", ") || "-"}`,
-                orbitaleMemoryText(node, 180)
-              ].join("\n");
-              return `<g data-orbitale-node="${orbitaleEscapeHtml(node.id)}" tabindex="0" style="cursor:pointer; opacity:${nodeFocusOpacity(node.id).toFixed(2)};"><circle cx="${pos.x.toFixed(1)}" cy="${pos.y.toFixed(1)}" r="${size.toFixed(1)}" fill="${color}" fill-opacity="0.86" stroke="${node.id === selectedNodeId ? "#ffffff" : "rgba(255,255,255,0.72)"}" stroke-width="${node.id === selectedNodeId ? "2.4" : "1.2"}"><title>${orbitaleEscapeHtml(detail)}</title></circle><text x="${(pos.x + size + 4).toFixed(1)}" y="${(pos.y + 3).toFixed(1)}" fill="rgba(226,232,240,0.82)" font-size="9" font-family="Arial, sans-serif" pointer-events="none"><title>${orbitaleEscapeHtml(detail)}</title>${orbitaleEscapeHtml(label)}</text></g>`;
-            }).join("")}
-          </svg>
-        </div>
-        <div data-orbitale-inspector="1" style="min-height:0; border:1px solid rgba(20,184,166,0.16); border-radius:8px; background:rgba(15,23,42,0.34); padding:9px; overflow:hidden;">
-          ${renderInspector(selectedNodeId)}
-        </div>
-      </div>
-    </div>
-  `;
-
-  target.querySelectorAll("[data-orbitale-node]").forEach(item => {
-    const toggleNode = () => {
-      const nextNodeId = item.dataset.orbitaleNode || "";
-      target.dataset.orbitaleSelectedNode = target.dataset.orbitaleSelectedNode === nextNodeId ? "" : nextNodeId;
-      const wrap = target.closest("[id^='orbitale-wrap-']");
-      const mcoTarget = wrap?.querySelector("[data-orbitale-panel='mco']");
-      if (mcoTarget && target.dataset.orbitaleSelectedNode) {
-        mcoTarget.dataset.orbitaleMcoSelected = target.dataset.orbitaleSelectedNode;
-        renderOrbitaleMcoCard(mcoTarget, nodes, links);
-      }
-      renderOrbitGraphCard(target, nodes, links);
-    };
-    item.addEventListener("click", toggleNode);
-    item.addEventListener("keydown", event => {
-      if (event.key !== "Enter" && event.key !== " ") return;
-      event.preventDefault();
-      toggleNode();
-    });
-  });
-}
-
-function renderActiveCoreCard(target, nodes) {
-  if (!target) return;
-  if (!nodes.length) {
-    target.innerHTML = orbitaleEmptyMessage();
-    return;
-  }
-
-  const topNodes = nodes.slice().sort((left, right) => {
-    const activationDelta = orbitaleNumber(right.activation, -1) - orbitaleNumber(left.activation, -1);
-    if (activationDelta) return activationDelta;
-    const importanceDelta = orbitaleNumber(right.importance, -1) - orbitaleNumber(left.importance, -1);
-    if (importanceDelta) return importanceDelta;
-    return (orbitaleDateValue(right.timestamp)?.getTime() || 0) - (orbitaleDateValue(left.timestamp)?.getTime() || 0);
-  }).slice(0, 10);
-
-  target.innerHTML = `
-    <div style="font-size:9px; font-weight:900; letter-spacing:1px; color:#99f6e4; margin-bottom:8px; text-transform:uppercase;">NUCLEO ATTIVO</div>
-    ${topNodes.map((node, index) => orbitaleNodeCard(node, { title: `#${index + 1}`, textLimit: 150, tagLimit: 5 })).join("")}
-  `;
-}
-
-function orbitaleTimelineGroup(timestamp) {
-  const date = orbitaleDateValue(timestamp);
-  if (!date) return "Più vecchie";
-  const startToday = new Date();
-  startToday.setHours(0, 0, 0, 0);
-  const startTarget = new Date(date);
-  startTarget.setHours(0, 0, 0, 0);
-  const days = Math.floor((startToday - startTarget) / 86400000);
-  if (days === 0) return "Oggi";
-  if (days === 1) return "Ieri";
-  if (days >= 2 && days <= 7) return "Ultimi 7 giorni";
-  if (days >= 8 && days <= 30) return "Ultimi 30 giorni";
-  return "Più vecchie";
-}
-
-function renderTemporalTimelineCard(target, nodes) {
-  if (!target) return;
-  if (!nodes.length) {
-    target.innerHTML = orbitaleEmptyMessage();
-    return;
-  }
-
-  const groups = ["Oggi", "Ieri", "Ultimi 7 giorni", "Ultimi 30 giorni", "Più vecchie"];
-  const byGroup = Object.fromEntries(groups.map(group => [group, []]));
-  nodes.slice().sort((left, right) => {
-    const rightTime = orbitaleDateValue(right.lastAccess || right.timestamp)?.getTime() || 0;
-    const leftTime = orbitaleDateValue(left.lastAccess || left.timestamp)?.getTime() || 0;
-    return rightTime - leftTime;
-  }).forEach(node => {
-    const time = node.lastAccess || node.timestamp;
-    byGroup[orbitaleTimelineGroup(time)].push(node);
-  });
-
-  target.innerHTML = groups.map(group => {
-    const items = byGroup[group].slice(0, 10);
-    return `
-      <div style="margin-bottom:12px;">
-        <div style="display:flex; align-items:center; justify-content:space-between; gap:10px; font-size:9px; font-weight:900; letter-spacing:1px; color:#99f6e4; margin-bottom:6px; text-transform:uppercase;">
-          <span>${orbitaleEscapeHtml(group)}</span>
-          <span style="opacity:0.55;">${byGroup[group].length}</span>
-        </div>
-        ${items.length ? items.map(node => orbitaleNodeCard(node, {
-          textLimit: 120,
-          tagLimit: 3,
-          time: orbitaleFormatTimestamp(node.lastAccess || node.timestamp)
-        })).join("") : "<div style='opacity:0.42; font-size:10px; margin-bottom:8px;'>Nessuna memoria in questo gruppo.</div>"}
-      </div>
-    `;
-  }).join("");
-}
-
-
-const ORBITALE_MCO_DOMAINS = {
-  "Health": {
-    tags: ["health", "entity_marco", "entity_angelman", "entity_aso", "entity_aso_paterno"],
-    missingVariables: ["tempo dell'evento", "farmaci concomitanti", "sintomi recenti", "infezioni/febbre", "sonno", "esami recenti", "relazione temporale con terapia/trial"],
-    bestQuestions: ["Quale dato clinico mancante ridurrebbe più rumore?", "Quale evento recente può confondere l'interpretazione?", "Quale variabile temporale serve per centrare il dominio?"]
-  },
-  "Project": {
-    tags: ["project"],
-    missingVariables: ["obiettivo operativo", "stato corrente", "vincolo principale", "prossimo test osservabile", "responsabile", "scadenza"],
-    bestQuestions: ["Qual è l'obiettivo operativo del nodo?", "Quale vincolo impedisce il prossimo passo?", "Quale risultato osservabile conferma l'avanzamento?"]
-  },
-  "Memory/Architecture": {
-    tags: ["technical", "memory", "orbital", "orbitale"],
-    missingVariables: ["path dati", "metodo chiamato", "criterio di link", "test osservabile", "log di verifica", "stato prima/dopo fix"],
-    bestQuestions: ["Quale log o file dimostra che il collegamento funziona?", "Quale componente della pipeline è la sorgente del dato?", "Quale test osservabile riduce il rumore?"]
-  },
-  "Family/Personal": {
-    tags: ["family", "entity_marco", "entity_elena"],
-    missingVariables: ["momento temporale", "stato emotivo", "contesto familiare", "evento precedente", "bisogno reale dell'utente"],
-    bestQuestions: ["Quale contesto personale manca?", "Quale evento precedente influenza questo nodo?", "Quale bisogno concreto deve restare in memoria?"]
-  },
-  "Research": {
-    tags: ["learning", "research", "pubmed"],
-    missingVariables: ["fonte primaria", "data pubblicazione", "tipo studio", "evidenza clinica vs teoria", "coerenza con altri studi"],
-    bestQuestions: ["Qual è la fonte primaria?", "È evidenza clinica o solo meccanismo teorico?", "Quanto è recente e applicabile al caso osservato?"]
-  },
-  "General": {
-    tags: [],
-    missingVariables: ["contesto specifico", "momento temporale", "obiettivo operativo", "dato osservabile", "fattore confondente"],
-    bestQuestions: ["Quale contesto manca per rendere utile questo nodo?", "Questo nodo è segnale o rumore naturale?", "Deve restare in memoria o decadere rapidamente?"]
-  }
-};
-
-const ORBITALE_MCO_WEAK_TAGS = new Set([
-  "user", "assistant", "temporary", "general", "emotion", "routine",
-  "tone_positive", "tone_negative", "tone_uncertain", "tone_urgent"
-]);
-
-function orbitaleMcoClamp(value) {
-  return Math.max(0, Math.min(1, value));
-}
-
-function orbitaleMcoTagList(node) {
-  return orbitaleTags(node?.tags, 100)
-    .map(tag => String(tag).trim().toLowerCase())
-    .filter(Boolean);
-}
-
-function orbitaleMcoDomain(node) {
-  const tags = orbitaleMcoTagList(node);
-  const scores = new Map(Object.keys(ORBITALE_MCO_DOMAINS).map(domain => [domain, 0]));
-  const reasons = new Map(Object.keys(ORBITALE_MCO_DOMAINS).map(domain => [domain, []]));
-
-  Object.entries(ORBITALE_MCO_DOMAINS).forEach(([domain, config]) => {
-    config.tags.forEach(strongTag => {
-      tags.forEach(tag => {
-        if (tag === strongTag) {
-          scores.set(domain, scores.get(domain) + 3);
-          reasons.get(domain).push(tag);
-        } else if (tag.startsWith(strongTag + "_") || tag.includes(strongTag)) {
-          scores.set(domain, scores.get(domain) + 1);
-          reasons.get(domain).push(tag);
-        }
-      });
-    });
-  });
-
-  const hasClinicalAnchor = tags.some(tag => ["entity_marco", "entity_angelman", "entity_aso", "entity_aso_paterno"].includes(tag));
-  if (tags.includes("health")) {
-    scores.set("Health", scores.get("Health") + 5);
-    reasons.get("Health").push("health");
-  }
-  if (tags.some(tag => tag === "research" || tag === "pubmed")) {
-    scores.set("Research", scores.get("Research") + 5);
-    reasons.get("Research").push(tags.includes("pubmed") ? "pubmed" : "research");
-  }
-  if (tags.includes("learning") && !hasClinicalAnchor) {
-    scores.set("Research", scores.get("Research") + 6);
-    reasons.get("Research").push("learning");
-  }
-  if (tags.some(tag => tag === "memory" || tag === "orbital" || tag === "orbitale")) {
-    scores.set("Memory/Architecture", scores.get("Memory/Architecture") + 5);
-    reasons.get("Memory/Architecture").push("memory/orbitale");
-  }
-
-  const ranked = [...scores.entries()]
-    .filter(([domain]) => domain !== "General")
-    .sort((left, right) => right[1] - left[1]);
-  if (ranked[0]?.[1] > 0) {
-    const domain = ranked[0][0];
-    return {
-      domain,
-      reason: "Tag: " + [...new Set(reasons.get(domain))].slice(0, 3).join(", ")
-    };
-  }
-
-  const text = String(node?.text || node?.content?.text || node?.label || "").toLowerCase();
-  const textRules = [
-    ["Health", ["marco", "angelman", "aso", "trial", "rupatidina", "paf", "stress ossidativo"]],
-    ["Research", ["pubmed", "studio", "ricerca", "evidenza", "letteratura"]],
-    ["Memory/Architecture", ["memoria orbitale", "card", "nodo", "link", "grafo", "engine", "adapter", "cockpit", "mco"]],
-    ["Family/Personal", ["elena", "moglie", "famiglia"]]
-  ];
-  for (const [domain, keywords] of textRules) {
-    const keyword = keywords.find(item => text.includes(item));
-    if (keyword) return { domain, reason: 'Testo: "' + keyword + '"' };
-  }
-
-  return {
-    domain: "General",
-    reason: tags.length ? "Solo tag generici o deboli" : "Nessun segnale semantico disponibile"
-  };
-}
-
-function orbitaleMcoAnalyze(nodes, links) {
-  const validNodes = Array.isArray(nodes) ? nodes.filter(node => node && node.id) : [];
-  const nodesById = new Map(validNodes.map(node => [node.id, node]));
-  const domainAnalysisById = new Map(validNodes.map(node => [node.id, orbitaleMcoDomain(node)]));
-  const domainsById = new Map(validNodes.map(node => [node.id, domainAnalysisById.get(node.id)?.domain || "General"]));
-  const validLinks = (Array.isArray(links) ? links : []).filter(link =>
-    link && nodesById.has(link.source) && nodesById.has(link.target)
-  );
-  const linksByNode = new Map(validNodes.map(node => [node.id, []]));
-
-  validLinks.forEach(link => {
-    linksByNode.get(link.source).push(link);
-    linksByNode.get(link.target).push(link);
-  });
-
-  const analyzedNodes = validNodes.map(node => {
-    const domain = domainsById.get(node.id) || "General";
-    const tags = orbitaleMcoTagList(node);
-    const domainTags = ORBITALE_MCO_DOMAINS[domain]?.tags || [];
-    const strongTags = tags.filter(tag => domainTags.some(strongTag =>
-      tag === strongTag || tag.startsWith(strongTag + "_") || tag.includes(strongTag)
-    ));
-    const weakTags = tags.filter(tag =>
-      ORBITALE_MCO_WEAK_TAGS.has(tag) ||
-      (tag.startsWith("entity_") && !["entity_marco", "entity_elena", "entity_angelman", "entity_aso_paterno"].includes(tag))
-    );
-    const nodeLinks = linksByNode.get(node.id) || [];
-    const coherentLinks = nodeLinks.filter(link => {
-      const otherId = link.source === node.id ? link.target : link.source;
-      return domainsById.get(otherId) === domain;
-    });
-    const heterogeneousLinks = nodeLinks.length - coherentLinks.length;
-    const activation = orbitaleMcoClamp(orbitaleNumber(node.activation, 0));
-    const importance = orbitaleMcoClamp(orbitaleNodeImportance(node));
-
-    let centerScore = 0.18;
-    centerScore += Math.min(0.28, strongTags.length * 0.09);
-    centerScore += ((activation + importance) / 2) * 0.22;
-    centerScore += nodeLinks.length ? Math.min(0.18, nodeLinks.length * 0.04) : -0.12;
-    centerScore += nodeLinks.length ? (coherentLinks.length / nodeLinks.length) * 0.18 : 0;
-    centerScore -= Math.min(0.18, weakTags.length * 0.025);
-    centerScore -= nodeLinks.length ? (heterogeneousLinks / nodeLinks.length) * 0.16 : 0;
-    if (!tags.length) centerScore -= 0.15;
-    if (domain === "General") centerScore -= 0.12;
-    centerScore = orbitaleMcoClamp(centerScore);
-
-    let noiseScore = 1 - centerScore;
-    noiseScore += Math.min(0.12, weakTags.length * 0.015);
-    if (!node.timestamp && !node.lastAccess) noiseScore += 0.08;
-    if (!nodeLinks.length) noiseScore += 0.10;
-    if (nodeLinks.length) noiseScore += (heterogeneousLinks / nodeLinks.length) * 0.10;
-    noiseScore = orbitaleMcoClamp(noiseScore);
-
-    const weakLinks = nodeLinks.filter(link => {
-      const otherId = link.source === node.id ? link.target : link.source;
-      const otherTags = orbitaleMcoTagList(nodesById.get(otherId));
-      const otherWeakTags = otherTags.filter(tag => ORBITALE_MCO_WEAK_TAGS.has(tag) || tag.startsWith("entity_"));
-      return orbitaleNumber(link.weight, 0) < 0.5 ||
-        domainsById.get(otherId) !== domain ||
-        !otherTags.length ||
-        otherWeakTags.length > Math.max(2, otherTags.length / 2);
-    }).map(link => {
-      const otherId = link.source === node.id ? link.target : link.source;
-      return {
-        ...link,
-        otherId,
-        otherLabel: orbitaleMemoryText(nodesById.get(otherId), 52) || orbitaleShortId(otherId),
-        otherDomain: domainsById.get(otherId) || "General"
-      };
-    });
-
-    return {
-      ...node,
-      domain,
-      domainReason: domainAnalysisById.get(node.id)?.reason || "Nessun segnale semantico disponibile",
-      centerScore,
-      noiseScore,
-      linkCount: nodeLinks.length,
-      weakLinks,
-      missingVariables: ORBITALE_MCO_DOMAINS[domain]?.missingVariables || ORBITALE_MCO_DOMAINS.General.missingVariables,
-      bestQuestions: ORBITALE_MCO_DOMAINS[domain]?.bestQuestions || ORBITALE_MCO_DOMAINS.General.bestQuestions
-    };
-  });
-
-  const average = key => analyzedNodes.length
-    ? analyzedNodes.reduce((sum, node) => sum + node[key], 0) / analyzedNodes.length
-    : 0;
-  const domainCounts = analyzedNodes.reduce((counts, node) => {
-    counts[node.domain] = (counts[node.domain] || 0) + 1;
-    return counts;
-  }, {});
-  const dominantDomain = Object.entries(domainCounts)
-    .sort((left, right) => right[1] - left[1] || left[0].localeCompare(right[0]))[0]?.[0] || "-";
-  const weakLinkIds = new Set();
-  analyzedNodes.forEach(node => node.weakLinks.forEach(link => weakLinkIds.add(link.id || (link.source + "|" + link.target))));
-
-  return {
-    nodes: analyzedNodes,
-    validLinks,
-    averageCenter: average("centerScore"),
-    averageNoise: average("noiseScore"),
-    dominantDomain,
-    weakLinksCount: weakLinkIds.size
-  };
-}
-
-function orbitaleMcoSignal(centerScore) {
-  if (centerScore >= 0.75) return { color: "#22c55e", label: "domain ben centrato" };
-  if (centerScore >= 0.45) return { color: "#facc15", label: "rumore medio" };
-  return { color: "#ef4444", label: "rumore alto" };
-}
-
-function orbitaleMcoIsShortGreeting(node) {
-  const text = String(node?.text || node?.label || "").replace(/[!?.,;:]+/g, " ").replace(/\s+/g, " ").trim().toLowerCase();
-  if (!text || text.length > 45) return false;
-  return /^(ciao|buonasera|buongiorno|ola|salve|come stai)(\b|$)/i.test(text);
-}
-
-function orbitaleMcoSearchText(node) {
-  return [
-    node?.text,
-    node?.label,
-    orbitaleMcoTagList(node).join(" "),
-    node?.domain,
-    orbitaleNodeRole(node)
-  ].filter(Boolean).join(" ").toLowerCase();
-}
-
-function renderOrbitaleMcoCard(target, nodes, links) {
-  if (!target) return;
-  const analysis = orbitaleMcoAnalyze(nodes, links);
-  if (!analysis.nodes.length) {
-    target.innerHTML = orbitaleEmptyMessage();
-    return;
-  }
-
-  const relevantNoise = analysis.nodes.filter(node =>
-    orbitaleNodeImportance(node) >= 0.3 &&
-    orbitaleNodeDepth(node) !== "temporary" &&
-    !orbitaleMcoIsShortGreeting(node) &&
-    !(node.linkCount === 0 && node.domain === "General")
-  ).sort((left, right) => right.noiseScore - left.noiseScore || left.centerScore - right.centerScore)
-    .slice(0, 10);
-  const highCenter = analysis.nodes.slice()
-    .sort((left, right) => right.centerScore - left.centerScore || left.noiseScore - right.noiseScore)
-    .slice(0, 10);
-  const view = ["noise", "center", "all"].includes(target.dataset.orbitaleMcoView)
-    ? target.dataset.orbitaleMcoView
-    : "noise";
-  const query = String(target.dataset.orbitaleMcoQuery || "").trim().toLowerCase();
-  const searchedNodes = query
-    ? analysis.nodes.filter(node => orbitaleMcoSearchText(node).includes(query))
-    : analysis.nodes.slice()
-      .sort((left, right) => right.centerScore - left.centerScore || right.noiseScore - left.noiseScore);
-  const visibleNodes = query || view === "all"
-    ? searchedNodes
-    : view === "center" ? highCenter : relevantNoise;
-  const fallbackNodes = relevantNoise.length ? relevantNoise : analysis.nodes.slice()
-    .sort((left, right) => right.noiseScore - left.noiseScore || left.centerScore - right.centerScore)
-    .slice(0, 10);
-  let selectedNodeId = target.dataset.orbitaleMcoSelected || visibleNodes[0]?.id || fallbackNodes[0]?.id || "";
-  if (!analysis.nodes.some(node => node.id === selectedNodeId)) selectedNodeId = visibleNodes[0]?.id || fallbackNodes[0]?.id || "";
-  target.dataset.orbitaleMcoSelected = selectedNodeId;
-  target.dataset.orbitaleMcoView = view;
-  const selected = analysis.nodes.find(node => node.id === selectedNodeId);
-  const signal = orbitaleMcoSignal(selected?.centerScore || 0);
-  const listTitle = query
-    ? "RISULTATI RICERCA (" + visibleNodes.length + ")"
-    : view === "center" ? "HIGH CENTER" : view === "all" ? "TUTTI I NODI" : "TOP NOISE RILEVANTE";
-  const renderNodeButton = node => {
-    const nodeSignal = orbitaleMcoSignal(node.centerScore);
-    const active = node.id === selectedNodeId;
-    return '<button data-orbitale-mco-node="' + orbitaleEscapeHtml(node.id) + '" style="display:block; width:100%; text-align:left; color:inherit; cursor:pointer; border:1px solid ' + (active ? nodeSignal.color : 'rgba(255,255,255,0.09)') + '; background:' + (active ? 'rgba(20,184,166,0.13)' : 'rgba(255,255,255,0.035)') + '; border-radius:7px; padding:7px; margin:0 0 6px; font:inherit;">' +
-      '<div style="display:flex; align-items:center; gap:6px; font-size:10px;"><span style="width:8px; height:8px; border-radius:50%; flex:none; background:' + nodeSignal.color + ';"></span><b style="color:#ccfbf1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">' + orbitaleEscapeHtml(node.label || node.id) + '</b></div>' +
-      '<div style="display:flex; justify-content:space-between; gap:6px; margin-top:4px; font-size:9px; opacity:0.68;"><span>' + orbitaleEscapeHtml(node.domain) + '</span><span>center ' + node.centerScore.toFixed(2) + ' | noise ' + node.noiseScore.toFixed(2) + '</span></div>' +
-      '<div style="font-size:8px; opacity:0.52; margin-top:3px;">' + orbitaleEscapeHtml(orbitaleNodeRole(node)) + ' | ' + orbitaleEscapeHtml(orbitaleNodeDepth(node)) + ' | link ' + node.linkCount + '</div>' +
-    '</button>';
-  };
-
-  target.innerHTML =
-    '<div style="height:100%; display:flex; flex-direction:column; gap:9px; overflow:hidden;">' +
-      '<div style="font-size:9px; font-weight:900; letter-spacing:1px; color:#99f6e4; text-transform:uppercase;">MCO OVERVIEW</div>' +
-      '<div style="display:grid; grid-template-columns:repeat(5, minmax(0, 1fr)); gap:6px;">' +
-        [["Nodi", analysis.nodes.length], ["Noise medio", analysis.averageNoise.toFixed(2)], ["Center medio", analysis.averageCenter.toFixed(2)], ["Domain", analysis.dominantDomain], ["Weak links", analysis.weakLinksCount]].map(([label, value]) =>
-          '<div style="background:rgba(20,184,166,0.08); border:1px solid rgba(20,184,166,0.18); border-radius:7px; padding:7px; min-width:0;">' +
-            '<div style="font-size:7px; opacity:0.58; font-weight:900; text-transform:uppercase; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">' + orbitaleEscapeHtml(label) + '</div>' +
-            '<div style="font-size:13px; color:#ccfbf1; font-weight:900; margin-top:3px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">' + orbitaleEscapeHtml(value) + '</div>' +
-          '</div>'
-        ).join("") +
-      '</div>' +
-      '<div style="flex:1; min-height:0; display:grid; grid-template-columns:minmax(250px, 0.9fr) minmax(0, 1.4fr); gap:9px; overflow:hidden;">' +
-        '<div style="min-height:0; display:flex; flex-direction:column; overflow:hidden;">' +
-          '<div style="display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:4px; margin-bottom:6px;">' +
-            [["noise", "Top Noise"], ["center", "High Center"], ["all", "Tutti / Cerca"]].map(([mode, label]) =>
-              '<button data-orbitale-mco-view="' + mode + '" style="border:1px solid ' + (view === mode ? '#14b8a6' : 'rgba(255,255,255,0.10)') + '; background:' + (view === mode ? 'rgba(20,184,166,0.18)' : 'rgba(255,255,255,0.04)') + '; color:' + (view === mode ? '#ccfbf1' : 'rgba(255,255,255,0.68)') + '; border-radius:6px; padding:5px 3px; font-size:8px; cursor:pointer;">' + label + '</button>'
-            ).join("") +
-          '</div>' +
-          '<input data-orbitale-mco-search="1" value="' + orbitaleEscapeHtml(target.dataset.orbitaleMcoQuery || "") + '" placeholder="Cerca testo, tag, domain, role..." style="width:100%; box-sizing:border-box; margin-bottom:6px; border:1px solid rgba(20,184,166,0.22); border-radius:6px; background:rgba(2,6,23,0.38); color:#ccfbf1; padding:6px 7px; font-size:9px; outline:none;">' +
-          '<div style="font-size:8px; opacity:0.62; letter-spacing:1px; font-weight:900; text-transform:uppercase; margin-bottom:6px;">' + orbitaleEscapeHtml(listTitle) + '</div>' +
-          '<div style="overflow:auto; min-height:0; padding-right:3px;">' + (visibleNodes.length ? visibleNodes.map(renderNodeButton).join("") : '<div style="opacity:0.55; font-size:10px; padding:8px 2px;">Nessun nodo corrispondente.</div>') + '</div>' +
-        '</div>' +
-        '<div style="min-height:0; border:1px solid rgba(20,184,166,0.16); border-radius:8px; background:rgba(15,23,42,0.34); padding:9px; overflow:auto;">' + (selected ?
-          '<div style="display:flex; align-items:center; justify-content:space-between; gap:8px; margin-bottom:8px;"><div style="font-size:8px; opacity:0.62; letter-spacing:1px; font-weight:900; text-transform:uppercase;">NODO SELEZIONATO / INSPECTOR MCO</div><div style="display:flex; align-items:center; gap:5px; color:' + signal.color + '; font-size:9px; font-weight:900;"><span style="width:9px; height:9px; border-radius:50%; background:' + signal.color + ';"></span>' + orbitaleEscapeHtml(signal.label) + '</div></div>' +
-          '<div style="font-size:10px; line-height:1.4; opacity:0.82; margin-bottom:8px;">' + orbitaleEscapeHtml(orbitaleMemoryText(selected, 320) || "-") + '</div>' +
-          '<div style="display:grid; grid-template-columns:repeat(4, minmax(0, 1fr)); gap:6px; margin-bottom:7px;">' + [["Domain", selected.domain], ["Center score", selected.centerScore.toFixed(2)], ["Noise score", selected.noiseScore.toFixed(2)], ["Link count", selected.linkCount]].map(([label, value]) => '<div style="background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:7px; padding:6px; min-width:0;"><div style="font-size:7px; opacity:0.5; text-transform:uppercase; font-weight:900;">' + orbitaleEscapeHtml(label) + '</div><div style="font-size:10px; color:#ccfbf1; margin-top:3px; overflow:hidden; text-overflow:ellipsis;">' + orbitaleEscapeHtml(value) + '</div></div>').join("") + '</div>' +
-          '<div style="font-size:9px; line-height:1.35; padding:6px 7px; border-left:2px solid rgba(20,184,166,0.55); background:rgba(20,184,166,0.06);"><b style="color:#99f6e4;">Domain reason:</b> ' + orbitaleEscapeHtml(selected.domainReason) + '</div>' +
-          [["Missing variables", selected.missingVariables.map(item => '<li>' + orbitaleEscapeHtml(item) + '</li>').join("")], ["Weak links collegati", selected.weakLinks.length ? selected.weakLinks.map(link => '<li>' + orbitaleEscapeHtml(link.otherLabel) + ' | ' + orbitaleEscapeHtml(link.otherDomain) + ' | peso ' + orbitaleEscapeHtml(orbitaleFormatScore(link.weight)) + '</li>').join("") : '<li>Nessun weak link collegato.</li>'], ["Best questions", selected.bestQuestions.map(item => '<li>' + orbitaleEscapeHtml(item) + '</li>').join("")]].map(([title, items]) => '<div style="margin-top:8px; font-size:10px;"><div style="font-size:8px; opacity:0.55; text-transform:uppercase; font-weight:900; margin-bottom:4px;">' + orbitaleEscapeHtml(title) + '</div><ul style="margin:0; padding-left:17px; line-height:1.5; opacity:0.78;">' + items + '</ul></div>').join("")
-          : orbitaleEmptyMessage()) +
-        '</div>' +
-      '</div>' +
-    '</div>';
-
-  target.querySelectorAll("[data-orbitale-mco-node]").forEach(button => {
-    button.addEventListener("click", () => {
-      target.dataset.orbitaleMcoSelected = button.dataset.orbitaleMcoNode || "";
-      const wrap = target.closest("[id^='orbitale-wrap-']");
-      const graphTarget = wrap?.querySelector("[data-orbitale-panel='grafo']");
-      if (graphTarget) {
-        graphTarget.dataset.orbitaleSelectedNode = target.dataset.orbitaleMcoSelected;
-        renderOrbitGraphCard(graphTarget, nodes, links);
-      }
-      renderOrbitaleMcoCard(target, nodes, links);
-    });
-  });
-  target.querySelectorAll("[data-orbitale-mco-view]").forEach(button => {
-    button.addEventListener("click", () => {
-      target.dataset.orbitaleMcoView = button.dataset.orbitaleMcoView || "noise";
-      if (target.dataset.orbitaleMcoView !== "all") target.dataset.orbitaleMcoQuery = "";
-      renderOrbitaleMcoCard(target, nodes, links);
-    });
-  });
-  const searchInput = target.querySelector("[data-orbitale-mco-search]");
-  searchInput?.addEventListener("input", () => {
-    target.dataset.orbitaleMcoQuery = searchInput.value;
-    target.dataset.orbitaleMcoView = "all";
-    renderOrbitaleMcoCard(target, nodes, links);
-    const nextInput = target.querySelector("[data-orbitale-mco-search]");
-    if (nextInput) {
-      nextInput.focus();
-      nextInput.setSelectionRange(nextInput.value.length, nextInput.value.length);
-    }
-  });
-}
-
-async function loadOrbitaleMemoryCard(cardId) {
-  const statusBox = document.getElementById(`orbitale-status-${cardId}`);
-  const barsBox = document.getElementById(`orbitale-bars-${cardId}`);
-  const nodesBox = document.getElementById(`orbitale-nodes-${cardId}`);
-  const linksBox = document.getElementById(`orbitale-links-${cardId}`);
-  const graphBox = document.getElementById(`orbitale-graph-${cardId}`);
-  const coreBox = document.getElementById(`orbitale-core-${cardId}`);
-  const timelineBox = document.getElementById(`orbitale-timeline-${cardId}`);
-  const mcoBox = document.getElementById(`orbitale-mco-${cardId}`);
-  if (!statusBox || !barsBox || !nodesBox || !linksBox || !graphBox || !coreBox || !timelineBox || !mcoBox) return;
-
-  statusBox.innerHTML = orbitaleMetricBox("Memorie", "...") + orbitaleMetricBox("Link", "...");
-  nodesBox.innerHTML = "<div style='opacity:0.55; font-size:11px;'>Loading...</div>";
-  linksBox.innerHTML = "<div style='opacity:0.55; font-size:11px;'>Loading...</div>";
-  graphBox.innerHTML = "<div style='opacity:0.55; font-size:11px;'>Loading...</div>";
-  coreBox.innerHTML = "<div style='opacity:0.55; font-size:11px;'>Loading...</div>";
-  timelineBox.innerHTML = "<div style='opacity:0.55; font-size:11px;'>Loading...</div>";
-  mcoBox.innerHTML = "<div style='opacity:0.55; font-size:11px;'>Loading...</div>";
-
-  try {
-    const [statusRes, graphRes] = await Promise.all([
-      fetch("/api/orbitale/status", { credentials: "include" }),
-      fetch("/api/orbitale/graph", { credentials: "include" })
-    ]);
-
-    if (!statusRes.ok || !graphRes.ok) {
-      throw new Error(`Orbitale request failed status=${statusRes.status} graph=${graphRes.status}`);
-    }
-
-    const status = await statusRes.json();
-    const graph = await graphRes.json();
-    const nodes = Array.isArray(graph.nodes) ? graph.nodes : [];
-    const links = Array.isArray(graph.links) ? graph.links : [];
-
-    statusBox.innerHTML = [
-      orbitaleMetricBox("Memorie", status.memoriesCount || nodes.length || 0),
-      orbitaleMetricBox("Link", status.linksCount || links.length || 0),
-      orbitaleMetricBox("Enabled", status.enabled ? "true" : "false"),
-      orbitaleMetricBox("Tags", Array.isArray(status.topTags) ? status.topTags.length : 0)
-    ].join("");
-
-    barsBox.innerHTML = [
-      orbitaleDistribution("Role", status.roles),
-      orbitaleDistribution("Orbite", status.orbits),
-      orbitaleDistribution("Depth", status.depths)
-    ].join("");
-
-    if (!nodes.length) {
-      nodesBox.innerHTML = orbitaleEmptyMessage();
-      linksBox.innerHTML = "<div style='opacity:0.55; font-size:11px;'>No links.</div>";
-      renderOrbitGraphCard(graphBox, nodes, links);
-      renderActiveCoreCard(coreBox, nodes);
-      renderTemporalTimelineCard(timelineBox, nodes);
-      renderOrbitaleMcoCard(mcoBox, nodes, links);
-      return;
-    }
-
-    const latestNodes = nodes
-      .slice()
-      .sort((left, right) => (orbitaleDateValue(right.timestamp)?.getTime() || 0) - (orbitaleDateValue(left.timestamp)?.getTime() || 0))
-      .slice(0, 10);
-
-    nodesBox.innerHTML = latestNodes.map(node => orbitaleNodeCard(node, {
-      textLimit: 115,
-      tagLimit: 3,
-      time: orbitaleFormatTimestamp(node.timestamp)
-    })).join("");
-
-    linksBox.innerHTML = links.slice(0, 10).map(link => `
-      <div style="border:1px solid rgba(255,255,255,0.10); background:rgba(255,255,255,0.04); border-radius:8px; padding:8px; margin-bottom:7px; font-size:10px; line-height:1.35;">
-        <div style="color:#ccfbf1; font-weight:900; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">${orbitaleEscapeHtml(link.type || "unknown")} | w ${orbitaleEscapeHtml(orbitaleFormatScore(link.weight))}</div>
-        <div style="opacity:0.65; margin-top:4px; word-break:break-all;">${orbitaleEscapeHtml(orbitaleShortId(link.source))} -> ${orbitaleEscapeHtml(orbitaleShortId(link.target))}</div>
-      </div>
-    `).join("") || "<div style='opacity:0.55; font-size:11px;'>No links.</div>";
-
-    renderOrbitGraphCard(graphBox, nodes, links);
-    renderActiveCoreCard(coreBox, nodes);
-    renderTemporalTimelineCard(timelineBox, nodes);
-    renderOrbitaleMcoCard(mcoBox, nodes, links);
-  } catch (err) {
-    statusBox.innerHTML = orbitaleMetricBox("Status", "error");
-    barsBox.innerHTML = "";
-    nodesBox.innerHTML = "<div style='opacity:0.65; font-size:11px;'>Orbitale cockpit unavailable.</div>";
-    linksBox.innerHTML = "";
-    graphBox.innerHTML = "<div style='opacity:0.65; font-size:11px;'>Orbitale cockpit unavailable.</div>";
-    coreBox.innerHTML = "";
-    timelineBox.innerHTML = "";
-    mcoBox.innerHTML = "";
-    console.error("Orbitale cockpit error", err);
-  }
-}
-
 //Funzione inizializzo dashboard
 function initDashboard() {
       const isLaptop = window.innerWidth < 1500;
@@ -5541,11 +4223,13 @@ function initDashboard() {
       const ROW_1 = 30;
 
       // --- 1. CARD APERTE ---
+      //Canvas Card
+      spawnCard("canvas", "CREATIVE CANVAS", "", { top: "360px",  left: LEFT_COL,  width: "520px",  height: "520px" }, true);
       // Agenda (Ora include il Diario)
       spawnCard("event", "AGENDA", "", { top: "30px", left: CENTER_COL }, true);
       
       // Keblo Core (Chat)
-      spawnCard("chat", "KEBLO CORE_DEV", "", { top: "100px", left: "calc(50% - 300px)" }, false);
+      spawnCard("chat", "KEBLO CORE", "", { top: "100px", left: "calc(50% - 300px)" }, false);
       
       //CARD Diario
       spawnCard("journal", "DIARIO PERSONALE", "", { top: "30px", left: "400px" }, true);
@@ -5558,9 +4242,7 @@ function initDashboard() {
       spawnCard("intelligence", "INTELLIGENCE STATION", "", { top: `${ROW_1}px`, left: LEFT_COL }, true);
       spawnCard("memo", "SCRATCHPAD", "", { top: "480px", left: LEFT_COL }, true);
       spawnCard("news_station", "INTERNET", "", { top: "680px", right: RIGHT_COL }, true);
-      spawnCard("orbitale_memory", "MEMORIA ORBITALE", "", { top: "320px", right: RIGHT_COL }, true);
       spawnCard("core", "SYSTEM", "", { top: "30px", right: RIGHT_COL, height:"120px" }, true);
-      spawnCard("fix_control", "FIX CONTROL", "", { top: "120px", left: LEFT_COL }, true);
     }
 
 // Navigazione Mesi
@@ -5701,7 +4383,6 @@ function toggleMinimize(btn) {
   if (card.classList.contains('news')) iconColor = "#3b82f6";         // Blu
   if (card.classList.contains('chat')) iconColor = "#6366f1";         // Indaco (Nexus)
   if (card.classList.contains('reader')) iconColor = "#f472b6";       // Rosa
-  if (card.classList.contains('fix_control')) iconColor = "#f59e0b";
 
   dockItem.innerHTML = `<span style="color:${iconColor}; font-size:14px;">●</span> ${cardTitle}`;
   
