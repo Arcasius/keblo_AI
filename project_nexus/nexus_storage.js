@@ -126,3 +126,78 @@ export async function loadSnapshot(userId, projectId, snapshotId) {
   const fileName = safeSnapshotId === "latest" ? "latest.json" : `${safeSnapshotId}.json`;
   return readJson(path.join(projectRoot(userId, projectId), fileName), null);
 }
+
+export async function saveAudit(userId, projectId, audit) {
+  const safeProjectId = sanitizeSegment(projectId || audit?.projectId, "unknown_project");
+  const now = new Date().toISOString();
+  const timestamp = now.replace(/[:.]/g, "-");
+  const auditId = `audit_${timestamp}`;
+  const dir = projectRoot(userId, safeProjectId);
+  const auditFile = path.join(dir, `${auditId}.json`);
+  const latestAuditFile = path.join(dir, "latest_audit.json");
+  const payload = {
+    auditId,
+    savedAt: now,
+    ...audit,
+    projectId: safeProjectId
+  };
+
+  await writeJson(auditFile, payload);
+  await writeJson(latestAuditFile, payload);
+
+  return {
+    auditId,
+    auditPath: auditFile,
+    latestAuditPath: latestAuditFile,
+    projectId: safeProjectId
+  };
+}
+
+export async function loadLatestAudit(userId, projectId) {
+  return readJson(path.join(projectRoot(userId, projectId), "latest_audit.json"), null);
+}
+
+export async function saveDeepAudit(userId, projectId, deepAudit) {
+  const safeProjectId = sanitizeSegment(projectId || deepAudit?.projectId, "unknown_project");
+  const now = new Date().toISOString();
+  const timestamp = now.replace(/[:.]/g, "-");
+  const deepAuditId = `deep_audit_${timestamp}`;
+  const dir = projectRoot(userId, safeProjectId);
+  const deepAuditFile = path.join(dir, `${deepAuditId}.json`);
+  const latestDeepAuditFile = path.join(dir, "latest_deep_audit.json");
+  const payload = {
+    deepAuditId,
+    savedAt: now,
+    ...deepAudit,
+    projectId: safeProjectId
+  };
+
+  await writeJson(deepAuditFile, payload);
+  await writeJson(latestDeepAuditFile, payload);
+
+  return {
+    deepAuditId,
+    deepAuditPath: deepAuditFile,
+    latestDeepAuditPath: latestDeepAuditFile,
+    projectId: safeProjectId
+  };
+}
+
+export async function saveRecommendedFixes(userId, projectId, fixes, source = {}) {
+  const safeProjectId = sanitizeSegment(projectId, "unknown_project");
+  const now = new Date().toISOString();
+  const payload = {
+    projectId: safeProjectId,
+    updatedAt: now,
+    source,
+    fixes: Array.isArray(fixes) ? fixes : []
+  };
+  const filePath = path.join(projectRoot(userId, safeProjectId), "recommended_fixes.json");
+  await writeJson(filePath, payload);
+  return payload;
+}
+
+export async function loadRecommendedFixes(userId, projectId) {
+  const payload = await readJson(path.join(projectRoot(userId, projectId), "recommended_fixes.json"), null);
+  return Array.isArray(payload?.fixes) ? payload.fixes : [];
+}

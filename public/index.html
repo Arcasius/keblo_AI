@@ -72,6 +72,7 @@
   --a-journal: #d946ef;
   --a-vision: #f472b6;
   --a-orbitale: #14b8a6;
+  --a-nexus: #84cc16;
 }
 
 /* grain overlay */
@@ -586,6 +587,7 @@ body{
 .card.vision{ --accent: var(--a-vision); }
 .card.orbitale_memory{ --accent: var(--a-orbitale); }
 .card.fix_control{ --accent: #f59e0b; }
+.card.nexus{ --accent: var(--a-nexus); }
 
 /* apply accent to surfaces */
 .card.chat .card-front, .card.chat .card-back,
@@ -601,7 +603,8 @@ body{
 .card.journal .card-front, .card.journal .card-back,
 .card.vision .card-front, .card.vision .card-back,
 .card.orbitale_memory .card-front, .card.orbitale_memory .card-back,
-.card.fix_control .card-front, .card.fix_control .card-back{
+.card.fix_control .card-front, .card.fix_control .card-back,
+.card.nexus .card-front, .card.nexus .card-back{
   border-color: color-mix(in srgb, var(--accent) 55%, rgba(255,255,255,0.16));
   box-shadow:
     inset 0 1px 0 rgba(255,255,255,0.18),
@@ -624,12 +627,40 @@ body{
 .card.journal .card-title,
 .card.vision .card-title,
 .card.orbitale_memory .card-title,
-.card.fix_control .card-title{
+.card.fix_control .card-title,
+.card.nexus .card-title{
   color: color-mix(in srgb, var(--accent) 78%, rgba(255,255,255,0.92));
   text-shadow: 0 0 10px color-mix(in srgb, var(--accent) 30%, transparent);
 }
 
 .card.fix_control .card-content{ gap:8px; }
+.card.nexus .card-content{ gap:0; overflow:hidden; }
+.nexus-scroll{ flex:1; min-height:0; overflow-y:auto; padding-right:4px; display:flex; flex-direction:column; gap:12px; }
+.nexus-toolbar{ display:grid; grid-template-columns:minmax(0, 1fr) 118px; gap:7px; }
+.nexus-action-bar{ display:grid; grid-template-columns:repeat(5, minmax(0, 1fr)); gap:6px; }
+.nexus-action-bar .card-btn{ margin:0; min-height:34px; white-space:normal; line-height:1.12; padding:6px 5px; }
+.nexus-panel{ max-height:260px; min-height:150px; overflow-y:auto; border:1px solid rgba(132,204,22,.18); background:rgba(15,23,42,.64); border-radius:10px; padding:11px; font-size:10px; line-height:1.5; }
+.nexus-deep-report{ display:flex; flex-direction:column; gap:10px; }
+.nexus-export-bar{ display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:6px; margin-bottom:8px; }
+.nexus-export-bar.two{ grid-template-columns:repeat(2, minmax(0, 1fr)); }
+.nexus-export-bar .card-btn{ margin:0; min-height:30px; padding:6px 5px; line-height:1.1; white-space:normal; }
+.nexus-section{ border:1px solid rgba(132,204,22,.12); background:rgba(2,6,23,.28); border-radius:10px; padding:10px; }
+.nexus-section h4{ margin:0 0 8px; color:#bef264; font-size:9px; letter-spacing:1px; text-transform:uppercase; }
+.nexus-section ul{ margin:0; padding-left:16px; }
+.nexus-section li{ margin-bottom:3px; overflow-wrap:anywhere; }
+.nexus-meta{ border:1px solid rgba(132,204,22,.16); background:rgba(132,204,22,.06); border-radius:8px; padding:8px; font-size:9px; overflow-wrap:anywhere; }
+.nexus-project-row{ border:1px solid rgba(255,255,255,.1); border-radius:8px; padding:8px; margin-bottom:7px; cursor:pointer; background:rgba(255,255,255,.04); }
+.nexus-project-row:hover{ border-color:rgba(132,204,22,.38); background:rgba(132,204,22,.08); }
+.nexus-fix-list{ max-height:190px; overflow-y:auto; padding-right:3px; }
+.nexus-fix-item{ border:1px solid rgba(132,204,22,.18); border-radius:8px; padding:8px; margin-bottom:8px; background:rgba(132,204,22,.06); }
+.nexus-chip-row{ display:flex; flex-wrap:wrap; gap:5px; }
+.nexus-chip{ border:1px solid rgba(132,204,22,.25); background:rgba(132,204,22,.09); color:#d9f99d; border-radius:999px; padding:3px 7px; font-size:8px; font-weight:900; letter-spacing:.5px; text-transform:uppercase; }
+.nexus-message{ min-height:18px; padding:4px 1px; font-size:9px; color:#fca5a5; }
+.nexus-prompt-output{ min-height:100px; resize:vertical; font-family:var(--font-mono); font-size:10px; line-height:1.45; }
+.nexus-full-overlay{ position:fixed; inset:0; z-index:200000; display:flex; align-items:center; justify-content:center; background:rgba(2,6,23,.78); backdrop-filter:blur(10px); }
+.nexus-full-modal{ width:min(980px, 92vw); height:min(760px, 88vh); display:flex; flex-direction:column; gap:10px; border:1px solid rgba(132,204,22,.38); border-radius:12px; background:rgba(8,13,24,.96); box-shadow:0 30px 80px rgba(0,0,0,.62); padding:14px; }
+.nexus-full-head{ display:flex; align-items:center; justify-content:space-between; gap:10px; color:#bef264; font-size:11px; font-weight:900; letter-spacing:1px; text-transform:uppercase; }
+.nexus-full-text{ flex:1; min-height:0; resize:none; border:1px solid rgba(132,204,22,.22); border-radius:10px; background:rgba(0,0,0,.32); color:#f8fafc; padding:12px; font-family:var(--font-mono); font-size:12px; line-height:1.55; outline:none; }
 .fix-control-toolbar{ display:grid; grid-template-columns:minmax(0, 1fr) 92px 78px 34px; gap:6px; }
 .fix-control-filter{ display:flex; align-items:center; gap:8px; }
 .fix-control-filter label{ font-size:9px; font-weight:900; letter-spacing:1px; color:#fcd34d; }
@@ -2114,6 +2145,7 @@ body.has-open-card .workspace-hero{ opacity:.08; }
         <div class="os-launcher-item" data-station="core"><span class="os-dot"></span><span class="os-icon">09</span><span>SYSTEM</span></div>
         <div class="os-launcher-item" data-station="chat"><span class="os-dot"></span><span class="os-icon">10</span><span>KEBLO CORE_DEV</span></div>
         <div class="os-launcher-item" data-station="fix_control"><span class="os-dot"></span><span class="os-icon">11</span><span>FIX CONTROL</span></div>
+        <div class="os-launcher-item" data-station="nexus"><span class="os-dot"></span><span class="os-icon">12</span><span>PROJECT NEXUS</span></div>
       </div>
       <div class="os-section-label">SYSTEM STATUS</div>
       <div class="os-status-panel">
@@ -2714,6 +2746,66 @@ function spawnCard(type, title, content, customPos = null, startMinimized = fals
         const saved = getRssInterests();
         if (saved.length > 0) loadAllFeeds(cardId, saved);
     }, 600000);
+  }
+  else if (type === "nexus") {
+    div.style.width = "560px";
+    div.style.height = "690px";
+
+    container.innerHTML = `
+      <div class="nexus-section">
+        <h4>Path progetto</h4>
+        <input type="text" class="card-q" id="nexus-root-${cardId}" value="/home/elena/Aiden/Progetti/keblo_dev" autocomplete="off" style="margin:0; font-size:10px;">
+      </div>
+      <div class="nexus-section">
+        <h4>Snapshot corrente</h4>
+        <input type="text" class="card-q" id="nexus-project-${cardId}" placeholder="projectId selezionato o corrente" autocomplete="off" style="margin:0; font-size:10px;">
+        <div class="nexus-meta" id="nexus-current-${cardId}" style="margin-top:7px;">Nessuno snapshot caricato.</div>
+      </div>
+      <div class="nexus-section">
+        <h4>Azioni</h4>
+        <div class="nexus-action-bar">
+          <button class="card-btn" id="nexus-scan-${cardId}" onclick="runNexusScan('${cardId}')" style="background:#84cc16; color:#0b1020;">UPDATE SNAPSHOT</button>
+          <button class="card-btn" id="nexus-latest-${cardId}" onclick="loadNexusLatest('${cardId}')">LOAD LATEST</button>
+          <button class="card-btn" onclick="loadNexusProjects('${cardId}')">LOAD PROJECTS</button>
+          <button class="card-btn" id="nexus-run-audit-${cardId}" onclick="runNexusAudit('${cardId}')" style="background:#3f6212; color:white;">RUN AUDIT</button>
+          <button class="card-btn" id="nexus-deep-audit-${cardId}" onclick="runNexusDeepAudit('${cardId}')" style="background:#166534; color:white;">RUN DEEP AI AUDIT</button>
+        </div>
+      </div>
+      <div class="nexus-message" id="nexus-message-${cardId}"></div>
+      <div class="nexus-scroll">
+        <div class="nexus-section">
+          <h4>Audit report / Deep AI audit report</h4>
+          <div class="nexus-export-bar">
+            <button class="card-btn" onclick="copyNexusReport('${cardId}', 'audit')">COPY AUDIT</button>
+            <button class="card-btn" onclick="sendNexusReportToScratchpad('${cardId}', 'audit')">SEND AUDIT TO SCRATCHPAD</button>
+            <button class="card-btn" onclick="openNexusFullView('${cardId}', 'audit')">OPEN FULL VIEW</button>
+          </div>
+          <div class="nexus-export-bar">
+            <button class="card-btn" onclick="copyNexusReport('${cardId}', 'deep_audit')">COPY DEEP AUDIT</button>
+            <button class="card-btn" onclick="sendNexusReportToScratchpad('${cardId}', 'deep_audit')">SEND DEEP AUDIT TO SCRATCHPAD</button>
+            <button class="card-btn" onclick="openNexusFullView('${cardId}', 'deep_audit')">OPEN FULL VIEW</button>
+          </div>
+          <div class="nexus-panel" id="nexus-results-${cardId}">
+            <div style="opacity:.45; text-align:center; padding:35px 10px;">Carica uno snapshot, aggiorna snapshot o avvia un audit.</div>
+          </div>
+        </div>
+        <div class="nexus-section">
+          <h4>Fix backlog / Fix consigliati</h4>
+          <div class="nexus-export-bar two">
+            <button class="card-btn" onclick="copyNexusReport('${cardId}', 'fixes')">COPY FIXES</button>
+            <button class="card-btn" onclick="sendNexusReportToScratchpad('${cardId}', 'fixes')">SEND FIXES TO SCRATCHPAD</button>
+          </div>
+          <div class="nexus-meta nexus-fix-list" id="nexus-fixes-${cardId}">Nessun fix consigliato salvato per questo progetto.</div>
+        </div>
+        <div class="nexus-section">
+          <h4>Codex prompt</h4>
+          <textarea class="card-q" id="nexus-request-${cardId}" placeholder="Richiesta per Codex..." style="height:54px; resize:vertical; margin:0;"></textarea>
+          <button class="card-btn" id="nexus-prompt-btn-${cardId}" onclick="generateNexusCodexPrompt('${cardId}')" style="background:#65a30d; color:white;">GENERATE CODEX PROMPT</button>
+          <textarea class="card-q nexus-prompt-output" id="nexus-prompt-${cardId}" placeholder="Prompt generato..." readonly></textarea>
+          <button class="card-btn" onclick="copyNexusPrompt('${cardId}')">COPY PROMPT</button>
+        </div>
+      </div>
+    `;
   }
   // --- BLOCCO DIARIO (AGGIUNGI QUESTO, NON TOCCARE LA CHAT) ---
 // 5. DIARIO
@@ -3424,6 +3516,684 @@ if (startMinimized) {
     }
 }
     //Fine funzione SpawnCard
+
+let currentNexusSnapshot = null;
+let currentNexusProjectId = "";
+let currentNexusAudit = null;
+let currentNexusDeepAudit = null;
+let currentNexusFixes = [];
+
+function nexusEscapeHtml(value) {
+  return String(value ?? "").replace(/[&<>"']/g, char => ({
+    "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#039;"
+  })[char]);
+}
+
+function setNexusMessage(cardId, message = "") {
+  const element = document.getElementById(`nexus-message-${cardId}`);
+  if (element) element.textContent = message;
+}
+
+async function nexusRequest(url, options = {}) {
+  const response = await fetch(url, {
+    credentials: "include",
+    ...options,
+    headers: { "Content-Type": "application/json", ...(options.headers || {}) }
+  });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok || data.ok === false) throw new Error(data.msg || `Errore HTTP ${response.status}`);
+  return data;
+}
+
+function nexusList(items, renderItem) {
+  if (!Array.isArray(items) || !items.length) return "<div style='opacity:.5;'>Nessun dato rilevato.</div>";
+  return `<ul>${items.map(renderItem).join("")}</ul>`;
+}
+
+function nexusPlain(value) {
+  if (value === null || value === undefined) return "";
+  if (typeof value === "string") return value;
+  return JSON.stringify(value, null, 2);
+}
+
+function nexusMdList(items, formatter = nexusPlain) {
+  if (!Array.isArray(items) || !items.length) return "- N/D";
+  return items.map((item) => `- ${formatter(item).replace(/\n/g, "\n  ")}`).join("\n");
+}
+
+function nexusProjectHeader(title, source = currentNexusSnapshot) {
+  const analysis = source?.analysis || source || {};
+  return [
+    `# ${title}`,
+    "",
+    `- Progetto: ${source?.projectName || analysis.projectName || currentNexusProjectId || "N/D"}`,
+    `- projectId: ${source?.projectId || analysis.projectId || currentNexusProjectId || "N/D"}`,
+    `- rootPath: ${source?.rootPath || analysis.rootPath || "N/D"}`,
+    `- generato: ${new Date().toISOString()}`
+  ].join("\n");
+}
+
+function nexusAuditToMarkdown(audit) {
+  if (!audit) return "";
+  return [
+    nexusProjectHeader("Project Nexus - Audit Report", audit),
+    `- auditedAt: ${audit.auditedAt || "N/D"}`,
+    "",
+    "## Scopo progetto",
+    nexusPlain(audit.projectPurpose || "N/D"),
+    "",
+    "## Architettura",
+    nexusPlain(audit.architectureOverview || "N/D"),
+    "",
+    "## Componenti core",
+    nexusMdList(audit.coreComponents, item => `${item.name || "Componente"}: ${item.role || ""}${item.files?.length ? `\n  File: ${item.files.join(", ")}` : ""}`),
+    "",
+    "## Flusso core",
+    nexusMdList(audit.coreFlow),
+    "",
+    "## Punti forti",
+    nexusMdList(audit.strengths),
+    "",
+    "## Punti fragili",
+    nexusMdList(audit.weaknesses),
+    "",
+    "## Rischi",
+    nexusMdList(audit.risks, item => item.message ? `[${item.level || "-"}] ${item.area || "-"}: ${item.message}` : nexusPlain(item)),
+    "",
+    "## Debito tecnico",
+    nexusMdList(audit.technicalDebt),
+    "",
+    "## Stato presente",
+    nexusMdList(audit.currentState),
+    "",
+    "## Prossimi fix",
+    nexusMdList(audit.nextSteps || audit.recommendedFixes),
+    "",
+    "## Strategia Codex",
+    nexusMdList(Array.isArray(audit.codexStrategy) ? audit.codexStrategy : [audit.codexStrategy || "N/D"]),
+    "",
+    "## Summary",
+    nexusPlain(audit.auditSummary || "N/D")
+  ].join("\n");
+}
+
+function nexusDeepAuditToMarkdown(deepAudit) {
+  if (!deepAudit) return "";
+  const architecture = deepAudit.architecture || {};
+  const memory = deepAudit.memoryOrbitaleAssessment || {};
+  return [
+    nexusProjectHeader("Project Nexus - Deep AI Audit Report", deepAudit),
+    `- auditedAt: ${deepAudit.auditedAt || "N/D"}`,
+    "",
+    "## Executive summary",
+    nexusPlain(deepAudit.executiveSummary || "N/D"),
+    "",
+    "## Cos'e' questo progetto",
+    nexusPlain(deepAudit.whatThisProjectIs || "N/D"),
+    "",
+    "## Cosa non e'",
+    nexusPlain(deepAudit.whatThisProjectIsNot || "N/D"),
+    "",
+    "## Architettura",
+    `- Overview: ${architecture.overview || "N/D"}`,
+    `- Backend: ${architecture.backend || "N/D"}`,
+    `- Frontend: ${architecture.frontend || "N/D"}`,
+    `- Memoria Orbitale: ${architecture.memoryOrbitale || "N/D"}`,
+    `- AI Layer: ${architecture.aiLayer || "N/D"}`,
+    `- Storage: ${architecture.storage || "N/D"}`,
+    `- Vision: ${architecture.vision || "N/D"}`,
+    `- Automation: ${architecture.automation || "N/D"}`,
+    "",
+    "## Core flows",
+    nexusMdList(deepAudit.coreFlows, item => `${item.name || "Flow"}: ${item.description || ""}${item.files?.length ? `\n  File: ${item.files.join(", ")}` : ""}`),
+    "",
+    "## Memoria Orbitale assessment",
+    nexusPlain(memory.summary || "N/D"),
+    "",
+    "### Rischi memoria",
+    nexusMdList(memory.risks || []),
+    "",
+    "### Fix memoria",
+    nexusMdList(memory.recommendedFixes || []),
+    "",
+    "## Rischi",
+    nexusMdList(deepAudit.risks),
+    "",
+    "## Debito tecnico",
+    nexusMdList(deepAudit.technicalDebt),
+    "",
+    "## Fix consigliati",
+    nexusFixListToMarkdown(deepAudit.recommendedFixes || []),
+    "",
+    "## Strategia Codex",
+    nexusPlain(deepAudit.codexStrategy || "N/D"),
+    "",
+    "## Cosa non rompere",
+    nexusMdList(deepAudit.dontBreak),
+    "",
+    "## Domande aperte",
+    nexusMdList(deepAudit.openQuestions)
+  ].join("\n");
+}
+
+function nexusFixListToMarkdown(fixes = []) {
+  return Array.isArray(fixes) && fixes.length
+    ? fixes.map((fix, index) => [
+        `${index + 1}. **${fix.title || "Fix consigliato"}**`,
+        `   - Priorita: ${fix.priority || "medium"}`,
+        `   - Area: ${fix.area || "backend"}`,
+        `   - Reason: ${fix.reason || "N/D"}`,
+        `   - Prompt Codex: ${fix.suggestedCodexPrompt || "N/D"}`
+      ].join("\n")).join("\n")
+    : "- Nessun fix consigliato salvato per questo progetto.";
+}
+
+function nexusFixesToMarkdown(fixes = currentNexusFixes) {
+  const header = nexusProjectHeader("Project Nexus - Fix consigliati");
+  const body = Array.isArray(fixes) && fixes.length
+    ? fixes.map((fix, index) => [
+        `## ${index + 1}. ${fix.title || "Fix consigliato"}`,
+        `- Priorita: ${fix.priority || "medium"}`,
+        `- Area: ${fix.area || "backend"}`,
+        `- Reason: ${fix.reason || "N/D"}`,
+        "",
+        "### Prompt Codex",
+        fix.suggestedCodexPrompt || "N/D"
+      ].join("\n")).join("\n\n")
+    : "Nessun fix consigliato salvato per questo progetto.";
+  return `${header}\n\n${body}`;
+}
+
+function getNexusMarkdown(kind) {
+  if (kind === "audit") return nexusAuditToMarkdown(currentNexusAudit);
+  if (kind === "deep_audit") return nexusDeepAuditToMarkdown(currentNexusDeepAudit);
+  if (kind === "fixes") return nexusFixesToMarkdown(currentNexusFixes);
+  return "";
+}
+
+function nexusReportTitle(kind) {
+  const project = currentNexusSnapshot?.projectName || currentNexusSnapshot?.analysis?.projectName || currentNexusProjectId || "Project Nexus";
+  if (kind === "audit") return `${project} - Audit Report`;
+  if (kind === "deep_audit") return `${project} - Deep AI Audit Report`;
+  return `${project} - Fix consigliati`;
+}
+
+function nexusMarkdownAsScratchpadHtml(markdown) {
+  return `<pre style="white-space:pre-wrap; font-family:monospace; line-height:1.5;">${nexusEscapeHtml(markdown)}</pre>`;
+}
+
+async function copyNexusReport(cardId, kind) {
+  const markdown = getNexusMarkdown(kind);
+  if (!markdown) return setNexusMessage(cardId, "Report non disponibile: genera o carica prima il contenuto.");
+
+  try {
+    await navigator.clipboard.writeText(markdown);
+    setNexusMessage(cardId, "Report copiato negli appunti.");
+  } catch (error) {
+    const area = document.createElement("textarea");
+    area.value = markdown;
+    area.style.position = "fixed";
+    area.style.left = "-9999px";
+    document.body.appendChild(area);
+    area.select();
+    document.execCommand("copy");
+    area.remove();
+    setNexusMessage(cardId, "Report copiato.");
+  }
+}
+
+async function sendNexusReportToScratchpad(cardId, kind) {
+  const markdown = getNexusMarkdown(kind);
+  if (!markdown) return setNexusMessage(cardId, "Report non disponibile: genera o carica prima il contenuto.");
+
+  try {
+    const response = await fetch("/api/export-to-scratchpad", {
+      method: "POST",
+      credentials: "include",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        title: nexusReportTitle(kind),
+        content: nexusMarkdownAsScratchpadHtml(markdown)
+      })
+    });
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok || data.ok === false) throw new Error(data.msg || `Errore HTTP ${response.status}`);
+    window.dispatchEvent(new CustomEvent("refresh-scratchpad"));
+    setNexusMessage(cardId, "Report inviato allo Scratchpad.");
+  } catch (error) {
+    setNexusMessage(cardId, `Export Scratchpad fallito: ${error.message}`);
+  }
+}
+
+function openNexusFullView(cardId, kind) {
+  const markdown = getNexusMarkdown(kind);
+  if (!markdown) return setNexusMessage(cardId, "Report non disponibile: genera o carica prima il contenuto.");
+
+  const previous = document.getElementById("nexus-full-overlay");
+  if (previous) previous.remove();
+
+  const overlay = document.createElement("div");
+  overlay.className = "nexus-full-overlay";
+  overlay.id = "nexus-full-overlay";
+  overlay.innerHTML = `
+    <div class="nexus-full-modal">
+      <div class="nexus-full-head">
+        <span>${nexusEscapeHtml(nexusReportTitle(kind))}</span>
+        <div style="display:flex; gap:6px;">
+          <button class="card-btn" id="nexus-full-copy" style="margin:0;">COPY</button>
+          <button class="card-btn" id="nexus-full-close" style="margin:0;">CLOSE</button>
+        </div>
+      </div>
+      <textarea class="nexus-full-text" readonly>${nexusEscapeHtml(markdown)}</textarea>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+  overlay.querySelector("#nexus-full-close").onclick = () => overlay.remove();
+  overlay.onclick = (event) => { if (event.target === overlay) overlay.remove(); };
+  overlay.querySelector("#nexus-full-copy").onclick = () => copyNexusReport(cardId, kind);
+  const text = overlay.querySelector(".nexus-full-text");
+  text.focus();
+  text.select();
+}
+
+function getNexusProjectId(cardId) {
+  const inputValue = document.getElementById(`nexus-project-${cardId}`)?.value.trim();
+  return inputValue || currentNexusSnapshot?.projectId || currentNexusSnapshot?.analysis?.projectId || currentNexusProjectId || "";
+}
+
+function updateNexusCurrentSnapshot(cardId, snapshot) {
+  const element = document.getElementById(`nexus-current-${cardId}`);
+  const projectInput = document.getElementById(`nexus-project-${cardId}`);
+  const rootInput = document.getElementById(`nexus-root-${cardId}`);
+  const analysis = snapshot?.analysis || snapshot || {};
+  const projectId = snapshot?.projectId || analysis.projectId || "";
+  const rootPath = snapshot?.rootPath || analysis.rootPath || "";
+  currentNexusProjectId = projectId || currentNexusProjectId;
+  if (projectInput && projectId) projectInput.value = projectId;
+  if (rootInput && rootPath) rootInput.value = rootPath;
+  if (!element) return;
+  if (!snapshot) {
+    element.textContent = "Nessuno snapshot caricato.";
+    return;
+  }
+  element.innerHTML = `
+    <b>${nexusEscapeHtml(snapshot.projectName || analysis.projectName || "-")}</b><br>
+    projectId: <code>${nexusEscapeHtml(projectId || "-")}</code><br>
+    snapshotId: <code>${nexusEscapeHtml(snapshot.snapshotId || "latest")}</code><br>
+    rootPath: <code>${nexusEscapeHtml(rootPath || "-")}</code>
+  `;
+}
+
+function renderNexusSnapshot(cardId, snapshot) {
+  const target = document.getElementById(`nexus-results-${cardId}`);
+  if (!target) return;
+  const analysis = snapshot?.analysis || snapshot || {};
+  const risks = Array.isArray(analysis.risks) ? analysis.risks : [];
+  const domains = Array.isArray(analysis.domains) ? analysis.domains : [];
+  const stack = Array.isArray(analysis.stack) ? analysis.stack : [];
+  const criticalFiles = Array.isArray(analysis.criticalFiles) ? analysis.criticalFiles : [];
+  const fixes = Array.isArray(analysis.recommendedFixes) ? analysis.recommendedFixes : [];
+  const scannedAt = snapshot?.scan?.scannedAt || analysis.scannedAt || snapshot?.scannedAt || "-";
+  updateNexusCurrentSnapshot(cardId, snapshot);
+
+  target.innerHTML = `
+    <div class="nexus-section">
+      <h4>Snapshot corrente</h4>
+      <div class="nexus-meta">
+        projectName: <b>${nexusEscapeHtml(snapshot?.projectName || analysis.projectName || "-")}</b><br>
+        projectId: <code>${nexusEscapeHtml(snapshot?.projectId || analysis.projectId || "-")}</code><br>
+        rootPath: <code>${nexusEscapeHtml(snapshot?.rootPath || analysis.rootPath || "-")}</code><br>
+        scannedAt: <code>${nexusEscapeHtml(scannedAt)}</code>
+      </div>
+    </div>
+    <div class="nexus-section">
+      <h4>Summary</h4>
+      <div>${nexusEscapeHtml(analysis.summary || "Summary non disponibile.")}</div>
+    </div>
+    <div class="nexus-section">
+      <h4>Stack</h4>
+      <div class="nexus-chip-row">${stack.length ? stack.map(item => `<span class="nexus-chip">${nexusEscapeHtml(item)}</span>`).join("") : "<span style='opacity:.5;'>N/D</span>"}</div>
+    </div>
+    <div class="nexus-section">
+      <h4>Domini</h4>
+      <div class="nexus-chip-row">${domains.length ? domains.map(domain => `<span class="nexus-chip">${nexusEscapeHtml(domain.name || domain)}${domain.score ? ` · ${nexusEscapeHtml(domain.score)}` : ""}</span>`).join("") : "<span style='opacity:.5;'>N/D</span>"}</div>
+    </div>
+    <div class="nexus-section">
+      <h4>File critici</h4>
+      ${nexusList(criticalFiles.slice(0, 40), file => `<li><code>${nexusEscapeHtml(file.path || file.relativePath || file.name || file)}</code></li>`)}
+    </div>
+    <div class="nexus-section">
+      <h4>Rischi</h4>
+      ${nexusList(risks, risk => `<li><b>${nexusEscapeHtml(risk.level || "-")}</b> · ${nexusEscapeHtml(risk.area || "-")}: ${nexusEscapeHtml(risk.message || risk)}</li>`)}
+    </div>
+    <div class="nexus-section">
+      <h4>Recommended Fixes</h4>
+      ${nexusList(fixes, fix => `<li>${nexusEscapeHtml(fix)}</li>`)}
+    </div>
+  `;
+}
+
+function renderNexusAudit(cardId, audit) {
+  const target = document.getElementById(`nexus-results-${cardId}`);
+  if (!target) return;
+  currentNexusAudit = audit;
+
+  const renderList = (items) => nexusList(items, item => {
+    if (typeof item === "string") return `<li>${nexusEscapeHtml(item)}</li>`;
+    if (item?.name) {
+      const files = Array.isArray(item.files) && item.files.length
+        ? `<div style="opacity:.58; margin-top:3px;">${item.files.map(file => `<code>${nexusEscapeHtml(file)}</code>`).join(" · ")}</div>`
+        : "";
+      return `<li><b>${nexusEscapeHtml(item.name)}</b>: ${nexusEscapeHtml(item.role || item.message || "")}${files}</li>`;
+    }
+    if (item?.message) return `<li><b>${nexusEscapeHtml(item.level || "-")}</b> · ${nexusEscapeHtml(item.area || "-")}: ${nexusEscapeHtml(item.message)}</li>`;
+    return `<li>${nexusEscapeHtml(JSON.stringify(item))}</li>`;
+  });
+
+  target.innerHTML = `
+    <div class="nexus-section">
+      <h4>SCOPO PROGETTO</h4>
+      <div>${nexusEscapeHtml(audit.projectPurpose || "-")}</div>
+      <div class="nexus-meta" style="margin-top:7px;">
+        projectName: <b>${nexusEscapeHtml(audit.projectName || "-")}</b><br>
+        projectId: <code>${nexusEscapeHtml(audit.projectId || "-")}</code><br>
+        rootPath: <code>${nexusEscapeHtml(audit.rootPath || "-")}</code><br>
+        auditedAt: <code>${nexusEscapeHtml(audit.auditedAt || "-")}</code>
+      </div>
+    </div>
+    <div class="nexus-section"><h4>ARCHITETTURA</h4><div>${nexusEscapeHtml(audit.architectureOverview || "-")}</div></div>
+    <div class="nexus-section"><h4>COMPONENTI CORE</h4>${renderList(audit.coreComponents)}</div>
+    <div class="nexus-section"><h4>FLUSSO CORE</h4>${renderList(audit.coreFlow)}</div>
+    <div class="nexus-section"><h4>PUNTI FORTI</h4>${renderList(audit.strengths)}</div>
+    <div class="nexus-section"><h4>PUNTI FRAGILI</h4>${renderList(audit.weaknesses)}</div>
+    <div class="nexus-section"><h4>RISCHI</h4>${renderList(audit.risks)}</div>
+    <div class="nexus-section"><h4>DEBITO TECNICO</h4>${renderList(audit.technicalDebt)}</div>
+    <div class="nexus-section"><h4>STATO PRESENTE</h4>${renderList(audit.currentState)}</div>
+    <div class="nexus-section"><h4>PROSSIMI FIX</h4>${renderList(audit.nextSteps || audit.recommendedFixes)}</div>
+    <div class="nexus-section"><h4>STRATEGIA CODEX</h4>${renderList(audit.codexStrategy)}</div>
+    <div class="nexus-section"><h4>Audit summary</h4><div>${nexusEscapeHtml(audit.auditSummary || "-")}</div></div>
+  `;
+}
+
+function renderNexusFixBacklog(cardId, fixes) {
+  const target = document.getElementById(`nexus-fixes-${cardId}`);
+  if (!target) return;
+  currentNexusFixes = Array.isArray(fixes) ? fixes : [];
+  if (!Array.isArray(fixes) || !fixes.length) {
+    target.textContent = "Nessun fix consigliato salvato per questo progetto.";
+    return;
+  }
+
+  target.innerHTML = fixes.map((fix) => `
+    <div class="nexus-fix-item">
+      <b>${nexusEscapeHtml(fix.title || "Fix consigliato")}</b>
+      <div class="nexus-chip-row" style="margin:5px 0;">
+        <span class="nexus-chip">${nexusEscapeHtml(fix.priority || "medium")}</span>
+        <span class="nexus-chip">${nexusEscapeHtml(fix.area || "backend")}</span>
+      </div>
+      <div>${nexusEscapeHtml(fix.reason || "-")}</div>
+      <details style="margin-top:6px;">
+        <summary style="cursor:pointer; color:#bef264; font-weight:900;">Prompt Codex</summary>
+        <div style="margin-top:5px;"><code>${nexusEscapeHtml(fix.suggestedCodexPrompt || "-")}</code></div>
+      </details>
+    </div>
+  `).join("");
+}
+
+function renderNexusDeepAudit(cardId, deepAudit, fixes = []) {
+  const target = document.getElementById(`nexus-results-${cardId}`);
+  if (!target) return;
+  currentNexusDeepAudit = deepAudit;
+  if (!deepAudit || Object.keys(deepAudit).length === 0) {
+    target.innerHTML = "<div style='opacity:.55; padding:28px 10px; text-align:center;'>Deep AI audit vuoto.</div>";
+    renderNexusFixBacklog(cardId, fixes);
+    return;
+  }
+
+  const renderList = (items) => nexusList(items, item => {
+    if (typeof item === "string") return `<li>${nexusEscapeHtml(item)}</li>`;
+    if (item?.name) return `<li><b>${nexusEscapeHtml(item.name)}</b>: ${nexusEscapeHtml(item.description || "")}<br><span style="opacity:.58;">${(item.files || []).map(file => `<code>${nexusEscapeHtml(file)}</code>`).join(" · ")}</span></li>`;
+    if (item?.title) return `<li><b>${nexusEscapeHtml(item.title)}</b> [${nexusEscapeHtml(item.priority || "medium")}/${nexusEscapeHtml(item.area || "-")}]: ${nexusEscapeHtml(item.reason || "")}</li>`;
+    return `<li>${nexusEscapeHtml(JSON.stringify(item))}</li>`;
+  });
+  const architecture = deepAudit.architecture || {};
+  const memory = deepAudit.memoryOrbitaleAssessment || {};
+
+  target.innerHTML = `
+    <div class="nexus-deep-report">
+    <div class="nexus-section">
+      <h4>DEEP AI AUDIT REPORT</h4>
+      <div class="nexus-meta">
+        projectName: <b>${nexusEscapeHtml(deepAudit.projectName || "-")}</b><br>
+        projectId: <code>${nexusEscapeHtml(deepAudit.projectId || "-")}</code><br>
+        mode: <code>${nexusEscapeHtml(deepAudit.mode || "deep_ai")}</code><br>
+        auditedAt: <code>${nexusEscapeHtml(deepAudit.auditedAt || "-")}</code>
+      </div>
+    </div>
+    <div class="nexus-section"><h4>Executive summary</h4><div>${nexusEscapeHtml(deepAudit.executiveSummary || "-")}</div></div>
+    <div class="nexus-section"><h4>Cos'e' questo progetto</h4><div>${nexusEscapeHtml(deepAudit.whatThisProjectIs || "-")}</div></div>
+    <div class="nexus-section"><h4>Cosa non e'</h4><div>${nexusEscapeHtml(deepAudit.whatThisProjectIsNot || "-")}</div></div>
+    <div class="nexus-section"><h4>Architecture</h4>
+      <ul>
+        <li><b>Overview:</b> ${nexusEscapeHtml(architecture.overview || "-")}</li>
+        <li><b>Backend:</b> ${nexusEscapeHtml(architecture.backend || "-")}</li>
+        <li><b>Frontend:</b> ${nexusEscapeHtml(architecture.frontend || "-")}</li>
+        <li><b>Memory Orbitale:</b> ${nexusEscapeHtml(architecture.memoryOrbitale || "-")}</li>
+        <li><b>AI Layer:</b> ${nexusEscapeHtml(architecture.aiLayer || "-")}</li>
+        <li><b>Storage:</b> ${nexusEscapeHtml(architecture.storage || "-")}</li>
+        <li><b>Vision:</b> ${nexusEscapeHtml(architecture.vision || "-")}</li>
+        <li><b>Automation:</b> ${nexusEscapeHtml(architecture.automation || "-")}</li>
+      </ul>
+    </div>
+    <div class="nexus-section"><h4>Core flows</h4>${renderList(deepAudit.coreFlows)}</div>
+    <div class="nexus-section"><h4>Memory Orbitale Assessment</h4>
+      <div>${nexusEscapeHtml(memory.summary || "-")}</div>
+      <div style="margin-top:5px;">${renderList(memory.risks || [])}</div>
+      <div style="margin-top:5px;">${renderList(memory.recommendedFixes || [])}</div>
+    </div>
+    <div class="nexus-section"><h4>Risks</h4>${renderList(deepAudit.risks)}</div>
+    <div class="nexus-section"><h4>Technical debt</h4>${renderList(deepAudit.technicalDebt)}</div>
+    <div class="nexus-section"><h4>FIX CONSIGLIATI</h4>${renderList(deepAudit.recommendedFixes)}</div>
+    <div class="nexus-section"><h4>Strategia Codex</h4><div>${nexusEscapeHtml(deepAudit.codexStrategy || "-")}</div></div>
+    <div class="nexus-section"><h4>Non rompere</h4>${renderList(deepAudit.dontBreak)}</div>
+    ${deepAudit.rawText ? `<details class="nexus-section"><summary style="cursor:pointer; color:#bef264; font-weight:900;">Raw LLM text</summary><pre style="white-space:pre-wrap; overflow:auto;">${nexusEscapeHtml(deepAudit.rawText)}</pre></details>` : ""}
+    </div>
+  `;
+  renderNexusFixBacklog(cardId, fixes.length ? fixes : deepAudit.recommendedFixes);
+}
+
+async function runNexusScan(cardId) {
+  const input = document.getElementById(`nexus-root-${cardId}`);
+  const button = document.getElementById(`nexus-scan-${cardId}`);
+  const results = document.getElementById(`nexus-results-${cardId}`);
+  const rootPath = input?.value.trim();
+  if (!rootPath) return setNexusMessage(cardId, "Inserisci una directory progetto.");
+
+  try {
+    setNexusMessage(cardId);
+    if (button) button.textContent = "SCANNING...";
+    if (results) results.innerHTML = "<div style='opacity:.55; padding:30px 10px; text-align:center;'>Scansione Nexus in corso...</div>";
+    const data = await nexusRequest("/api/nexus/scan", {
+      method: "POST",
+      body: JSON.stringify({ rootPath })
+    });
+    currentNexusSnapshot = data.snapshot;
+    currentNexusAudit = null;
+    currentNexusDeepAudit = null;
+    currentNexusProjectId = currentNexusSnapshot?.projectId || currentNexusSnapshot?.analysis?.projectId || "";
+    renderNexusSnapshot(cardId, currentNexusSnapshot);
+    await loadNexusRecommendedFixes(cardId, currentNexusProjectId);
+    logToCard(cardId, `Snapshot Nexus aggiornato: ${currentNexusSnapshot?.projectName || currentNexusSnapshot?.analysis?.projectName || rootPath}`);
+  } catch (error) {
+    setNexusMessage(cardId, error.message);
+    if (results) results.innerHTML = `<div style="color:#fca5a5; padding:20px;">${nexusEscapeHtml(error.message)}</div>`;
+  } finally {
+    if (button) button.textContent = "UPDATE SNAPSHOT";
+  }
+}
+
+async function runNexusAudit(cardId) {
+  const button = document.getElementById(`nexus-run-audit-${cardId}`);
+  const results = document.getElementById(`nexus-results-${cardId}`);
+  if (!currentNexusSnapshot) return setNexusMessage(cardId, "Carica uno snapshot o esegui uno scan prima di avviare l'audit.");
+
+  try {
+    setNexusMessage(cardId);
+    if (button) button.textContent = "AUDITING...";
+    if (results) results.innerHTML = "<div style='opacity:.55; padding:30px 10px; text-align:center;'>Audit tecnico Nexus in corso...</div>";
+    const data = await nexusRequest("/api/nexus/audit", {
+      method: "POST",
+      body: JSON.stringify({ snapshot: currentNexusSnapshot })
+    });
+    renderNexusAudit(cardId, data.audit);
+    logToCard(cardId, `Audit tecnico Nexus generato: ${data.audit?.projectName || data.audit?.projectId || "snapshot corrente"}`);
+  } catch (error) {
+    setNexusMessage(cardId, error.message);
+    if (results) results.innerHTML = `<div style="color:#fca5a5; padding:20px;">${nexusEscapeHtml(error.message)}</div>`;
+  } finally {
+    if (button) button.textContent = "RUN AUDIT";
+  }
+}
+
+async function runNexusDeepAudit(cardId) {
+  const button = document.getElementById(`nexus-deep-audit-${cardId}`);
+  const results = document.getElementById(`nexus-results-${cardId}`);
+  if (!currentNexusSnapshot) return setNexusMessage(cardId, "Carica uno snapshot o esegui uno scan prima del deep audit.");
+
+  try {
+    setNexusMessage(cardId);
+    if (button) button.textContent = "DEEP AUDITING...";
+    if (results) results.innerHTML = "<div style='opacity:.55; padding:30px 10px; text-align:center;'>Deep AI audit in corso...</div>";
+    const data = await nexusRequest("/api/nexus/deep-audit", {
+      method: "POST",
+      body: JSON.stringify({ snapshot: currentNexusSnapshot })
+    });
+    renderNexusDeepAudit(cardId, data.deepAudit, data.fixes || []);
+    logToCard(cardId, `Deep AI audit Nexus generato: ${data.deepAudit?.projectName || data.deepAudit?.projectId || "snapshot corrente"}`);
+  } catch (error) {
+    setNexusMessage(cardId, error.message);
+    if (results) results.innerHTML = `<div style="color:#fca5a5; padding:20px;">${nexusEscapeHtml(error.message)}</div>`;
+  } finally {
+    if (button) button.textContent = "RUN DEEP AI AUDIT";
+  }
+}
+
+async function loadNexusRecommendedFixes(cardId, projectId = getNexusProjectId(cardId)) {
+  if (!projectId) {
+    renderNexusFixBacklog(cardId, []);
+    return;
+  }
+
+  try {
+    const data = await nexusRequest(`/api/nexus/recommended-fixes/${encodeURIComponent(projectId)}`);
+    renderNexusFixBacklog(cardId, data.fixes || []);
+  } catch (error) {
+    const target = document.getElementById(`nexus-fixes-${cardId}`);
+    if (target) target.textContent = `Fix consigliati non disponibili: ${error.message}`;
+  }
+}
+
+async function loadNexusProjects(cardId) {
+  const results = document.getElementById(`nexus-results-${cardId}`);
+  try {
+    setNexusMessage(cardId);
+    if (results) results.innerHTML = "<div style='opacity:.55; padding:30px 10px; text-align:center;'>Caricamento progetti...</div>";
+    const data = await nexusRequest("/api/nexus/projects");
+    const projects = Array.isArray(data.projects) ? data.projects : [];
+    if (!results) return;
+    results.innerHTML = projects.length ? `
+      <div class="nexus-section">
+        <h4>Progetti auditati</h4>
+        ${projects.map(project => `
+          <div class="nexus-project-row" onclick="selectNexusProject('${cardId}', '${nexusEscapeHtml(project.projectId)}')">
+            <b>${nexusEscapeHtml(project.projectName || project.projectId)}</b><br>
+            <code>${nexusEscapeHtml(project.projectId)}</code><br>
+            <span style="opacity:.55;">${nexusEscapeHtml(project.rootPath || "-")} · latest ${nexusEscapeHtml(project.latestSnapshot || "-")}</span>
+          </div>
+        `).join("")}
+      </div>
+    ` : "<div style='opacity:.5; text-align:center; padding:35px 10px;'>Nessun progetto auditato.</div>";
+  } catch (error) {
+    setNexusMessage(cardId, error.message);
+  }
+}
+
+function selectNexusProject(cardId, projectId) {
+  currentNexusProjectId = projectId;
+  const input = document.getElementById(`nexus-project-${cardId}`);
+  if (input) input.value = projectId;
+  setNexusMessage(cardId, "ProjectId selezionato. Usa LOAD LATEST per caricare lo snapshot salvato.");
+  loadNexusRecommendedFixes(cardId, projectId);
+}
+
+async function loadNexusLatest(cardId) {
+  const projectId = getNexusProjectId(cardId);
+  const results = document.getElementById(`nexus-results-${cardId}`);
+  const button = document.getElementById(`nexus-latest-${cardId}`);
+  if (!projectId) return setNexusMessage(cardId, "Seleziona o inserisci un projectId prima di caricare latest.");
+
+  try {
+    setNexusMessage(cardId);
+    if (button) button.textContent = "LOADING...";
+    if (results) results.innerHTML = "<div style='opacity:.55; padding:30px 10px; text-align:center;'>Caricamento snapshot latest...</div>";
+    const data = await nexusRequest(`/api/nexus/snapshot/${encodeURIComponent(projectId)}/latest`);
+    if (!data.snapshot) throw new Error("Snapshot latest non trovato.");
+    currentNexusSnapshot = data.snapshot;
+    currentNexusAudit = null;
+    currentNexusDeepAudit = null;
+    currentNexusProjectId = data.snapshot.projectId || data.snapshot.analysis?.projectId || projectId;
+    renderNexusSnapshot(cardId, currentNexusSnapshot);
+    await loadNexusRecommendedFixes(cardId, currentNexusProjectId);
+    logToCard(cardId, `Snapshot Nexus caricato: ${currentNexusProjectId}`);
+  } catch (error) {
+    setNexusMessage(cardId, error.message || "Snapshot latest non disponibile.");
+    if (results) results.innerHTML = `<div style="color:#fca5a5; padding:20px;">${nexusEscapeHtml(error.message || "Snapshot latest non disponibile.")}</div>`;
+  } finally {
+    if (button) button.textContent = "LOAD LATEST";
+  }
+}
+
+async function generateNexusCodexPrompt(cardId) {
+  const output = document.getElementById(`nexus-prompt-${cardId}`);
+  const requestInput = document.getElementById(`nexus-request-${cardId}`);
+  const button = document.getElementById(`nexus-prompt-btn-${cardId}`);
+  const projectId = currentNexusSnapshot?.projectId || currentNexusSnapshot?.analysis?.projectId;
+  if (!currentNexusSnapshot || !projectId) return setNexusMessage(cardId, "Carica uno snapshot o avvia un audit prima di generare il prompt.");
+
+  try {
+    setNexusMessage(cardId);
+    if (button) button.textContent = "GENERATING...";
+    const data = await nexusRequest("/api/nexus/codex-prompt", {
+      method: "POST",
+      body: JSON.stringify({
+        projectId,
+        snapshotId: "latest",
+        request: requestInput?.value.trim() || ""
+      })
+    });
+    if (output) output.value = data.prompt || "";
+    logToCard(cardId, "Prompt Codex Nexus generato.");
+  } catch (error) {
+    setNexusMessage(cardId, error.message);
+  } finally {
+    if (button) button.textContent = "GENERATE CODEX PROMPT";
+  }
+}
+
+async function copyNexusPrompt(cardId) {
+  const output = document.getElementById(`nexus-prompt-${cardId}`);
+  const prompt = output?.value || "";
+  if (!prompt) return setNexusMessage(cardId, "Nessun prompt da copiare.");
+  try {
+    await navigator.clipboard.writeText(prompt);
+    setNexusMessage(cardId, "Prompt copiato negli appunti.");
+  } catch (error) {
+    output.focus();
+    output.select();
+    document.execCommand("copy");
+    setNexusMessage(cardId, "Prompt copiato.");
+  }
+}
 
 const fixControlState = new Map();
 const FIX_CONTROL_STATUSES = ["todo", "active", "testing", "blocked", "done", "rollback"];
@@ -5688,6 +6458,7 @@ function initDashboard() {
       spawnCard("orbitale_memory", "MEMORIA ORBITALE", "", { top: "320px", right: RIGHT_COL }, true);
       spawnCard("core", "SYSTEM", "", { top: "30px", right: RIGHT_COL, height:"120px" }, true);
       spawnCard("fix_control", "FIX CONTROL", "", { top: "120px", left: LEFT_COL }, true);
+      spawnCard("nexus", "PROJECT NEXUS", "", { top: "210px", left: LEFT_COL }, true);
 
       setTimeout(() => {
         initSidebarLauncher();
@@ -5953,6 +6724,7 @@ function toggleMinimize(btn) {
   if (card.classList.contains('chat')) iconColor = "#6366f1";         // Indaco (Nexus)
   if (card.classList.contains('reader')) iconColor = "#f472b6";       // Rosa
   if (card.classList.contains('fix_control')) iconColor = "#f59e0b";
+  if (card.classList.contains('nexus')) iconColor = "#84cc16";
 
   dockItem.innerHTML = `<span style="color:${iconColor}; font-size:14px;">●</span> ${cardTitle}`;
   

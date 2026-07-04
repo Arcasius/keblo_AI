@@ -17,6 +17,12 @@ import { getRelevantNews, buildNewsSnippets, cleanNewsQuery, rerankNews } from "
 import { parseDueDate } from "./time_parser.js";
 import { ensureConversationSession, appendTurn, readLastTurns, readAllTurns, readLastGreenExchanges,readContextTurns, searchTurns, convFilePath, semanticSearchTurns } from "./conversation_repo.js";
 import { createOrbitaleMemoryAdapter } from "./src/memory/orbitale/index.js";
+import { scanProject } from "./project_nexus/nexus_scanner.js";
+import { analyzeProject } from "./project_nexus/nexus_analyzer.js";
+import { generateProjectAudit } from "./project_nexus/nexus_auditor.js";
+import { generateDeepAudit } from "./project_nexus/nexus_deep_auditor.js";
+import { saveSnapshot, listProjects, listSnapshots, loadSnapshot, saveAudit, loadLatestAudit, saveDeepAudit, saveRecommendedFixes, loadRecommendedFixes } from "./project_nexus/nexus_storage.js";
+import { generateCodexPrompt } from "./project_nexus/nexus_codex_prompt.js";
 import fs from "fs";
 import { buildWorldBrief, readWorldBrief } from "./world_brief.js";
 import { startWorldBriefScheduler } from "./world_brief_scheduler.js";
@@ -646,6 +652,74 @@ function isAuthenticated(req, res, next) {
   res.status(401).json({ ok: false, msg: "Sessione non valida o scaduta" });
 }
 
+function getSessionUserId(req) {
+  return req.session?.user?.id || "u1";
+}
+
+async function resolveAllowedNexusRoots() {
+  const configuredRoots = String(process.env.NEXUS_ALLOWED_ROOTS || "")
+    .split(path.delimiter)
+    .map((value) => value.trim())
+    .filter(Boolean);
+  const candidateRoots = [
+    process.cwd(),
+    "/home/elena/Aiden/Progetti",
+    "/home/francesco/Aiden/Progetti",
+    ...configuredRoots
+  ];
+  const allowedRoots = [];
+
+  for (const candidateRoot of candidateRoots) {
+    try {
+      allowedRoots.push(await fs.promises.realpath(path.resolve(candidateRoot)));
+    } catch (error) {
+      if (error.code !== "ENOENT") {
+        console.warn(`[NEXUS] allowed root non accessibile: ${candidateRoot} (${error.message})`);
+      }
+    }
+  }
+
+  return Array.from(new Set(allowedRoots));
+}
+
+async function resolveAllowedNexusRootPath(rootPath) {
+  if (typeof rootPath !== "string" || !rootPath.trim()) {
+    const error = new Error("rootPath obbligatorio.");
+    error.status = 400;
+    throw error;
+  }
+
+  let realRootPath;
+  try {
+    realRootPath = await fs.promises.realpath(path.resolve(rootPath));
+  } catch (error) {
+    const wrapped = new Error(`rootPath non accessibile: ${error.message}`);
+    wrapped.status = 400;
+    throw wrapped;
+  }
+
+  const stats = await fs.promises.stat(realRootPath);
+  if (!stats.isDirectory()) {
+    const error = new Error("rootPath deve essere una directory.");
+    error.status = 400;
+    throw error;
+  }
+
+  const allowedRoots = await resolveAllowedNexusRoots();
+  const isAllowed = allowedRoots.some((allowedRoot) => {
+    const relative = path.relative(allowedRoot, realRootPath);
+    return relative === "" || (!relative.startsWith("..") && !path.isAbsolute(relative));
+  });
+
+  if (!isAllowed) {
+    const error = new Error("rootPath non consentito dalla allowlist Nexus.");
+    error.status = 403;
+    throw error;
+  }
+
+  return realRootPath;
+}
+
 
 function createFixId() {
   return `fix_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
@@ -786,6 +860,161 @@ app.delete("/api/fixes/:id", isAuthenticated, (req, res) => {
   } catch (error) {
     console.error("[FIX CONTROL] DELETE error:", error);
     res.status(500).json({ ok: false, msg: "Impossibile eliminare il fix." });
+  }
+});
+
+app.post("/api/nexus/scan", isAuthenticated, async (req, res) => {
+  try {
+    const rootPath = await resolveAllowedNexusRootPath(req.body?.rootPath);
+    const scanResult = await scanProject(rootPath);
+    const analysis = analyzeProject(scanResult);
+    const userId = getSessionUserId(req);
+    const snapshot = {
+      scan: scanResult,
+      analysis
+    };
+    const saved = await saveSnapshot(userId, snapshot);
+    const savedSnapshot = await loadSnapshot(userId, saved.projectId, saved.snapshotId);
+
+    res.json({ ok: true, snapshot: savedSnapshot || { ...snapshot, snapshotId: saved.snapshotId, projectId: saved.projectId } });
+  } catch (error) {
+    console.error("[NEXUS] scan error:", error);
+    res.status(error.status || 500).json({ ok: false, msg: error.message || "Errore scansione Nexus." });
+  }
+});
+
+app.get("/api/nexus/projects", isAuthenticated, async (req, res) => {
+  try {
+    const projects = await listProjects(getSessionUserId(req));
+    res.json({ ok: true, projects });
+  } catch (error) {
+    console.error("[NEXUS] projects error:", error);
+    res.status(500).json({ ok: false, msg: "Impossibile leggere i progetti Nexus." });
+  }
+});
+
+app.get("/api/nexus/snapshots/:projectId", isAuthenticated, async (req, res) => {
+  try {
+    const snapshots = await listSnapshots(getSessionUserId(req), req.params.projectId);
+    res.json({ ok: true, snapshots });
+  } catch (error) {
+    console.error("[NEXUS] snapshots error:", error);
+    res.status(500).json({ ok: false, msg: "Impossibile leggere gli snapshot Nexus." });
+  }
+});
+
+app.get("/api/nexus/snapshot/:projectId/:snapshotId", isAuthenticated, async (req, res) => {
+  try {
+    const snapshot = await loadSnapshot(getSessionUserId(req), req.params.projectId, req.params.snapshotId);
+    if (!snapshot) return res.status(404).json({ ok: false, msg: "Snapshot Nexus non trovato." });
+    res.json({ ok: true, snapshot });
+  } catch (error) {
+    console.error("[NEXUS] snapshot error:", error);
+    res.status(500).json({ ok: false, msg: "Impossibile leggere lo snapshot Nexus." });
+  }
+});
+
+app.post("/api/nexus/audit", isAuthenticated, async (req, res) => {
+  try {
+    const userId = getSessionUserId(req);
+    let snapshot = req.body?.snapshot || null;
+
+    if (!snapshot) {
+      const projectId = String(req.body?.projectId || "").trim();
+      const snapshotId = String(req.body?.snapshotId || "latest").trim() || "latest";
+
+      if (!projectId) return res.status(400).json({ ok: false, msg: "projectId obbligatorio o snapshot diretto obbligatorio." });
+
+      snapshot = await loadSnapshot(userId, projectId, snapshotId);
+      if (!snapshot) return res.status(404).json({ ok: false, msg: "Snapshot Nexus non trovato." });
+    }
+
+    const audit = generateProjectAudit(snapshot);
+    const saved = await saveAudit(userId, audit.projectId, audit);
+
+    res.json({
+      ok: true,
+      audit: {
+        ...audit,
+        auditId: saved.auditId
+      }
+    });
+  } catch (error) {
+    console.error("[NEXUS] audit error:", error);
+    res.status(500).json({ ok: false, msg: "Impossibile generare audit Nexus." });
+  }
+});
+
+app.post("/api/nexus/deep-audit", isAuthenticated, async (req, res) => {
+  try {
+    const userId = getSessionUserId(req);
+    let snapshot = req.body?.snapshot || null;
+    let requestedProjectId = "";
+
+    if (!snapshot) {
+      requestedProjectId = String(req.body?.projectId || "").trim();
+      const snapshotId = String(req.body?.snapshotId || "latest").trim() || "latest";
+
+      if (!requestedProjectId) return res.status(400).json({ ok: false, msg: "projectId obbligatorio o snapshot diretto obbligatorio." });
+
+      snapshot = await loadSnapshot(userId, requestedProjectId, snapshotId);
+      if (!snapshot) return res.status(404).json({ ok: false, msg: "Snapshot Nexus non trovato." });
+    }
+
+    const analysis = snapshot.analysis || snapshot;
+    const projectId = snapshot.projectId || analysis.projectId || requestedProjectId;
+    if (!projectId) return res.status(400).json({ ok: false, msg: "projectId non determinabile dallo snapshot." });
+
+    const heuristicAudit = await loadLatestAudit(userId, projectId);
+    const deepAudit = await generateDeepAudit(snapshot, { heuristicAudit });
+    const saved = await saveDeepAudit(userId, projectId, deepAudit);
+    const fixesPayload = await saveRecommendedFixes(userId, projectId, deepAudit.recommendedFixes || [], {
+      type: "deep_ai",
+      deepAuditId: saved.deepAuditId,
+      generatedAt: deepAudit.auditedAt
+    });
+
+    res.json({
+      ok: true,
+      deepAudit: {
+        ...deepAudit,
+        deepAuditId: saved.deepAuditId
+      },
+      fixes: fixesPayload.fixes
+    });
+  } catch (error) {
+    console.error("[NEXUS] deep audit error:", error);
+    const isTimeout = /timeout/i.test(error?.message || "");
+    res.status(isTimeout ? 504 : 500).json({ ok: false, msg: error.message || "Impossibile generare deep audit Nexus." });
+  }
+});
+
+app.get("/api/nexus/recommended-fixes/:projectId", isAuthenticated, async (req, res) => {
+  try {
+    const fixes = await loadRecommendedFixes(getSessionUserId(req), req.params.projectId);
+    res.json({ ok: true, fixes });
+  } catch (error) {
+    console.error("[NEXUS] recommended fixes error:", error);
+    res.status(500).json({ ok: false, msg: "Impossibile leggere i fix consigliati Nexus." });
+  }
+});
+
+app.post("/api/nexus/codex-prompt", isAuthenticated, async (req, res) => {
+  try {
+    const projectId = String(req.body?.projectId || "").trim();
+    const snapshotId = String(req.body?.snapshotId || "latest").trim() || "latest";
+    const request = String(req.body?.request || "").trim();
+
+    if (!projectId) return res.status(400).json({ ok: false, msg: "projectId obbligatorio." });
+
+    const snapshot = await loadSnapshot(getSessionUserId(req), projectId, snapshotId);
+    if (!snapshot) return res.status(404).json({ ok: false, msg: "Snapshot Nexus non trovato." });
+
+    const prompt = generateCodexPrompt(snapshot, request);
+    res.json({ ok: true, prompt });
+  } catch (error) {
+    console.error("[NEXUS] codex prompt error:", error);
+    res.status(500).json({ ok: false, msg: "Impossibile generare il prompt Codex Nexus." });
   }
 });
 
