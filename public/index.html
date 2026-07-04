@@ -4,7 +4,6 @@
   <meta charset="UTF-8" />
   <title>Keblo – Dashboard AI</title>
   <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
-  <div id="dock"></div>
   <style>
    /* ============================================================
    KEBLO UI — CLEAN CSS (A: draggable absolute cards)
@@ -25,7 +24,7 @@
   /* layers */
   --z-cards: 100;
   --z-dock: 10000;
-  --z-overlay: 9999;
+  --z-overlay: 200000;
 
   /* radius */
   --r-1: 10px;
@@ -886,77 +885,103 @@ body{
 }
 
 .card.chat #chat-input-container{
-  padding: 14px !important;
-  background: rgba(15,23,42,0.72) !important;
-  border-bottom: 1px solid rgba(148,163,184,0.16) !important;
+  padding: 9px 10px !important;
+  background: rgba(8,15,32,0.78) !important;
+  border-bottom: 1px solid rgba(99,102,241,0.18) !important;
 }
-
+.chat-composer{
+  display:grid;
+  grid-template-columns:minmax(0, 1fr) auto;
+  align-items:end;
+  gap:8px;
+  padding:7px;
+  border:1px solid rgba(99,102,241,0.34);
+  border-radius:12px;
+  background:linear-gradient(135deg, rgba(15,23,42,0.96), rgba(8,17,35,0.92));
+  box-shadow:inset 0 1px 0 rgba(255,255,255,0.04), 0 8px 24px rgba(0,0,0,0.18);
+}
+.chat-composer textarea,
 .card.chat #chat-input-main{
-  min-height: 60px;
-  resize: none !important;
-  background: rgba(17,24,39,0.94) !important;
-  border: 1px solid rgba(129,140,248,0.30) !important;
-  border-radius: 8px !important;
-  color: #e5e7eb !important;
-  font-size: 13px !important;
-  line-height: 1.45 !important;
-  box-shadow: inset 0 1px 0 rgba(255,255,255,0.04) !important;
+  width:100%;
+  height:38px;
+  min-height:38px;
+  max-height:82px;
+  box-sizing:border-box;
+  padding:9px 8px;
+  resize:none !important;
+  overflow-y:auto;
+  border:0 !important;
+  border-radius:7px !important;
+  outline:none;
+  background:transparent !important;
+  color:#e5e7eb !important;
+  font-family:var(--font-mono);
+  font-size:12px !important;
+  line-height:1.45 !important;
+  box-shadow:none !important;
 }
-
-.card.chat #chat-input-main::placeholder{
-  color: rgba(203,213,225,0.58) !important;
+.card.chat #chat-input-main::placeholder{ color:rgba(203,213,225,0.48) !important; }
+.card.chat #chat-input-main:focus{ box-shadow:none !important; }
+.chat-composer-actions{
+  display:flex;
+  align-items:center;
+  gap:5px;
 }
-
-.card.chat #chat-input-main:focus{
-  border-color: rgba(103,232,249,0.44) !important;
-  box-shadow:
-    inset 0 1px 0 rgba(255,255,255,0.05),
-    0 0 0 3px rgba(99,102,241,0.14) !important;
+.chat-icon-btn,
+.card.chat .chat-icon-btn{
+  display:grid;
+  place-items:center;
+  width:34px;
+  height:34px;
+  flex:0 0 34px;
+  padding:0;
+  border:1px solid rgba(129,140,248,0.30);
+  border-radius:9px;
+  background:rgba(30,41,59,0.76);
+  color:#e5e7eb;
+  font-size:15px;
+  line-height:1;
+  cursor:pointer;
+  transition:border-color var(--t-fast), background var(--t-fast), color var(--t-fast), transform var(--t-fast);
 }
-
-.card.chat #chat-stt-button{
-  width: 34px;
-  height: 34px;
-  flex: 0 0 34px;
-  border: 1px solid rgba(129,140,248,0.35);
-  border-radius: 8px;
-  background: rgba(30,41,59,0.9);
-  color: #e5e7eb;
-  cursor: pointer;
+.chat-icon-btn:hover{
+  border-color:rgba(103,232,249,0.55);
+  background:rgba(49,46,129,0.45);
+  color:#ecfeff;
+}
+.chat-icon-btn:active{ transform:translateY(1px); }
+#chat-send-button{
+  border-color:rgba(34,211,238,0.42);
+  background:linear-gradient(135deg, rgba(79,70,229,0.62), rgba(8,145,178,0.48));
+  color:#fff;
+  font-size:20px;
 }
 .card.chat #chat-stt-button[data-state="recording"]{
-  border-color: rgba(248,113,113,0.7);
-  background: rgba(127,29,29,0.45);
+  border-color:rgba(248,113,113,0.72);
+  background:rgba(127,29,29,0.52);
 }
-.card.chat #chat-stt-button[data-state="transcribing"]{
-  cursor: wait;
-  opacity: 0.7;
+.card.chat #chat-stt-button[data-state="transcribing"]{ cursor:wait; opacity:0.7; }
+#chat-image-preview{
+  display:flex;
+  gap:5px;
+  flex-wrap:wrap;
+  margin-top:6px;
+}
+#chat-image-preview:empty{ display:none; }
+#chat-image-preview img{
+  width:38px !important;
+  height:38px !important;
+  object-fit:cover;
+  border:1px solid rgba(103,232,249,0.28) !important;
+  border-radius:7px !important;
 }
 #chat-stt-status{
-  min-height: 14px;
-  margin-top: 5px;
-  color: rgba(203,213,225,0.7);
-  font-size: 10px;
+  min-height:0;
+  margin-top:4px;
+  color:rgba(203,213,225,0.68);
+  font-size:9px;
 }
-.chat-stt-auto-send{
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  flex: 0 0 auto;
-  color: rgba(226,232,240,0.82);
-  font-size: 10px;
-  white-space: nowrap;
-  cursor: pointer;
-}
-.chat-stt-auto-send input{
-  margin: 0;
-  accent-color: #6366f1;
-  cursor: pointer;
-}
-.chat-stt-auto-send strong{
-  color: #a5b4fc;
-  font-weight: 700;
-}
+#chat-stt-status:empty{ display:none; }
 
 .card.chat #nexus-display{
   padding: 16px !important;
@@ -1820,13 +1845,12 @@ body{
     /* --- MASCOTTE REATTIVA E DINAMICA --- */
 /* --- MASCOTTE OLOGRAFICA REATTIVA (Styling Jace) --- */
 #keblo-mascot {
-  position: fixed;
-  bottom: 100px;
-  right: 40px;
-  width: 160px;
-  height: 160px;
+  position: relative;
+  width: 48px;
+  height: 48px;
   z-index: 50;
   pointer-events: none;
+  object-fit: contain;
   mix-blend-mode: screen;
   transition: filter 1.5s cubic-bezier(0.4, 0, 0.2, 1); /* Transizione fluida del mix */
 }
@@ -1964,17 +1988,152 @@ body{
   box-shadow: 0 0 50px rgba(34, 211, 238, 0.3);
   border: 1px solid rgba(255,255,255,0.1);
 }
+
+
+/* ============================================================
+   KEBLO OS SHELL TEMPLATE
+   ============================================================ */
+body{
+  isolation:isolate;
+  background:
+    radial-gradient(900px 900px at 8% 42%, rgba(100,42,190,.32), transparent 62%),
+    radial-gradient(900px 720px at 96% 38%, rgba(0,190,255,.20), transparent 60%),
+    radial-gradient(700px 520px at 55% 85%, rgba(80,40,180,.14), transparent 68%),
+    linear-gradient(135deg, #030612 0%, #070a1d 48%, #03101d 100%);
+}
+body::before{ z-index:0; opacity:.48; }
+body::after{
+  content:""; position:fixed; inset:0; z-index:0; pointer-events:none; opacity:.46;
+  background-image:
+    radial-gradient(circle at 12% 18%, rgba(255,255,255,.72) 0 1px, transparent 1.4px),
+    radial-gradient(circle at 76% 14%, rgba(125,211,252,.68) 0 1px, transparent 1.4px),
+    radial-gradient(circle at 84% 68%, rgba(255,255,255,.46) 0 1px, transparent 1.5px),
+    radial-gradient(circle at 44% 78%, rgba(196,181,253,.54) 0 1px, transparent 1.5px);
+  background-size:190px 190px, 260px 260px, 310px 310px, 230px 230px;
+}
+#keblo-os-shell{ position:fixed; inset:0; z-index:20; pointer-events:none; }
+.os-sidebar{
+  position:fixed; pointer-events:auto; cursor:default; top:18px; bottom:18px; left:18px; width:304px; box-sizing:border-box;
+  display:flex; flex-direction:column; padding:24px 20px 18px; overflow:hidden;
+  border:1px solid rgba(116,135,255,.24); border-radius:26px;
+  background:linear-gradient(180deg, rgba(15,22,54,.86), rgba(5,10,27,.78)), radial-gradient(circle at 20% 0%, rgba(78,92,255,.18), transparent 42%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.08), 0 24px 70px rgba(0,0,0,.42), 0 0 45px rgba(85,65,220,.10);
+  backdrop-filter:blur(26px) saturate(145%);
+}
+.os-sidebar::after{ content:""; position:absolute; inset:0; pointer-events:none; border-radius:inherit; background:linear-gradient(115deg, rgba(255,255,255,.045), transparent 35%); }
+.os-brand{ position:relative; z-index:1; display:grid; grid-template-columns:48px 1fr auto; align-items:center; gap:12px; padding-bottom:14px; border-bottom:1px solid rgba(255,255,255,.08); }
+.os-brand-logo{ filter:saturate(1.3) drop-shadow(0 0 14px rgba(56,189,248,.48)); }
+.os-brand-copy strong{ display:block; font-size:17px; letter-spacing:2.6px; }
+.os-brand-copy span{ display:block; margin-top:5px; color:rgba(190,205,255,.48); font-size:9px; font-weight:700; letter-spacing:1.8px; text-transform:uppercase; }
+.os-idle{ display:flex; align-items:center; gap:6px; color:#86efac; font-family:var(--font-mono); font-size:8px; letter-spacing:1px; }
+.os-dot{ width:6px; height:6px; flex:0 0 auto; border-radius:50%; background:#34d399; box-shadow:0 0 9px rgba(52,211,153,.88); }
+.os-sidebar-meta{ position:relative; z-index:1; padding:13px 4px 4px; }
+.os-sidebar-meta .node-status-badge{ width:max-content; margin-top:9px; }
+.os-launcher{ position:relative; z-index:1; flex:1; min-height:0; padding-top:12px; }
+.os-section-label{ margin:0 0 10px 10px; color:rgba(170,188,235,.38); font-size:8px; font-weight:900; letter-spacing:2.4px; }
+.os-launcher-item{
+  display:grid; grid-template-columns:8px 22px 1fr auto; align-items:center; gap:9px; min-height:34px; padding:2px 10px;
+  border:1px solid transparent; border-radius:10px; color:rgba(222,230,255,.62); font-size:9px; font-weight:800; letter-spacing:.75px;
+  cursor:pointer;
+  transition:background var(--t-med), color var(--t-med), border-color var(--t-med), opacity var(--t-med);
+}
+.os-launcher-item:hover{ color:#fff; background:rgba(255,255,255,.05); }
+.os-launcher-item .os-icon{ color:rgba(125,211,252,.75); font-family:var(--font-mono); font-size:12px; text-align:center; }
+.os-launcher-item .os-item-state{ color:rgba(165,243,252,.72); font-family:var(--font-mono); font-size:7px; letter-spacing:1px; }
+.os-launcher-item.active{ color:#ecfeff; border-color:rgba(34,211,238,.30); background:linear-gradient(90deg, rgba(34,211,238,.17), rgba(99,102,241,.10)); box-shadow:inset 0 0 20px rgba(34,211,238,.05), 0 0 20px rgba(34,211,238,.08); }
+.os-launcher-item.active .os-dot{ background:#22d3ee; box-shadow:0 0 10px rgba(34,211,238,.95); }
+.os-launcher-item.is-open:not(.active) .os-dot{ background:#60a5fa; box-shadow:0 0 8px rgba(96,165,250,.72); }
+.os-launcher-item.is-minimized{ opacity:.62; }
+.os-launcher-item.is-minimized .os-dot{ background:#64748b; box-shadow:none; }
+.os-status-panel{ position:relative; z-index:1; display:grid; grid-template-columns:1fr 1fr; gap:8px 12px; margin-top:12px; padding:14px 12px; border:1px solid rgba(255,255,255,.07); border-radius:14px; background:rgba(1,5,18,.34); }
+.os-status-row{ display:flex; align-items:center; gap:7px; color:rgba(196,211,245,.52); font-family:var(--font-mono); font-size:7px; letter-spacing:.8px; }
+.os-sidebar-footer{ position:relative; z-index:1; display:flex; justify-content:center; gap:30px; padding-top:16px; color:rgba(188,204,245,.46); font-family:var(--font-mono); font-size:14px; }
+.workspace-hero{ position:fixed; top:50%; left:calc(50% + 165px); z-index:1; width:min(680px, calc(100vw - 420px)); text-align:center; opacity:1; pointer-events:none; transform:translate(-50%, -54%); transition:opacity var(--t-med); }
+body.has-open-card .workspace-hero{ opacity:.08; }
+.workspace-hero::after{ content:""; display:block; width:280px; height:1px; margin:24px auto 0; background:linear-gradient(90deg, transparent, #8b5cf6 35%, #22d3ee 70%, transparent); box-shadow:0 0 18px rgba(34,211,238,.56); }
+.workspace-kicker{ margin:0; color:rgba(210,225,255,.42); font-size:9px; font-weight:800; letter-spacing:5px; }
+.workspace-title{ margin:12px 0 9px; color:transparent; background:linear-gradient(90deg, #b79cff 12%, #e2e8ff 48%, #67e8f9 88%); -webkit-background-clip:text; background-clip:text; font-size:clamp(42px, 6vw, 86px); font-weight:200; letter-spacing:.18em; text-indent:.18em; text-shadow:0 0 42px rgba(111,99,255,.12); }
+.workspace-subtitle{ margin:0; color:rgba(185,202,240,.38); font-size:9px; font-weight:800; letter-spacing:3px; }
+.workspace-orbit{ position:absolute; top:50%; left:50%; width:min(58vw, 760px); aspect-ratio:1; border:1px solid rgba(109,137,255,.10); border-radius:50%; transform:translate(-50%, -50%) rotate(-18deg); box-shadow:inset 0 0 90px rgba(77,61,180,.04), 0 0 110px rgba(24,126,180,.04); }
+.workspace-orbit::before,.workspace-orbit::after{ content:""; position:absolute; border-radius:50%; }
+.workspace-orbit::before{ inset:12%; border:1px dashed rgba(125,211,252,.08); }
+.workspace-orbit::after{ top:12%; right:14%; width:8px; height:8px; background:#67e8f9; box-shadow:0 0 18px rgba(103,232,249,.85); }
+#system-clock{ position:static; z-index:auto; padding:0; border:0; background:none; text-align:left; backdrop-filter:none; }
+#clock-time{ font-family:var(--font-mono); font-size:28px; font-weight:300; letter-spacing:-1px; }
+#clock-date{ margin-top:3px; font-size:8px; letter-spacing:1px; white-space:nowrap; }
+.node-status-badge{ position:static; z-index:auto; display:flex; align-items:center; gap:7px; padding:7px 9px; border:1px solid rgba(34,211,238,.18); border-radius:999px; background:rgba(5,13,30,.48); box-shadow:0 0 24px rgba(34,211,238,.06); color:rgba(207,250,254,.68); font-family:var(--font-mono); font-size:7px; font-weight:700; letter-spacing:1px; white-space:nowrap; backdrop-filter:blur(15px); }
+#dock,
+#dock.active{
+  position:fixed;
+  left:-9999px !important;
+  top:-9999px !important;
+  opacity:0 !important;
+  pointer-events:none !important;
+}
+@media (max-height:820px){
+  .os-sidebar{ padding-top:18px; padding-bottom:14px; }
+  .os-brand{ padding-bottom:14px; }
+  .os-launcher{ padding-top:14px; }
+  .os-launcher-item{ min-height:29px; }
+  .os-status-panel{ padding:10px; }
+  .os-sidebar-footer{ padding-top:10px; }
+}
+@media (max-width:1050px){
+  .os-sidebar{ width:270px; left:12px; top:12px; bottom:12px; }
+  .os-launcher-item{ font-size:8px; }
+  .workspace-hero{ left:calc(50% + 140px); width:calc(100vw - 330px); }
+}
   </style>
 </head>
 
 <body>
+  <div id="keblo-os-shell" aria-hidden="true">
+    <aside class="os-sidebar">
+      <div class="os-brand">
+        <img class="os-brand-logo" src="/output/ComfyUI_00014_-removebg-preview.png" id="keblo-mascot" alt="">
+        <div class="os-brand-copy"><strong>KEBLO OS</strong><span>workspace AI</span></div>
+        <div class="os-idle"><span class="os-dot"></span>IDLE</div>
+      </div>
+      <div class="os-sidebar-meta">
+        <div id="system-clock">
+          <div id="clock-time">00:00</div>
+          <div id="clock-date">CARICAMENTO...</div>
+        </div>
+        <div class="node-status-badge"><span class="os-dot"></span>LOCAL NODE ACTIVE</div>
+      </div>
+      <div class="os-launcher">
+        <div class="os-section-label">LAUNCHER</div>
+        <div class="os-launcher-item" data-station="event"><span class="os-dot"></span><span class="os-icon">01</span><span>AGENDA</span></div>
+        <div class="os-launcher-item" data-station="journal"><span class="os-dot"></span><span class="os-icon">02</span><span>DIARIO PERSONALE</span></div>
+        <div class="os-launcher-item" data-station="radar"><span class="os-dot"></span><span class="os-icon">03</span><span>SATELLITE RADAR</span></div>
+        <div class="os-launcher-item" data-station="vision"><span class="os-dot"></span><span class="os-icon">04</span><span>VISION STATION</span></div>
+        <div class="os-launcher-item active" data-station="intelligence"><span class="os-dot"></span><span class="os-icon">05</span><span>INTELLIGENCE STATION</span><span class="os-item-state">ACTIVE</span></div>
+        <div class="os-launcher-item" data-station="memo"><span class="os-dot"></span><span class="os-icon">06</span><span>SCRATCHPAD</span></div>
+        <div class="os-launcher-item" data-station="news_station"><span class="os-dot"></span><span class="os-icon">07</span><span>INTERNET</span></div>
+        <div class="os-launcher-item" data-station="orbitale_memory"><span class="os-dot"></span><span class="os-icon">08</span><span>MEMORIA ORBITALE</span></div>
+        <div class="os-launcher-item" data-station="core"><span class="os-dot"></span><span class="os-icon">09</span><span>SYSTEM</span></div>
+        <div class="os-launcher-item" data-station="chat"><span class="os-dot"></span><span class="os-icon">10</span><span>KEBLO CORE_DEV</span></div>
+        <div class="os-launcher-item" data-station="fix_control"><span class="os-dot"></span><span class="os-icon">11</span><span>FIX CONTROL</span></div>
+      </div>
+      <div class="os-section-label">SYSTEM STATUS</div>
+      <div class="os-status-panel">
+        <div class="os-status-row"><span class="os-dot"></span>NODE ONLINE</div>
+        <div class="os-status-row"><span class="os-dot"></span>LLAMA ONLINE</div>
+        <div class="os-status-row"><span class="os-dot"></span>MEMORY SYNC</div>
+        <div class="os-status-row"><span class="os-dot"></span>GPU READY</div>
+      </div>
+      <div class="os-sidebar-footer"><span title="Controls">=</span><span title="Notifications">!</span><span title="Power">&#9211;</span></div>
+    </aside>
+    <main class="workspace-hero">
+      <div class="workspace-orbit"></div>
+      <p class="workspace-kicker">KEBLO NEURAL ENVIRONMENT</p>
+      <h1 class="workspace-title">WORKSPACE</h1>
+      <p class="workspace-subtitle">SCEGLI UNA STAZIONE DAL LAUNCHER</p>
+    </main>
+  </div>
+  <div id="dock"></div>
   <div id="keblo-lightbox" onclick="this.style.display='none'">
   <img id="lightbox-img" src="">
-</div>
-  <img src="/output/ComfyUI_00014_-removebg-preview.png" id="keblo-mascot">
-  <div id="system-clock">
-  <div id="clock-time">00:00</div>
-  <div id="clock-date">CARICAMENTO...</div>
 </div>
    <!-- Overlay di Login -->
   <div id="login-overlay">
@@ -3162,28 +3321,23 @@ else if (type === "chat") {
 
        container.innerHTML = `
   <!-- AREA INPUT -->
-  <div id="chat-input-container" style="padding: 14px; border-bottom: 1px solid rgba(99,102,241,0.2);">
-  <div style="position:relative; width: 100%;">
-    <textarea id="chat-input-main" placeholder="Scrivi al sistema..."
-      style="width:100%; height:60px; padding:10px; box-sizing: border-box; border-radius:8px; border: 1px solid #6366f1; background: rgba(30, 41, 59, 0.9); color: #ffffff; font-family: 'Consolas', monospace; font-size: 13px; outline: none; resize: none;"></textarea>
-
-    <div style="display:flex; align-items:center; gap:8px; margin-top:8px;">
-      <button id="chat-stt-button" type="button" data-state="idle"
-              aria-label="Avvia registrazione vocale" title="Trascrivi voce">🎙️</button>
-      <label class="chat-stt-auto-send" title="Invia automaticamente dopo la trascrizione">
-        <input id="chat-stt-auto-send" type="checkbox" checked>
-        Auto-invio <strong id="chat-stt-auto-send-state">ON</strong>
-      </label>
-      <input id="chat-image-input" type="file" accept="image/*" multiple
-             style="font-size:11px; color:#cbd5e1; width:100%;">
+  <div id="chat-input-container">
+    <div class="chat-composer">
+      <textarea id="chat-input-main" rows="1" placeholder="Scrivi al sistema..."></textarea>
+      <div class="chat-composer-actions">
+        <button id="chat-stt-button" class="chat-icon-btn" type="button" data-state="idle"
+                aria-label="Avvia registrazione vocale" title="Registra voce">🎙️</button>
+        <button id="chat-attach-button" class="chat-icon-btn" type="button"
+                aria-label="Allega immagini" title="Allega immagini">🖼️</button>
+        <input id="chat-image-input" type="file" accept="image/*" multiple hidden>
+        <input id="chat-stt-auto-send" type="checkbox" checked hidden>
+        <button id="chat-send-button" class="chat-icon-btn" type="button"
+                aria-label="Invia messaggio" title="Invia">↑</button>
+      </div>
     </div>
+    <div id="chat-image-preview"></div>
     <div id="chat-stt-status" role="status" aria-live="polite"></div>
-
-    <div id="chat-image-preview" style="display:flex; gap:6px; margin-top:8px; flex-wrap:wrap;"></div>
-
-    <div style="font-size:9px; opacity:0.4; text-align:right; margin-top:6px;">ENTER: Invia | SHIFT+ENTER: A capo</div>
   </div>
-</div>
 
   <!-- AREA RISPOSTA -->
   <div id="nexus-display" style="flex:1; overflow-y:auto; padding:15px; position:relative; user-select:text !important; scroll-behavior: smooth;">
@@ -3218,73 +3372,45 @@ else if (type === "chat") {
     </div>
   </div>
   `;
-      // --- FIX EVENTO INVIO ---
-      // Usiamo un piccolo timeout per assicurarci che l'HTML sia stato renderizzato
       setTimeout(() => {
-          const inp = document.getElementById("chat-input-main");
-          const imageInput = document.getElementById("chat-image-input");
-          const preview = document.getElementById("chat-image-preview");
+        const input = document.getElementById("chat-input-main");
+        const imageInput = document.getElementById("chat-image-input");
+        const preview = document.getElementById("chat-image-preview");
+        const sttButton = document.getElementById("chat-stt-button");
+        const attachButton = document.getElementById("chat-attach-button");
+        const sendButton = document.getElementById("chat-send-button");
 
-          const sttButton = document.getElementById("chat-stt-button");
-          if (sttButton) sttButton.onclick = handleSttButtonClick;
-          initSttAutoSendToggle();
+        if (sttButton) sttButton.onclick = handleSttButtonClick;
+        if (attachButton && imageInput) attachButton.onclick = () => imageInput.click();
+        if (sendButton) sendButton.onclick = submitMainChatInput;
+        initSttAutoSendToggle();
 
-          if (imageInput && preview) {
-            imageInput.onchange = () => {
-              preview.innerHTML = "";
+        if (imageInput && preview) {
+          imageInput.onchange = () => {
+            preview.innerHTML = "";
+            for (const file of imageInput.files) {
+              const img = document.createElement("img");
+              img.src = URL.createObjectURL(file);
+              img.alt = file.name;
+              preview.appendChild(img);
+            }
+          };
+        }
 
-              for (const file of imageInput.files) {
-                const img = document.createElement("img");
-                img.src = URL.createObjectURL(file);
-                img.style.width = "52px";
-                img.style.height = "52px";
-                img.style.objectFit = "cover";
-                img.style.borderRadius = "8px";
-                img.style.border = "1px solid rgba(99,102,241,0.35)";
-                preview.appendChild(img);
-              }
-            };
+        if (!input) {
+          console.error("ERRORE: Input chat non trovato nel DOM!");
+          return;
+        }
+
+        input.focus();
+        input.oninput = cancelPendingSttAutoSend;
+        input.onkeydown = (event) => {
+          if (event.key === "Enter" && !event.shiftKey) {
+            event.preventDefault();
+            submitMainChatInput();
           }
-                    
- if (inp) {
-  // Focus automatico
-  inp.focus();
-
-  const imageInput = document.getElementById("chat-image-input");
-  const preview = document.getElementById("chat-image-preview");
-
-  if (imageInput && preview) {
-    imageInput.onchange = () => {
-      preview.innerHTML = "";
-
-      for (const file of imageInput.files) {
-        const img = document.createElement("img");
-        img.src = URL.createObjectURL(file);
-        img.style.width = "52px";
-        img.style.height = "52px";
-        img.style.objectFit = "cover";
-        img.style.borderRadius = "8px";
-        img.style.border = "1px solid rgba(99,102,241,0.35)";
-        preview.appendChild(img);
-      }
-    };
-  }
-
-  // Rimozione vecchi listener (per sicurezza) e aggiunta nuovo
-  inp.onkeydown = null;
-  inp.oninput = cancelPendingSttAutoSend;
-  inp.addEventListener("keydown", (e) => {
-    // Se premi ENTER senza SHIFT
-    if (e.key === "Enter" && !e.shiftKey) {
-      e.preventDefault(); // Blocca l'a capo
-      submitMainChatInput();
-    }
-  });
-} else {
-  console.error("ERRORE: Input chat non trovato nel DOM!");
-}
-
-      }, 100); // 100ms di attesa sono sufficienti
+        };
+      }, 100);
 
     }
   logToCard(cardId, `Sotto-sistema ${title} inizializzato.`);
@@ -5535,8 +5661,9 @@ async function loadOrbitaleMemoryCard(cardId) {
 //Funzione inizializzo dashboard
 function initDashboard() {
       const isLaptop = window.innerWidth < 1500;
-      const LEFT_COL = "30px";
-      const CENTER_COL = isLaptop ? "360px" : "440px"; 
+      const SIDEBAR_SAFE_LEFT = "350px";
+      const LEFT_COL = `calc(${SIDEBAR_SAFE_LEFT} + 10px)`;
+      const CENTER_COL = isLaptop ? "700px" : "780px";
       const RIGHT_COL = "30px";
       const ROW_1 = 30;
 
@@ -5545,10 +5672,10 @@ function initDashboard() {
       spawnCard("event", "AGENDA", "", { top: "30px", left: CENTER_COL }, true);
       
       // Keblo Core (Chat)
-      spawnCard("chat", "KEBLO CORE_DEV", "", { top: "100px", left: "calc(50% - 300px)" }, false);
+      spawnCard("chat", "KEBLO CORE_DEV", "", { top: "100px", left: "calc(50% - 130px)" }, false);
       
       //CARD Diario
-      spawnCard("journal", "DIARIO PERSONALE", "", { top: "30px", left: "400px" }, true);
+      spawnCard("journal", "DIARIO PERSONALE", "", { top: "30px", left: LEFT_COL }, true);
 
       // Radar (La nuova card indipendente per il meteo)
       spawnCard("radar", "SATELLITE RADAR", "", { top: "180px", right: RIGHT_COL }, true);
@@ -5561,7 +5688,131 @@ function initDashboard() {
       spawnCard("orbitale_memory", "MEMORIA ORBITALE", "", { top: "320px", right: RIGHT_COL }, true);
       spawnCard("core", "SYSTEM", "", { top: "30px", right: RIGHT_COL, height:"120px" }, true);
       spawnCard("fix_control", "FIX CONTROL", "", { top: "120px", left: LEFT_COL }, true);
+
+      setTimeout(() => {
+        initSidebarLauncher();
+        syncSidebarStationState();
+      }, 300);
+
+      updateWorkspaceVisibility();
     }
+
+let activeSidebarStation = "intelligence";
+let sidebarStationObserver = null;
+
+function getStationCard(station) {
+  return document.querySelector(`.card.${station}`);
+}
+
+function focusStationCard(card) {
+  if (!card) return;
+  if (typeof highestZ === "number") {
+    highestZ++;
+    card.style.zIndex = highestZ;
+  }
+}
+
+function restoreStationCard(card) {
+  if (!card) return;
+
+  if (card.classList.contains("minimized-to-dock")) {
+    const dockItem = document.getElementById(`dock-item-${card.id}`);
+    if (dockItem) {
+      dockItem.click();
+    } else {
+      card.classList.remove("minimized-to-dock");
+    }
+  }
+
+  focusStationCard(card);
+}
+
+function activateStationFromSidebar(station) {
+  const card = getStationCard(station);
+  if (!card) return;
+
+  activeSidebarStation = station;
+  restoreStationCard(card);
+  syncSidebarStationState();
+  updateWorkspaceVisibility();
+}
+
+function updateWorkspaceVisibility() {
+  const hasVisibleCard = Array.from(document.querySelectorAll(".card"))
+    .some((card) => !card.classList.contains("minimized-to-dock"));
+
+  document.body.classList.toggle("has-open-card", hasVisibleCard);
+}
+
+function syncSidebarStationState() {
+  const launcherItems = document.querySelectorAll(".os-launcher-item[data-station]");
+
+  launcherItems.forEach((item) => {
+    const station = item.dataset.station;
+    const card = getStationCard(station);
+    const isMinimized = Boolean(card && card.classList.contains("minimized-to-dock"));
+    const isActive = station === activeSidebarStation;
+
+    item.classList.toggle("is-open", Boolean(card && !isMinimized));
+    item.classList.toggle("is-minimized", isMinimized);
+    item.classList.toggle("active", isActive);
+
+    let stateLabel = item.querySelector(".os-item-state");
+    if (isActive && !stateLabel) {
+      stateLabel = document.createElement("span");
+      stateLabel.className = "os-item-state";
+      item.appendChild(stateLabel);
+    }
+    if (stateLabel) {
+      stateLabel.textContent = isActive ? "ACTIVE" : "";
+      if (!isActive) stateLabel.remove();
+    }
+  });
+}
+
+function initSidebarLauncher() {
+  document.querySelectorAll(".os-launcher-item[data-station]").forEach((item) => {
+    if (item.dataset.launcherReady === "true") return;
+
+    item.dataset.launcherReady = "true";
+    item.addEventListener("click", () => {
+      activateStationFromSidebar(item.dataset.station);
+    });
+  });
+
+  if (sidebarStationObserver) return;
+
+  sidebarStationObserver = new MutationObserver((mutations) => {
+    const shouldSync = mutations.some((mutation) => {
+      if (mutation.type === "childList") {
+        const changedNodes = [...mutation.addedNodes, ...mutation.removedNodes];
+        return mutation.target.id === "dock" || changedNodes.some((node) =>
+          node.nodeType === Node.ELEMENT_NODE
+          && (node.matches(".card") || node.querySelector(".card"))
+        );
+      }
+      return mutation.type === "attributes"
+        && mutation.target.classList
+        && mutation.target.classList.contains("card");
+    });
+
+    if (shouldSync) {
+      syncSidebarStationState();
+      updateWorkspaceVisibility();
+    }
+  });
+
+  const dock = document.getElementById("dock");
+  if (dock) {
+    sidebarStationObserver.observe(dock, { childList: true });
+  }
+  sidebarStationObserver.observe(document.body, {
+    attributes: true,
+    attributeFilter: ["class"],
+    childList: true,
+    subtree: true
+  });
+}
 
 // Navigazione Mesi
 function changeMonth(cardId, delta) {
