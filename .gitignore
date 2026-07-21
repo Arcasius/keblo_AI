@@ -8,3 +8,5 @@ output/
 dist/
 build/
 coverage/
+
+orbitale_memory_data/

@@ -1,0 +1,16 @@
+{
+  "name": "@keblo/memoria-orbitale",
+  "version": "1.0.0",
+  "private": true,
+  "type": "commonjs",
+  "main": "index.js",
+  "exports": {
+    ".": "./index.js"
+  },
+  "engines": {
+    "node": ">=18.20.8"
+  },
+  "scripts": {
+    "test": "node --test test/package-boundary.test.js"
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "fixtureType": "historical-timestamps",
+  "id": "mem_fixture_historical",
+  "type": "episodic",
+  "content": {
+    "text": "Synthetic historical memory"
+  },
+  "activation": 0.4,
+  "orbitalState": 0.4,
+  "orbitalLevel": "medium",
+  "memoryDepth": "core",
+  "timestamp": -2208988800000,
+  "lastAccess": -2208902400000,
+  "accessCount": 0,
+  "orbital": {
+    "level": "medium",
+    "activation_score": 0.4,
+    "last_access": "1900-01-02T00:00:00.000Z",
+    "birth": "1900-01-01T00:00:00.000Z"
+  },
+  "meta": {
+    "timestamp": "1900-01-01T00:00:00.000Z",
+    "user_id": "synthetic_user"
+  },
+  "tags": ["synthetic", "historical"]
+}

@@ -1,5 +1,14 @@
 // cards.js - versione migliorata
-export function maybeShowCard(text, state) {
+export function isMemoryRecallRequest(text) {
+  return /\b(memoria(?:\s+orbitale)?|ricordo|ricordi|ricorda|ricordare|recall|ippocampo|supermemory)\b/i
+    .test(String(text || ""));
+}
+
+export function isExplicitNewsSaveCommand(text) {
+  return /\b(salva|archivia)\s+(questa\s+)?(news|notizia)\b/i.test(String(text || ""));
+}
+
+export function maybeShowCard(text, state, intentAnalysis = null) {
   const t = (text || "").trim().toLowerCase();
 
   // Escludi contesti di conferma/annullamento
@@ -8,7 +17,11 @@ export function maybeShowCard(text, state) {
     if (confirmWords.includes(t)) {
       return null;
     }
+    state.activeCard = null;
   }
+
+  const memoryIntent = intentAnalysis?.refinedIntent?.primaryIntent === "recall" ||
+    intentAnalysis?.refinedIntent?.primaryDomain === "memory";
 
   // 🔎 RICERCA
   if (t.startsWith("cerca") || t.startsWith("trova") || t.startsWith("ricerca")) {
@@ -21,7 +34,8 @@ export function maybeShowCard(text, state) {
   }
 
   // 📰 NEWS
-  if (t.includes("news") || t.includes("novità") || t.includes("aggiornami")) {
+  if (memoryIntent || isMemoryRecallRequest(t)) return null;
+  if (isExplicitNewsSaveCommand(t)) {
     return {
       type: "news",
       title: "News",

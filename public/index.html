@@ -637,7 +637,7 @@ body{
 .card.nexus .card-content{ gap:0; overflow:hidden; }
 .nexus-scroll{ flex:1; min-height:0; overflow-y:auto; padding-right:4px; display:flex; flex-direction:column; gap:12px; }
 .nexus-toolbar{ display:grid; grid-template-columns:minmax(0, 1fr) 118px; gap:7px; }
-.nexus-action-bar{ display:grid; grid-template-columns:repeat(5, minmax(0, 1fr)); gap:6px; }
+.nexus-action-bar{ display:grid; grid-template-columns:repeat(6, minmax(0, 1fr)); gap:6px; }
 .nexus-action-bar .card-btn{ margin:0; min-height:34px; white-space:normal; line-height:1.12; padding:6px 5px; }
 .nexus-panel{ max-height:260px; min-height:150px; overflow-y:auto; border:1px solid rgba(132,204,22,.18); background:rgba(15,23,42,.64); border-radius:10px; padding:11px; font-size:10px; line-height:1.5; }
 .nexus-deep-report{ display:flex; flex-direction:column; gap:10px; }
@@ -2763,12 +2763,14 @@ function spawnCard(type, title, content, customPos = null, startMinimized = fals
       </div>
       <div class="nexus-section">
         <h4>Azioni</h4>
+        <textarea class="card-q" id="nexus-focus-${cardId}" placeholder="Es. Fai un audit mirato della card Diario Personale e Agenda..." style="height:48px; resize:vertical; margin:0 0 7px 0;"></textarea>
         <div class="nexus-action-bar">
           <button class="card-btn" id="nexus-scan-${cardId}" onclick="runNexusScan('${cardId}')" style="background:#84cc16; color:#0b1020;">UPDATE SNAPSHOT</button>
           <button class="card-btn" id="nexus-latest-${cardId}" onclick="loadNexusLatest('${cardId}')">LOAD LATEST</button>
           <button class="card-btn" onclick="loadNexusProjects('${cardId}')">LOAD PROJECTS</button>
           <button class="card-btn" id="nexus-run-audit-${cardId}" onclick="runNexusAudit('${cardId}')" style="background:#3f6212; color:white;">RUN AUDIT</button>
           <button class="card-btn" id="nexus-deep-audit-${cardId}" onclick="runNexusDeepAudit('${cardId}')" style="background:#166534; color:white;">RUN DEEP AI AUDIT</button>
+          <button class="card-btn" id="nexus-targeted-audit-${cardId}" onclick="runNexusTargetedDeepAudit('${cardId}')" style="background:#15803d; color:white;">RUN TARGETED DEEP AUDIT</button>
         </div>
       </div>
       <div class="nexus-message" id="nexus-message-${cardId}"></div>
@@ -3255,8 +3257,8 @@ else if (type === "event") {
           <div style="font-size:9px; font-weight:900; letter-spacing:1px; color:#14b8a6; text-transform:uppercase;">READ ONLY</div>
           <button class="card-btn" style="width:auto; min-width:84px; padding:6px 10px; margin:0; font-size:9px; background:rgba(20,184,166,0.22); color:#ccfbf1;" onclick="loadOrbitaleMemoryCard('${cardId}')">REFRESH</button>
         </div>
-        <div id="orbitale-tabs-${cardId}" style="display:grid; grid-template-columns:repeat(5, minmax(0, 1fr)); gap:6px;">
-          ${["Status", "Grafo", "Nucleo", "Timeline", "MCO"].map((tab, index) => `
+        <div id="orbitale-tabs-${cardId}" style="display:grid; grid-template-columns:repeat(6, minmax(0, 1fr)); gap:6px;">
+          ${["Status", "Grafo", "Nucleo", "Timeline", "MCO", "Ippocampo"].map((tab, index) => `
             <button class="card-btn" data-orbitale-tab="${tab.toLowerCase()}" onclick="setOrbitaleMemoryTab('${cardId}', '${tab.toLowerCase()}')" style="width:100%; min-width:0; padding:7px 5px; margin:0; font-size:9px; background:${index === 0 ? "rgba(20,184,166,0.24)" : "rgba(255,255,255,0.05)"}; color:${index === 0 ? "#ccfbf1" : "rgba(255,255,255,0.72)"};">${tab}</button>
           `).join("")}
         </div>
@@ -3278,6 +3280,7 @@ else if (type === "event") {
         <div id="orbitale-core-${cardId}" data-orbitale-panel="nucleo" style="display:none; min-height:0; flex:1; overflow:auto; padding-right:4px;"></div>
         <div id="orbitale-timeline-${cardId}" data-orbitale-panel="timeline" style="display:none; min-height:0; flex:1; overflow:auto; padding-right:4px;"></div>
         <div id="orbitale-mco-${cardId}" data-orbitale-panel="mco" style="display:none; min-height:0; flex:1; overflow:hidden;"></div>
+        <div id="orbitale-ippocampo-${cardId}" data-orbitale-panel="ippocampo" data-orbitale-recall-card="${cardId}" style="display:none; min-height:0; flex:1; overflow:auto; padding-right:4px;"></div>
       </div>
     `;
     setTimeout(() => loadOrbitaleMemoryCard(cardId), 100);
@@ -3627,6 +3630,9 @@ function nexusDeepAuditToMarkdown(deepAudit) {
     "",
     "## Executive summary",
     nexusPlain(deepAudit.executiveSummary || "N/D"),
+    deepAudit.focus ? ["", "## Focus audit mirato", nexusPlain(deepAudit.focus)].join("\n") : "",
+    deepAudit.currentUnderstanding ? ["", "## Comprensione corrente", nexusPlain(deepAudit.currentUnderstanding)].join("\n") : "",
+    deepAudit.likelyFilesInvolved?.length ? ["", "## File probabilmente coinvolti", nexusMdList(deepAudit.likelyFilesInvolved)].join("\n") : "",
     "",
     "## Cos'e' questo progetto",
     nexusPlain(deepAudit.whatThisProjectIs || "N/D"),
@@ -3658,15 +3664,20 @@ function nexusDeepAuditToMarkdown(deepAudit) {
     "",
     "## Rischi",
     nexusMdList(deepAudit.risks),
+    deepAudit.uxRisks?.length ? ["", "## UX risks", nexusMdList(deepAudit.uxRisks)].join("\n") : "",
+    deepAudit.technicalRisks?.length ? ["", "## Technical risks mirati", nexusMdList(deepAudit.technicalRisks)].join("\n") : "",
     "",
     "## Debito tecnico",
     nexusMdList(deepAudit.technicalDebt),
+    deepAudit.storageAssessment ? ["", "## Storage assessment", nexusPlain(deepAudit.storageAssessment)].join("\n") : "",
+    deepAudit.overlapWithScratchpadMemoryAgenda ? ["", "## Overlap Scratchpad / Memory / Agenda", nexusPlain(deepAudit.overlapWithScratchpadMemoryAgenda)].join("\n") : "",
     "",
     "## Fix consigliati",
     nexusFixListToMarkdown(deepAudit.recommendedFixes || []),
     "",
     "## Strategia Codex",
     nexusPlain(deepAudit.codexStrategy || "N/D"),
+    deepAudit.codexPrompts?.length ? ["", "## Codex prompts mirati", nexusMdList(deepAudit.codexPrompts)].join("\n") : "",
     "",
     "## Cosa non rompere",
     nexusMdList(deepAudit.dontBreak),
@@ -3970,6 +3981,9 @@ function renderNexusDeepAudit(cardId, deepAudit, fixes = []) {
         auditedAt: <code>${nexusEscapeHtml(deepAudit.auditedAt || "-")}</code>
       </div>
     </div>
+    ${deepAudit.focus ? `<div class="nexus-section"><h4>Targeted focus</h4><div>${nexusEscapeHtml(deepAudit.focus)}</div></div>` : ""}
+    ${deepAudit.currentUnderstanding ? `<div class="nexus-section"><h4>Current understanding</h4><div>${nexusEscapeHtml(deepAudit.currentUnderstanding)}</div></div>` : ""}
+    ${deepAudit.likelyFilesInvolved?.length ? `<div class="nexus-section"><h4>Likely files involved</h4>${renderList(deepAudit.likelyFilesInvolved)}</div>` : ""}
     <div class="nexus-section"><h4>Executive summary</h4><div>${nexusEscapeHtml(deepAudit.executiveSummary || "-")}</div></div>
     <div class="nexus-section"><h4>Cos'e' questo progetto</h4><div>${nexusEscapeHtml(deepAudit.whatThisProjectIs || "-")}</div></div>
     <div class="nexus-section"><h4>Cosa non e'</h4><div>${nexusEscapeHtml(deepAudit.whatThisProjectIsNot || "-")}</div></div>
@@ -3992,9 +4006,16 @@ function renderNexusDeepAudit(cardId, deepAudit, fixes = []) {
       <div style="margin-top:5px;">${renderList(memory.recommendedFixes || [])}</div>
     </div>
     <div class="nexus-section"><h4>Risks</h4>${renderList(deepAudit.risks)}</div>
+    ${deepAudit.whatWorks?.length ? `<div class="nexus-section"><h4>What works</h4>${renderList(deepAudit.whatWorks)}</div>` : ""}
+    ${deepAudit.unclearParts?.length ? `<div class="nexus-section"><h4>Unclear parts</h4>${renderList(deepAudit.unclearParts)}</div>` : ""}
+    ${deepAudit.uxRisks?.length ? `<div class="nexus-section"><h4>UX risks</h4>${renderList(deepAudit.uxRisks)}</div>` : ""}
+    ${deepAudit.technicalRisks?.length ? `<div class="nexus-section"><h4>Technical risks mirati</h4>${renderList(deepAudit.technicalRisks)}</div>` : ""}
     <div class="nexus-section"><h4>Technical debt</h4>${renderList(deepAudit.technicalDebt)}</div>
+    ${deepAudit.storageAssessment ? `<div class="nexus-section"><h4>Storage assessment</h4><div>${nexusEscapeHtml(deepAudit.storageAssessment)}</div></div>` : ""}
+    ${deepAudit.overlapWithScratchpadMemoryAgenda ? `<div class="nexus-section"><h4>Overlap Scratchpad / Memory / Agenda</h4><div>${nexusEscapeHtml(deepAudit.overlapWithScratchpadMemoryAgenda)}</div></div>` : ""}
     <div class="nexus-section"><h4>FIX CONSIGLIATI</h4>${renderList(deepAudit.recommendedFixes)}</div>
     <div class="nexus-section"><h4>Strategia Codex</h4><div>${nexusEscapeHtml(deepAudit.codexStrategy || "-")}</div></div>
+    ${deepAudit.codexPrompts?.length ? `<div class="nexus-section"><h4>Codex prompts mirati</h4>${renderList(deepAudit.codexPrompts)}</div>` : ""}
     <div class="nexus-section"><h4>Non rompere</h4>${renderList(deepAudit.dontBreak)}</div>
     ${deepAudit.rawText ? `<details class="nexus-section"><summary style="cursor:pointer; color:#bef264; font-weight:900;">Raw LLM text</summary><pre style="white-space:pre-wrap; overflow:auto;">${nexusEscapeHtml(deepAudit.rawText)}</pre></details>` : ""}
     </div>
@@ -4075,6 +4096,31 @@ async function runNexusDeepAudit(cardId) {
     if (results) results.innerHTML = `<div style="color:#fca5a5; padding:20px;">${nexusEscapeHtml(error.message)}</div>`;
   } finally {
     if (button) button.textContent = "RUN DEEP AI AUDIT";
+  }
+}
+
+async function runNexusTargetedDeepAudit(cardId) {
+  const button = document.getElementById(`nexus-targeted-audit-${cardId}`);
+  const results = document.getElementById(`nexus-results-${cardId}`);
+  const focus = document.getElementById(`nexus-focus-${cardId}`)?.value.trim() || "";
+  if (!currentNexusSnapshot) return setNexusMessage(cardId, "Carica uno snapshot o aggiorna snapshot prima dell’audit mirato.");
+  if (!focus) return setNexusMessage(cardId, "Scrivi una richiesta/focus per l’audit mirato.");
+
+  try {
+    setNexusMessage(cardId);
+    if (button) button.textContent = "TARGETING...";
+    if (results) results.innerHTML = "<div style='opacity:.55; padding:30px 10px; text-align:center;'>Targeted deep audit in corso...</div>";
+    const data = await nexusRequest("/api/nexus/deep-audit", {
+      method: "POST",
+      body: JSON.stringify({ snapshot: currentNexusSnapshot, focus })
+    });
+    renderNexusDeepAudit(cardId, data.deepAudit, data.fixes || []);
+    logToCard(cardId, `Targeted deep audit Nexus generato: ${focus.slice(0, 80)}`);
+  } catch (error) {
+    setNexusMessage(cardId, error.message);
+    if (results) results.innerHTML = `<div style="color:#fca5a5; padding:20px;">${nexusEscapeHtml(error.message)}</div>`;
+  } finally {
+    if (button) button.textContent = "RUN TARGETED DEEP AUDIT";
   }
 }
 
@@ -4463,6 +4509,7 @@ async function deleteFixControlItem(cardId, id) {
                     spawnCard(data.card.type, data.card.title, data.card.content, data.card.status);
                   }
                   updateTokens(data.meta);
+                  refreshOrbitaleRecallPanels();
                 }
 
                 if (data.type === "error") {
@@ -5638,6 +5685,73 @@ function orbitaleEmptyMessage() {
   return "<div style='opacity:0.65; font-size:11px;'>Nessuna memoria orbitale ancora disponibile.</div>";
 }
 
+function renderOrbitaleRecallPanel(target, recallState) {
+  if (!target) return;
+  const enabled = recallState?.enabled === true;
+  const lastRecall = recallState?.lastRecall;
+  const badge = (label, color) => `<span style="border:1px solid ${color}; color:${color}; border-radius:999px; padding:3px 7px; font-size:8px; font-weight:900; letter-spacing:.7px;">${orbitaleEscapeHtml(label)}</span>`;
+  const header = `
+    <div style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:9px;">
+      ${badge(enabled ? "RECALL ONLINE" : "RECALL OFF", enabled ? "#34d399" : "#f87171")}
+      ${badge("READ ONLY", "#5eead4")}
+      ${badge("DAEMON OFF", "#fbbf24")}
+    </div>
+    <div style="border:1px solid rgba(94,234,212,.18); background:rgba(15,118,110,.08); border-radius:8px; padding:8px; margin-bottom:9px; font-size:9px; line-height:1.45; color:rgba(226,232,240,.76);">
+      La sezione mostra solo memoria recuperata e inserita nel prompt. Ogni elaborazione ulteriore appartiene all'inferenza del modello.
+    </div>`;
+  if (!lastRecall) {
+    target.innerHTML = header + "<div style='opacity:0.68; font-size:11px;'>Nessun recall eseguito in questa sessione</div>";
+    return;
+  }
+  const items = Array.isArray(lastRecall.items) ? lastRecall.items : [];
+  const summary = `
+    <div style="display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:6px; margin-bottom:9px;">
+      ${orbitaleMetricBox("CORE SUPERMEMORY", recallState.coreAvailableCount || 0)}
+      ${orbitaleMetricBox("WARM RAW", recallState.warmAvailableCount || 0)}
+      ${orbitaleMetricBox("Selezionati", lastRecall.selectedCount || 0)}
+      ${orbitaleMetricBox("Durata ms", orbitaleFormatScore(lastRecall.durationMs))}
+      ${orbitaleMetricBox("Truncated", lastRecall.truncated ? "YES" : "NO")}
+      ${orbitaleMetricBox("Mode", recallState.mode || "READ_ONLY")}
+    </div>`;
+  const cards = items.map(item => `
+    <div style="border:1px solid rgba(20,184,166,.24); background:rgba(20,184,166,.07); border-radius:9px; padding:9px; margin-bottom:8px;">
+      <div style="display:flex; justify-content:space-between; align-items:center; gap:8px; margin-bottom:7px;">
+        ${badge("INJECTED INTO PROMPT", "#34d399")}
+        <b style="font-size:9px; color:#ccfbf1; text-transform:uppercase;">${orbitaleEscapeHtml(item.tier === "core" ? "CORE SUPERMEMORY" : "WARM RAW")}</b>
+      </div>
+      <div style="display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:5px; font-size:9px; margin-bottom:7px;">
+        <span>rank <b>${orbitaleEscapeHtml(item.rank)}</b></span>
+        <span>score <b>${orbitaleEscapeHtml(orbitaleFormatScore(item.score))}</b></span>
+        <span>${orbitaleEscapeHtml(item.timestamp ? orbitaleFormatTimestamp(item.timestamp) : "timestamp -")}</span>
+      </div>
+      <div style="font-size:9px; opacity:.65; margin-bottom:6px;">Motivo: ${orbitaleEscapeHtml(item.matchedBy || "RANKED_RECALL")}${item.tier === "core" ? ` | fonti ${orbitaleEscapeHtml(item.sourceCount || 0)}` : ""}</div>
+      <div style="font-size:10px; line-height:1.45; color:rgba(226,232,240,.86); white-space:pre-wrap; word-break:break-word;">${orbitaleEscapeHtml(item.excerpt || "")}</div>
+    </div>`).join("");
+  target.innerHTML = header + summary + (cards || "<div style='opacity:.68;font-size:11px;'>Nessun elemento iniettato.</div>");
+}
+
+async function loadOrbitaleRecallPanel(cardId) {
+  const target = document.getElementById(`orbitale-ippocampo-${cardId}`);
+  if (!target) return;
+  target.innerHTML = "<div style='opacity:.55;font-size:11px;'>Loading...</div>";
+  try {
+    const response = await fetch("/api/orbitale/last-recall", {
+      credentials: "include",
+      cache: "no-store"
+    });
+    if (!response.ok) throw new Error("Recall provenance unavailable");
+    renderOrbitaleRecallPanel(target, await response.json());
+  } catch {
+    target.innerHTML = "<div style='opacity:.68;font-size:11px;'>Recall provenance unavailable.</div>";
+  }
+}
+
+function refreshOrbitaleRecallPanels() {
+  document.querySelectorAll("[data-orbitale-recall-card]").forEach(target => {
+    loadOrbitaleRecallPanel(target.dataset.orbitaleRecallCard);
+  });
+}
+
 function setOrbitaleMemoryTab(cardId, tab) {
   const wrap = document.getElementById(`orbitale-wrap-${cardId}`);
   if (!wrap) return;
@@ -6345,7 +6459,8 @@ async function loadOrbitaleMemoryCard(cardId) {
   const coreBox = document.getElementById(`orbitale-core-${cardId}`);
   const timelineBox = document.getElementById(`orbitale-timeline-${cardId}`);
   const mcoBox = document.getElementById(`orbitale-mco-${cardId}`);
-  if (!statusBox || !barsBox || !nodesBox || !linksBox || !graphBox || !coreBox || !timelineBox || !mcoBox) return;
+  const ippocampoBox = document.getElementById(`orbitale-ippocampo-${cardId}`);
+  if (!statusBox || !barsBox || !nodesBox || !linksBox || !graphBox || !coreBox || !timelineBox || !mcoBox || !ippocampoBox) return;
 
   statusBox.innerHTML = orbitaleMetricBox("Memorie", "...") + orbitaleMetricBox("Link", "...");
   nodesBox.innerHTML = "<div style='opacity:0.55; font-size:11px;'>Loading...</div>";
@@ -6354,21 +6469,25 @@ async function loadOrbitaleMemoryCard(cardId) {
   coreBox.innerHTML = "<div style='opacity:0.55; font-size:11px;'>Loading...</div>";
   timelineBox.innerHTML = "<div style='opacity:0.55; font-size:11px;'>Loading...</div>";
   mcoBox.innerHTML = "<div style='opacity:0.55; font-size:11px;'>Loading...</div>";
+  ippocampoBox.innerHTML = "<div style='opacity:0.55; font-size:11px;'>Loading...</div>";
 
   try {
-    const [statusRes, graphRes] = await Promise.all([
+    const [statusRes, graphRes, recallRes] = await Promise.all([
       fetch("/api/orbitale/status", { credentials: "include" }),
-      fetch("/api/orbitale/graph", { credentials: "include" })
+      fetch("/api/orbitale/graph", { credentials: "include" }),
+      fetch("/api/orbitale/last-recall", { credentials: "include", cache: "no-store" })
     ]);
 
-    if (!statusRes.ok || !graphRes.ok) {
-      throw new Error(`Orbitale request failed status=${statusRes.status} graph=${graphRes.status}`);
+    if (!statusRes.ok || !graphRes.ok || !recallRes.ok) {
+      throw new Error("Orbitale request failed");
     }
 
     const status = await statusRes.json();
     const graph = await graphRes.json();
+    const recallState = await recallRes.json();
     const nodes = Array.isArray(graph.nodes) ? graph.nodes : [];
     const links = Array.isArray(graph.links) ? graph.links : [];
+    renderOrbitaleRecallPanel(ippocampoBox, recallState);
 
     statusBox.innerHTML = [
       orbitaleMetricBox("Memorie", status.memoriesCount || nodes.length || 0),
@@ -6424,6 +6543,7 @@ async function loadOrbitaleMemoryCard(cardId) {
     coreBox.innerHTML = "";
     timelineBox.innerHTML = "";
     mcoBox.innerHTML = "";
+    ippocampoBox.innerHTML = "<div style='opacity:0.65; font-size:11px;'>Recall provenance unavailable.</div>";
     console.error("Orbitale cockpit error", err);
   }
 }

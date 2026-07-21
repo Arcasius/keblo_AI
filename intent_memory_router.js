@@ -427,8 +427,9 @@ export function generalIntentRouter(text) {
   }
 
   if (hasAny(t, [
-    "ricordi", "ti ricordi", "memoria", "passato", "prima",
-    "mi avevi detto", "ne avevamo parlato", "tempo fa"
+    "ricordo", "ricordi", "ricorda", "ricordare", "ti ricordi", "memoria", "memoria orbitale",
+    "recall", "ippocampo", "supermemory", "passato", "prima", "mi avevi detto",
+    "ne avevamo parlato", "tempo fa"
   ])) {
     intentScores.recall += 0.95;
   }
@@ -531,7 +532,8 @@ export function generalIntentRouter(text) {
   }
 
   if (hasAny(t, [
-    "memoria", "contesto", "short memory", "middle memory", "ricordi"
+    "memoria", "memoria orbitale", "contesto", "short memory", "middle memory", "ricordo",
+    "ricordi", "ricordare", "recall", "ippocampo", "supermemory"
   ])) {
     domainScores.memory += 0.88;
   }
@@ -1752,8 +1754,9 @@ export function generalIntentRouter(text) {
   }
 
   if (hasAny(t, [
-    "ricordi", "ti ricordi", "memoria", "passato", "prima",
-    "mi avevi detto", "ne avevamo parlato", "tempo fa"
+    "ricordo", "ricordi", "ricorda", "ricordare", "ti ricordi", "memoria", "memoria orbitale",
+    "recall", "ippocampo", "supermemory", "passato", "prima", "mi avevi detto",
+    "ne avevamo parlato", "tempo fa"
   ])) {
     intentScores.recall += 0.95;
   }
@@ -1852,7 +1855,8 @@ export function generalIntentRouter(text) {
   }
 
   if (hasAny(t, [
-    "memoria", "contesto", "short memory", "middle memory", "ricordi"
+    "memoria", "memoria orbitale", "contesto", "short memory", "middle memory", "ricordo",
+    "ricordi", "ricordare", "recall", "ippocampo", "supermemory"
   ])) {
     domainScores.memory += 0.88;
   }

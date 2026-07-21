@@ -1,0 +1,26 @@
+{
+  "fixtureType": "zero-values",
+  "id": "mem_fixture_zero",
+  "type": "episodic",
+  "content": {
+    "text": "Synthetic zero-value memory"
+  },
+  "activation": 0,
+  "orbitalState": 0,
+  "orbitalLevel": "long",
+  "memoryDepth": "temporary",
+  "accessCount": 0,
+  "timestamp": 0,
+  "lastAccess": 0,
+  "orbital": {
+    "level": "long",
+    "activation_score": 0,
+    "decay_rate": 0,
+    "last_access": "1970-01-01T00:00:00.000Z",
+    "access_count": 0
+  },
+  "linkProbe": {
+    "reinforcement_count": 0
+  },
+  "tags": []
+}

@@ -17,6 +17,8 @@ import { getRelevantNews, buildNewsSnippets, cleanNewsQuery, rerankNews } from "
 import { parseDueDate } from "./time_parser.js";
 import { ensureConversationSession, appendTurn, readLastTurns, readAllTurns, readLastGreenExchanges,readContextTurns, searchTurns, convFilePath, semanticSearchTurns } from "./conversation_repo.js";
 import { createOrbitaleMemoryAdapter } from "./src/memory/orbitale/index.js";
+import { createKebloChatRecallRuntime, parseKebloChatRecallEnvironment } from "./src/memory/orbitale/KebloChatRecallRuntime.js";
+import { createKebloRecallProvenanceStore } from "./src/memory/orbitale/KebloRecallProvenanceStore.js";
 import { scanProject } from "./project_nexus/nexus_scanner.js";
 import { analyzeProject } from "./project_nexus/nexus_analyzer.js";
 import { generateProjectAudit } from "./project_nexus/nexus_auditor.js";
@@ -74,6 +76,11 @@ const uploadAudio = multer({
 });
 //import * as cheerio from "cheerio";
 const require = createRequire(import.meta.url);
+const kebloChatRecallConfig = parseKebloChatRecallEnvironment(process.env);
+const kebloChatRecallRuntime = kebloChatRecallConfig.enabled
+  ? createKebloChatRecallRuntime(kebloChatRecallConfig)
+  : null;
+const kebloRecallTraceStore = createKebloRecallProvenanceStore();
 
 // --- 2. 🛠️ FIX PER NODE v18 (POLYFILLS) ---
 // Devono essere definiti PRIMA di caricare pdf-parse
@@ -950,6 +957,7 @@ app.post("/api/nexus/deep-audit", isAuthenticated, async (req, res) => {
     const userId = getSessionUserId(req);
     let snapshot = req.body?.snapshot || null;
     let requestedProjectId = "";
+    const focus = String(req.body?.focus || req.body?.userRequest || "").trim();
 
     if (!snapshot) {
       requestedProjectId = String(req.body?.projectId || "").trim();
@@ -966,12 +974,13 @@ app.post("/api/nexus/deep-audit", isAuthenticated, async (req, res) => {
     if (!projectId) return res.status(400).json({ ok: false, msg: "projectId non determinabile dallo snapshot." });
 
     const heuristicAudit = await loadLatestAudit(userId, projectId);
-    const deepAudit = await generateDeepAudit(snapshot, { heuristicAudit });
+    const deepAudit = await generateDeepAudit(snapshot, { heuristicAudit, focus });
     const saved = await saveDeepAudit(userId, projectId, deepAudit);
     const fixesPayload = await saveRecommendedFixes(userId, projectId, deepAudit.recommendedFixes || [], {
-      type: "deep_ai",
+      type: focus ? "targeted_deep_ai_audit" : "deep_ai",
       deepAuditId: saved.deepAuditId,
-      generatedAt: deepAudit.auditedAt
+      generatedAt: deepAudit.auditedAt,
+      focus
     });
 
     res.json({
@@ -1601,6 +1610,24 @@ app.post("/api/chat", isAuthenticated, async (req, res) => {
       shift: intentAnalysis?.contextShift
     });
 
+    // --- KINT-4 ORBITAL RECALL (READ-ONLY, DEFAULT OFF) ---
+    kebloRecallTraceStore.clear(req.sessionID, userId);
+    const orbitalRecall = kebloChatRecallRuntime
+      ? await kebloChatRecallRuntime.recallForChat({
+          session: req.session,
+          rawText,
+          primaryIntent: intentAnalysis?.refinedIntent?.primaryIntent,
+          memoryCanAssist: intentAnalysis?.contextShift?.memoryCanAssist
+        })
+      : { context: "", metrics: { enabled: false, bypassed: true, reasonCode: "DISABLED",
+          coreCount: 0, warmCount: 0, totalCount: 0, truncated: false, durationMs: 0 },
+          provenance: [] };
+    const orbitalMemoryContext = orbitalRecall.context;
+    console.log("[ORBITAL RECALL]", {
+      phase: "chat_recall",
+      ...orbitalRecall.metrics
+    });
+
     // --- WORLD CONTEXT INJECTION (LIGHT / DEEP) ---
     const brief = await safeReadWorldBrief();
     const worldRelevant = isWorldRelevantTurn(rawText, intentAnalysis);
@@ -1685,11 +1712,20 @@ ISTRUZIONI:
     console.log("\n================ PROMPT FINALE ====================");
     console.log((finalInputText || "").slice(0, 4000));
     console.log("===================================================\n");
+    if (orbitalMemoryContext) {
+      finalInputText = `${orbitalMemoryContext}\n\n--- CURRENT USER REQUEST AND APPLICATION CONTEXT ---\n${finalInputText}`;
+      if (Array.isArray(orbitalRecall.provenance) && orbitalRecall.provenance.length > 0) {
+        kebloRecallTraceStore.replace(req.sessionID, userId, {
+          metrics: orbitalRecall.metrics,
+          items: orbitalRecall.provenance
+        });
+      }
+    }
     // 6. Streaming LLM
     let fullReply = "";
 
     const result = await processInput(
-      { text: finalInputText, images },
+      { text: finalInputText, commandText: rawText, images },
       req.session.user.state,
       history,
       currentMood,
@@ -1973,6 +2009,25 @@ app.post("/api/set-confidence", isAuthenticated, async (req, res) => {
 
 
 // Endpoint cockpit Memoria Orbitale (read-only)
+app.get("/api/orbitale/last-recall", isAuthenticated, (req, res) => {
+  res.setHeader("Cache-Control", "no-store");
+  if (Object.prototype.hasOwnProperty.call(req.query || {}, "userId")) {
+    return res.status(400).json({ ok: false, error: "CLIENT_USER_ID_FORBIDDEN" });
+  }
+  const userId = req.session.user.id;
+  const stored = kebloRecallTraceStore.read(req.sessionID, userId);
+  const items = stored.lastRecall?.items || [];
+  return res.json({
+    enabled: kebloChatRecallConfig.enabled === true,
+    mode: "READ_ONLY",
+    daemonStatus: "OFF",
+    coreAvailableCount: items.filter((item) => item.tier === "core").length,
+    warmAvailableCount: items.filter((item) => item.tier === "warm").length,
+    lastRecall: stored.lastRecall,
+    expiresAt: stored.expiresAt
+  });
+});
+
 app.get("/api/orbitale/status", isAuthenticated, async (req, res) => {
   try {
     const { memoryPath, memories, links } = readOrbitaleCockpitData(req);

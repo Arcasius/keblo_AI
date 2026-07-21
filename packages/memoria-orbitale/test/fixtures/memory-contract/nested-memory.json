@@ -1,0 +1,35 @@
+{
+  "fixtureType": "theoretical-nested",
+  "id": "mem_fixture_nested",
+  "type": "observation",
+  "content": {
+    "text": "Synthetic nested memory",
+    "entities": [],
+    "context_tags": ["synthetic"]
+  },
+  "orbital": {
+    "level": "short",
+    "activation_score": 0.8,
+    "decay_rate": 0.05,
+    "last_access": "2021-02-03T04:05:06.000Z",
+    "access_count": 1,
+    "birth": "2021-01-01T00:00:00.000Z"
+  },
+  "cluster": {
+    "id": null,
+    "density": 0,
+    "centroid_ref": null
+  },
+  "embedding_ref": null,
+  "links_summary": {
+    "incoming_count": 0,
+    "outgoing_count": 0,
+    "total_weight": 0
+  },
+  "meta": {
+    "user_id": "synthetic_user",
+    "session_id": "synthetic_session",
+    "timestamp": "2021-01-01T00:00:00.000Z",
+    "version": 1
+  }
+}

@@ -49,13 +49,24 @@ function snapshotForPrompt(snapshot, heuristicAudit) {
   };
 }
 
-function buildDeepAuditPrompt(snapshot, heuristicAudit) {
+function buildDeepAuditPrompt(snapshot, heuristicAudit, focus = "") {
   const context = snapshotForPrompt(snapshot, heuristicAudit);
+  const targeted = String(focus || "").trim();
   return `
 Agisci come senior software architect. Devi produrre un AUDIT TECNICO APPROFONDITO in JSON valido.
 
 Usa SOLO lo snapshot qui sotto. Non inventare file non presenti nello snapshot. Non assumere contenuto completo dei file.
 Se una cosa e' inferita, dichiarala come inferenza nel testo.
+
+RICHIESTA SPECIFICA UTENTE / FOCUS AUDIT:
+${targeted || "Nessun focus specifico: esegui deep audit generale."}
+
+${targeted ? `Modalita' mirata:
+- Dai priorita' assoluta alla richiesta specifica.
+- Non limitarti all'audit generale: produci un audit mirato sul focus.
+- Indica quali file/funzioni Codex deve leggere per confermare.
+- Non inventare contenuto non presente nello snapshot.
+- Dichiara esplicitamente le inferenze.` : ""}
 
 Obiettivi:
 - Spiega cos'e' questo progetto.
@@ -108,7 +119,17 @@ Rispondi SOLO con JSON valido, senza markdown, con questa struttura:
   "nextSteps": [],
   "codexStrategy": "...",
   "dontBreak": [],
-  "openQuestions": []
+  "openQuestions": [],
+  "targetedFocus": "${targeted ? "..." : ""}",
+  "currentUnderstanding": "${targeted ? "..." : ""}",
+  "likelyFilesInvolved": [],
+  "whatWorks": [],
+  "unclearParts": [],
+  "uxRisks": [],
+  "technicalRisks": [],
+  "storageAssessment": "${targeted ? "..." : ""}",
+  "overlapWithScratchpadMemoryAgenda": "${targeted ? "..." : ""}",
+  "codexPrompts": []
 }
 
 Snapshot:
@@ -157,19 +178,21 @@ function normalizeFix(fix, index) {
   };
 }
 
-function normalizeDeepAudit(parsed, snapshot, rawText = "") {
+function normalizeDeepAudit(parsed, snapshot, rawText = "", focus = "") {
   const analysis = snapshot?.analysis || snapshot || {};
   const projectId = snapshot?.projectId || analysis.projectId || "unknown_project";
   const projectName = snapshot?.projectName || analysis.projectName || projectId;
   const rootPath = snapshot?.rootPath || analysis.rootPath || "";
   const fixes = asArray(parsed.recommendedFixes).map(normalizeFix);
+  const targetedFocus = String(focus || parsed.targetedFocus || "").trim();
 
   return {
     projectId,
     projectName,
     rootPath,
     auditedAt: new Date().toISOString(),
-    mode: "deep_ai",
+    mode: targetedFocus ? "targeted_deep_ai" : "deep_ai",
+    focus: targetedFocus,
     executiveSummary: parsed.executiveSummary || "",
     whatThisProjectIs: parsed.whatThisProjectIs || "",
     whatThisProjectIsNot: parsed.whatThisProjectIsNot || "",
@@ -185,12 +208,23 @@ function normalizeDeepAudit(parsed, snapshot, rawText = "") {
     codexStrategy: parsed.codexStrategy || "",
     dontBreak: asArray(parsed.dontBreak),
     openQuestions: asArray(parsed.openQuestions),
+    targetedFocus,
+    currentUnderstanding: parsed.currentUnderstanding || "",
+    likelyFilesInvolved: asArray(parsed.likelyFilesInvolved),
+    whatWorks: asArray(parsed.whatWorks),
+    unclearParts: asArray(parsed.unclearParts),
+    uxRisks: asArray(parsed.uxRisks),
+    technicalRisks: asArray(parsed.technicalRisks),
+    storageAssessment: parsed.storageAssessment || "",
+    overlapWithScratchpadMemoryAgenda: parsed.overlapWithScratchpadMemoryAgenda || "",
+    codexPrompts: asArray(parsed.codexPrompts),
     rawText
   };
 }
 
 export async function generateDeepAudit(snapshot, options = {}) {
-  const prompt = buildDeepAuditPrompt(snapshot, options.heuristicAudit || null);
+  const focus = String(options.focus || "").trim();
+  const prompt = buildDeepAuditPrompt(snapshot, options.heuristicAudit || null, focus);
   const timeoutMs = Number(options.timeoutMs || DEFAULT_TIMEOUT_MS);
   const controller = new AbortController();
   const timeout = setTimeout(() => controller.abort(), timeoutMs);
@@ -218,13 +252,14 @@ export async function generateDeepAudit(snapshot, options = {}) {
     const rawText = String(payload.response || "").trim();
 
     try {
-      return normalizeDeepAudit(extractJsonObject(rawText), snapshot, rawText);
+      return normalizeDeepAudit(extractJsonObject(rawText), snapshot, rawText, focus);
     } catch {
       return normalizeDeepAudit({
         executiveSummary: "Il modello locale ha restituito testo non JSON. Il report grezzo e' salvato in rawText.",
+        targetedFocus: focus,
         recommendedFixes: fallbackFixesFromText(rawText),
         risks: ["Risposta deep audit non strutturata: verificare prompt/modello o rilanciare."]
-      }, snapshot, rawText);
+      }, snapshot, rawText, focus);
     }
   } catch (error) {
     const message = error?.name === "AbortError" ? "Timeout deep audit LLM locale." : error.message;

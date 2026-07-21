@@ -1,0 +1,22 @@
+{
+  "fixtureType": "null-values",
+  "id": "mem_fixture_null",
+  "type": "semantic",
+  "content": {
+    "text": null,
+    "entities": null
+  },
+  "activation": null,
+  "orbitalState": null,
+  "orbitalLevel": "medium",
+  "memoryDepth": "deep",
+  "lastAccess": null,
+  "accessCount": null,
+  "embedding_ref": null,
+  "cluster": null,
+  "links_summary": null,
+  "tags": null,
+  "meta": {
+    "unknown_nullable_field": null
+  }
+}

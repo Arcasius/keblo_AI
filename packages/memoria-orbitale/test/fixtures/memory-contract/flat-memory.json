@@ -1,0 +1,29 @@
+{
+  "fixtureType": "operational-flat",
+  "id": "mem_fixture_flat",
+  "type": "episodic",
+  "content": {
+    "text": "Synthetic operational memory",
+    "role": "memory"
+  },
+  "activation": 0.65,
+  "orbitalState": 0.61,
+  "orbitalLevel": "medium",
+  "memoryDepth": "normal",
+  "dualState": {
+    "cognitive": 0.65,
+    "affective": 0,
+    "lastUpdate": 1704067200000
+  },
+  "decay_rate": 0.008,
+  "tags": ["synthetic", "contract"],
+  "timestamp": 1704067200000,
+  "lastAccess": 1704153600000,
+  "accessCount": 2,
+  "meta": {
+    "user_id": "synthetic_user",
+    "importance": 0.5,
+    "emotionalValence": 0,
+    "version": 1
+  }
+}

@@ -1,0 +1,43 @@
+node_modules/
+__pycache__/
+*.pyc
+*.log
+
+# output test memoria orbitale
+tmp_orbitale_data/
+tmp_orbitale_bridge_data/
+tmp_orbitale_play_data/
+orbitale_output.log
+
+# ambiente
+.env
+
+# dati runtime memoria
+keblo_data/
+
+# dati chat orbitale locale
+orbitale_chat_data/
+
+# visualizzazioni generate
+orbitale_visual.html
+
+# cockpit React
+apps/**/node_modules/
+apps/**/dist/
+apps/**/.env
+apps/**/.env.local
+apps/**/package-lock.json
+
+# zip sorgenti/import temporanei
+docs/memoria-orbitale.zip
+
+# zip import cockpit
+apps/orbitale-cockpilot/memoria-orbitale.zip
+
+# Private OpenAI import/export
+imports/
+backups/openai_import/
+
+# Local development backups
+backups/
+automation/planner-output/

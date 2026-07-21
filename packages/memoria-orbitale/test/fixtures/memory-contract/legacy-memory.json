@@ -1,0 +1,23 @@
+{
+  "fixtureType": "legacy-with-future-contract-example",
+  "id": "mem_fixture_legacy",
+  "type": "dialogue",
+  "content": "Synthetic legacy string content",
+  "text": "Synthetic top-level fallback text",
+  "activation": 0.2,
+  "orbitalLevel": "short",
+  "memoryDepth": "historical",
+  "timestamp": "946684800000",
+  "lastAccess": "2000-01-02T00:00:00.000Z",
+  "accessCount": 0,
+  "tags": ["synthetic", "legacy"],
+  "unknownLegacyField": {
+    "preserveMe": true
+  },
+  "futureContractExample": {
+    "contractStatus": "future",
+    "storageTier": "warm",
+    "memoryKind": "raw",
+    "processingState": "candidate"
+  }
+}

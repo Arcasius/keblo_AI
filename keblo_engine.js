@@ -162,9 +162,11 @@ export async function processInput(
   if (typeof state.tokenLimit !== "number") state.tokenLimit = 10000;
 
   const rawText = typeof input === "string" ? input : (input?.text || "");
+  const commandText = typeof input === "string" ? input : (input?.commandText || rawText);
   const rawImages = Array.isArray(input?.images) ? input.images : [];
 
   const normalizedText = rawText.trim();
+  const normalizedCommandText = commandText.trim();
 
   console.log("[ENGINE] INPUT", {
     text: normalizedText,
@@ -189,7 +191,7 @@ export async function processInput(
 
   consumeTokens(state, normalizedText);
 
-  const card = maybeShowCard(normalizedText, state);
+  const card = maybeShowCard(normalizedCommandText, state, intentAnalysis);
   if (card) {
     state.activeCard = card;
 
